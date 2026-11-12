@@ -1,0 +1,61 @@
+@startuml
+!include ../theme.puml
+title UML state — Canonical outgoing payment lifecycle and correction handling (proposed)
+hide empty description
+[*] --> DRAFT : Persist intent
+DRAFT --> PENDING_APPROVAL : Confirmed; approval needed
+DRAFT --> VALIDATING : Confirmed; no extra approver needed
+PENDING_APPROVAL --> VALIDATING : Independent approval / same details
+PENDING_APPROVAL --> REJECTED : Approval denied
+VALIDATING --> REVIEW_REQUIRED : Mandatory control unresolved
+REVIEW_REQUIRED --> VALIDATING : Authorized disposition / revalidate all gates
+VALIDATING --> REJECTED : Invalid, prohibited or insufficient availability
+VALIDATING --> FUNDS_RESERVED : All gates current / core reserve committed
+FUNDS_RESERVED --> SUBMITTING : Persist provider submission intent
+FUNDS_RESERVED --> SETTLED : Internal transfer / atomic core debit+credit
+SUBMITTING --> SUBMITTED : Provider acceptance; not settlement
+SUBMITTING --> RECONCILING : Timeout / ambiguous response
+SUBMITTING --> FAILED : Non-execution proven AND hold release committed
+SUBMITTED --> RECONCILING : Missing/conflicting evidence or booking pending
+SUBMITTED --> SETTLED : Final evidence AND core settlement booking
+SUBMITTED --> FAILED : Definitive rejection AND safe release committed
+RECONCILING --> SUBMITTED : Accepted, still nonfinal / original instruction
+RECONCILING --> SETTLED : Final evidence AND unique core booking recovered
+RECONCILING --> FAILED : Non-execution proven AND safe release committed
+RECONCILING --> CANCELLED : Cancellation proven AND safe release committed
+DRAFT --> CANCELLED : Local cancellation / no submission
+PENDING_APPROVAL --> CANCELLED : Local cancellation / no submission
+VALIDATING --> CANCELLED : Non-submission confirmed
+REVIEW_REQUIRED --> CANCELLED : Non-submission confirmed
+FUNDS_RESERVED --> CANCELLED : Non-submission confirmed AND hold released once
+SUBMITTED --> SUBMITTED : Cancellation requested; wait for evidence
+SUBMITTED --> CANCELLED : Provider confirms cancellation AND safe release
+SUBMITTING --> RECONCILING : Cancellation request while outcome uncertain
+SETTLED --> RETURN_PENDING : Rail return/correction evidence requires linked movement
+RETURN_PENDING --> RETURNED : Linked corrective booking completed
+RETURN_PENDING --> RETURN_PENDING : Correction uncertain / owned recovery
+REJECTED --> [*]
+FAILED --> [*]
+CANCELLED --> [*]
+RETURNED --> [*]
+note right of RECONCILING
+  No blind financial resubmission.
+  Preserve provider instruction identity.
+  Keep funds restricted until safe resolution.
+  Confirmed external settlement + missing core
+  booking stays here until booking is recovered.
+end note
+note right of RETURNED
+  Original journals remain immutable.
+  A linked movement has its own lifecycle.
+  Partial/multiple returns carry amounts in
+  linked records; RETURNED means the policy's
+  full corrective disposition is complete.
+end note
+note bottom of SETTLED
+  Financial milestone; not an assertion that
+  every rail forbids later returns or disputes.
+  Rail-specific finality rules govern corrections.
+end note
+footer BR-04–10. Transitions require expected aggregate version, valid evidence and auditable actor/policy context.
+@enduml

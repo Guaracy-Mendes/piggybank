@@ -1,0 +1,64 @@
+@startuml
+!include ../theme.puml
+autonumber
+title UML sequence — Authentication, consent, entitlement and transaction authority (proposed)
+actor "Customer / staff / partner" as Actor
+boundary Gateway
+participant IAM
+boundary "Experience / Open APIs" as API
+control "Domain service" as Domain
+control "Controls / entitlements" as Controls
+participant Core
+
+Actor -> Gateway : Request with token + action context + correlation
+Gateway -> IAM : Validate audience, issuer, session/client and revocation
+IAM --> Gateway : Authenticated subject/client context or denial
+break Invalid/expired/revoked identity
+  Gateway --> Actor : Authentication denial
+end
+Gateway -> API : Validated context; route by audience
+opt Partner Open API call
+  API -> IAM : Verify current consent scopes, accounts, purpose and expiry
+  IAM --> API : Bounded grant or denial
+  break No valid applicable consent
+    API --> Actor : Non-disclosing denial
+  end
+end
+API -> Domain : Request + trusted actor/delegation context
+Domain -> Controls : Evaluate action/resource/relationship, roles and policy
+Controls -> Core : Obtain authoritative account relationship/restriction context
+Core --> Controls : Current relationship/state/version
+Controls --> Domain : Allow / deny / step-up / review + policy evidence
+alt Deny or mandatory dependency unavailable
+  Domain --> Actor : Denied or safe pending via API; no execution
+else Additional proof or approval required
+  Domain --> Actor : Action-bound challenge / independent approval via API
+  Actor -> API : Proof for material action details
+  API -> Domain : Approval reference + intent digest
+  Domain -> Controls : Validate proof, same details, expiry and maker/checker
+  Controls --> Domain : Valid current decision or denial
+else No additional proof required
+  Domain -> Domain : Preserve attributable decision context
+end
+opt All required gates currently satisfied
+  Domain -> Core : Unique financial command + current policy/actor references
+  Core -> Core : Revalidate account restrictions, authority and availability atomically
+  Core --> Domain : Committed/prior result or denial
+  Domain --> Actor : Actual durable result via API
+end
+opt Equivalent idempotent command retried
+  Actor -> Gateway : Retry same key
+  Gateway -> API : Revalidate identity and route
+  API -> Domain : Revalidated request context
+  Domain -> Controls : Recheck permission to see/replay result
+  Domain --> Actor : Same permitted result; never bypass authorization via cache
+end
+note over IAM, Core
+  IAM proves identity; Controls evaluates permission;
+  Core enforces financial ownership/restriction/availability.
+  A customer token cannot become a staff token.
+  Revocation blocks new authorization; existing irrevocable
+  external instructions still complete/reconcile safely.
+end note
+footer FR-IAM-01–06; FR-CTRL-06; SEC-01/03/08; AT-01/14/21/29.
+@enduml

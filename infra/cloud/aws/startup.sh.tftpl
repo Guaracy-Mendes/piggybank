@@ -1,0 +1,29 @@
+#!/bin/bash
+export BANK_DATA_DEVICE=/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_${volume_id}
+${bootstrap}
+# Canonical Ubuntu EC2 includes SSM Agent; install if this approved AMI omitted it.
+if ! snap list amazon-ssm-agent >/dev/null 2>&1; then
+  snap install amazon-ssm-agent --classic
+fi
+snap start amazon-ssm-agent
+curl -fsSL https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /opt/piggybank-bootstrap/awscli.zip
+unzip -q -o /opt/piggybank-bootstrap/awscli.zip -d /opt/piggybank-bootstrap
+/opt/piggybank-bootstrap/aws/install --update
+if [[ -f /srv/piggybank/state/deployed-release-sha256 ]]; then
+  # A replacement boot disk has an empty Docker store; recover the sealed images.
+  python3 - <<'RECOVER'
+import hashlib, json
+from pathlib import Path
+root=Path('/srv/piggybank/current')
+manifest=json.loads((root/'manifest.json').read_text())
+assert hashlib.file_digest((root/'images.tar').open('rb'),'sha256').hexdigest()==manifest['imagesSha256']
+RECOVER
+  docker load --input /srv/piggybank/current/images.tar > /dev/null
+  bash /srv/piggybank/current/deployment/activate-host.sh
+  systemctl start piggybank
+  exit 0
+fi
+aws s3 cp 's3://${bucket}/${object}' /opt/piggybank-bootstrap/release.tgz --region '${region}' --only-show-errors
+echo '${release_sha256}  /opt/piggybank-bootstrap/release.tgz' | sha256sum --check --status
+tar -xzf /opt/piggybank-bootstrap/release.tgz -C /opt/piggybank-bootstrap deployment/install-release.sh
+bash /opt/piggybank-bootstrap/deployment/install-release.sh /opt/piggybank-bootstrap/release.tgz '${release_sha256}'

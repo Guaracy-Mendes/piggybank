@@ -1,0 +1,65 @@
+@startuml
+title UML sequence - Internal payment, action approval and acknowledgement recovery
+actor Payer
+actor Recipient
+participant "Customer web / BFF" as API
+participant "Payments" as Payments
+participant "Identity / issuer" as IAM
+participant "Controls" as Controls
+participant "Platform workflow" as Jobs
+participant "Worker" as Worker
+participant "Core" as Core
+Recipient -> Core : Issue shareable receiving reference as current owner
+Recipient --> Payer : Share opaque reference
+Payer -> API : Register recipient / request exact quote
+API -> Payments : Current owned source + receiving reference + amount
+Payments -> Core : Resolve active receiver and source product policy
+Core --> Payments : Exact versioned price / limits / destination
+Payments -> Payments : Immutable quote and one payment identity
+Payer -> API : Review / create intent using stable request key
+API -> Payments : Bind one immutable quote to one intent
+Payments -> Controls : Action challenge binds exact PaymentDetails
+Payer -> IAM : Fresh OIDC authorization code / PKCE / nonce
+IAM -> IAM : Expected actor + auth_time + details-bound proof
+Payer -> API : Confirm original intent and quote
+API -> Payments : Current source / recipient / quote guards
+Payments -> Controls : Consume original action-bound proof
+Payments -> Payments : Commit ACCEPTED intent and audit/outbox intent
+Payments -> Jobs : Accept stable workflow / original payment ID
+Jobs --> API : Saved operation identity
+Worker -> Jobs : Claim lease / fence
+Worker -> Payments : Process original payment
+Payments -> Payments : Serialize intent and recipient revocation
+Payments -> Controls : Current permission, action proof and signed checks
+alt Current denial / expiry / blocked instruction
+ Payments -> Payments : Record nonexecution outcome; no journal effect
+else Current pending / review
+ Payments -> Jobs : Retry or owned review; preserve original identity
+else Current gates allow execution
+ Payments -> Core : Bound InternalInstruction + trusted expiring permit
+ Core -> Core : Lock accounts in UUID order
+ Core -> Core : Recheck expiry, restrictions, exact fee, funds and daily principal limit
+ group One Core transaction
+  Core -> Core : Debit total / credit recipient / credit fee account
+  Core -> Core : Balanced journal + immutable execution receipt + outbox
+ end
+ alt Lost acknowledgement
+  Core --x Payments : Response unavailable after commit
+  Worker -> Payments : Retry original payment
+  Payments -> Core : Retrieve receipt by original identity + full request digest
+  Core --> Payments : Original journal batch
+ else Acknowledgement received
+  Core --> Payments : Journal batch evidence
+ end
+ Payments -> Payments : Commit SETTLED + event / audit intent
+end
+Payments -> Controls : Relay persisted audit record with stable ID
+Payer -> API : Resume / refresh original payment
+API -> Payments : Current authorized inquiry
+Payments --> Payer : Actual status, fees, date and original booking reference
+note over Payments,Core
+Payment ID is the economic business identity.
+Platform workflow ID is a distinct scheduling identity.
+No external provider acknowledgement is used as internal settlement evidence.
+end note
+@enduml

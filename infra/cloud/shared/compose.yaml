@@ -1,0 +1,94 @@
+name: piggybank-cloud
+x-app: &app
+  image: piggybank-runtime:${RELEASE_ID:?required}
+  network_mode: host
+  restart: unless-stopped
+  env_file: [/srv/piggybank/state/runtime.env]
+  volumes: [/srv/piggybank/state/evidence:/evidence]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  read_only: true
+  tmpfs: [/tmp:rw,noexec,nosuid,size=64m]
+  stop_grace_period: 40s
+  logging: &logs
+    driver: json-file
+    options: {max-size: 10m, max-file: '5'}
+services:
+  postgres:
+    image: docker.io/library/postgres:18.4-bookworm@sha256:c7d36c2369348f77fe9558f1970f7a0ea80ed55dfdf9500eb734159bd4df684d
+    network_mode: host
+    restart: unless-stopped
+    command: [postgres, -p, '15432', -c, listen_addresses=127.0.0.1, -c, max_connections=200]
+    environment:
+      POSTGRES_USER: bank_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: piggybank
+    volumes: [/srv/piggybank/state/postgres:/var/lib/postgresql]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -h 127.0.0.1 -p 15432 -U bank_admin -d piggybank]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    stop_grace_period: 60s
+    logging: *logs
+  nats:
+    image: docker.io/library/nats:2.12.0-alpine@sha256:72100bb9c3af46712a7ef13ab91a2245898de9c9b3269c515331bf61fe0aa516
+    network_mode: host
+    restart: unless-stopped
+    command: [-c, /etc/nats/cloud.conf]
+    volumes: [/srv/piggybank/state/nats:/data, ./nats.conf:/etc/nats/cloud.conf:ro]
+    logging: *logs
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.5.0@sha256:24896bcb632fa37445c8ca979886f5b2370651335b92ed72724369f8e5f56b4f
+    network_mode: host
+    restart: unless-stopped
+    command: [start-dev, --import-realm, --http-host=127.0.0.1, --http-port=18280, --http-management-host=127.0.0.1]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://127.0.0.1:15432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:?required}
+      KC_HOSTNAME: http://127.0.0.1:18280
+      KC_HEALTH_ENABLED: 'true'
+      KC_BOOTSTRAP_ADMIN_USERNAME: local-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?required}
+    volumes: [./identity:/opt/keycloak/data/import:ro]
+    logging: *logs
+  api:
+    <<: *app
+    command: [bank-api]
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, --max-time, '3', http://127.0.0.1:4180/health/ready]
+      interval: 15s
+      timeout: 4s
+      retries: 12
+      start_period: 30s
+  worker:
+    <<: *app
+    command: [bank-worker]
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, --max-time, '3', http://127.0.0.1:4181/health/ready]
+      interval: 15s
+      timeout: 4s
+      retries: 12
+      start_period: 30s
+  provider:
+    <<: *app
+    command: [provider-simulator]
+  web:
+    image: piggybank-web:${RELEASE_ID:?required}
+    network_mode: host
+    restart: unless-stopped
+    logging: *logs
+  migrate:
+    <<: *app
+    profiles: [tools]
+    restart: 'no'
+    command: [bank-migrate]
+    environment:
+      MIGRATION_DATABASE_URL: ${MIGRATION_DATABASE_URL:?required}
+  seed:
+    <<: *app
+    profiles: [tools]
+    restart: 'no'
+    command: [bank-seed]

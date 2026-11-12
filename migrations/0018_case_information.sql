@@ -1,0 +1,1 @@
+CREATE TABLE controls.case_information(case_id uuid NOT NULL REFERENCES controls.cases(id),request_id uuid NOT NULL,digest text NOT NULL,evidence_id uuid NOT NULL REFERENCES controls.evidence_objects(id),PRIMARY KEY(case_id,request_id));

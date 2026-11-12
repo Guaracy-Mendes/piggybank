@@ -1,0 +1,62 @@
+@startuml
+title UML - immutable Core periodic basis and calculation evidence
+hide methods
+class PeriodicPolicy <<Core published PREVIEW_ONLY>> {
+ id / productVersionId / digest
+ exact finite UTC calendar
+ daily ACT365 or whole-month fixed fee
+}
+class BasisCapture <<Core immutable>> {
+ id / original actor / client / key
+ capturedPersonId / coreAsOf UTC
+ accountId / registeredAt / state / restrictions
+ exact productVersionId / policyDigest
+ periodStart inclusive / periodEnd exclusive
+ dueAt : frozen calendar UTC
+ status : OPEN_PROVISIONAL or CLOSED_OBSERVATION
+ currentBooked / held / available : i64 strings
+ opening / change / observedClosing : i128 strings
+ sourceCount : 0..1000
+ sourceDigest / artifactDigest : SHA256
+}
+class NativeSourceItem <<immutable saved membership>> {
+ ordinal : 1..1000
+ batchId / operationId / originalBatchId?
+ postingKind / businessDate / postedAt UTC
+ journalFingerprint : native SHA256
+ deltaMinor : signed i64 string
+}
+class JournalBatch <<Core native immutable fact>> {
+ id / operationId / businessDate
+ entries : balanced actual account legs
+ fingerprint / postedAt
+}
+class BasisCalculation <<derived preview only>> {
+ amount : exact Money
+ exactNumerator / denominator : decimal strings
+ evaluatedAt : saved coreAsOf
+ isDue / provisional
+ basisSource : CORE_BUSINESS_DATE_BASIS_V1
+}
+class AuditEvent <<stable recovery>> {
+ id : basis UUID
+ person / occurredAt : original capture
+ action : finance.periodic-basis.captured
+}
+class AuditCursor <<Finance recovery>> {
+ lastId : persisted UUID
+ page : 50; wraps past failures
+}
+BasisCapture "*" --> "1" PeriodicPolicy : frozen exact policy
+BasisCapture "1" *-- "0..1000" NativeSourceItem : business date before exclusive end
+NativeSourceItem "*" --> "1" JournalBatch : independently verified saved native facts
+BasisCapture "1" --> "0..1" BasisCalculation : no clamp / no current-balance fallback
+BasisCapture "1" --> "1" AuditEvent : idempotent original identity and time
+AuditCursor --> AuditEvent : repair lost acknowledgment
+note bottom of BasisCapture
+One statement snapshot includes account position and prefix facts.
+Historical totals never use the current balance as an opening substitute.
+New facts require a new artifact; closed observation is not finalization.
+Account registration is not customer enrollment or consent evidence.
+end note
+@enduml

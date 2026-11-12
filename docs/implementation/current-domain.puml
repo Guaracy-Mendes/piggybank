@@ -1,0 +1,481 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+title UML - Implemented domain ownership and identity boundaries
+package "Journeys" {
+ class Application {
+  id: UUID
+  issuer / subject
+  generation
+  version
+  state
+  operationId
+ }
+ class ApplicantProfile {
+  legal identity digest
+  decision digest
+  consent version
+ }
+ class ContactChange {
+  expectedVersion
+  controlInputDigest
+  state
+ }
+ Application *-- ApplicantProfile
+}
+package "Identity" {
+ class Session {
+  opaque ID hash
+  trust / issuer / subject
+  refresh lease
+ }
+ class StepUpProof {
+  challengeId
+  intentDigest
+  authenticatedAt
+  useOperationId
+ }
+}
+package "Controls" {
+ class PersonLink {
+  issuer
+  subject
+  canonicalPersonId
+ }
+ class RoleGrant {
+  role
+  scope
+  validUntil
+  revokedAt
+ }
+ class CheckRequest {
+  resource / kind / generation
+  inputDigest
+  policyVersion
+  state
+ }
+ class CheckResult <<immutable>> {
+  original outcome
+  evidenceId
+  expiresAt
+  fingerprint
+ }
+ class Case {
+  queue
+  ownerPerson
+  evidenceRefs
+  nextAction
+  version
+  deadline
+ }
+ class CaseProposal {
+  makerPerson
+  checkerPerson
+  disposition
+  expiresAt
+  caseVersion
+ }
+ class ConfigurationDraft <<immutable details>> {
+  resourceId
+  kind
+  exact JSON details
+  publication acknowledgement
+ }
+ class ChangeProposal {
+  materialDigest
+  makerPerson
+  checkerPerson
+  expiresAt
+ }
+ PersonLink "1" -- "*" RoleGrant : canonical person
+ CheckRequest "1" -- "0..1" CheckResult
+ Case "1" -- "*" CaseProposal
+ ConfigurationDraft "1" -- "1" ChangeProposal
+}
+package "Core - sole money authority" {
+ class Party {
+  issuer / subject
+  identityDigest
+  sourceApplication
+ }
+ class Account {
+  posted: i64
+  held: i64
+  state
+  debit / credit restrictions
+ }
+ class ProductVersion <<immutable>> {
+  exact fees / limits
+  effective dates
+  chartVersion
+ }
+ class Hold {
+  operationId
+  amount
+  submitted
+  state
+ }
+ class JournalBatch <<immutable>> {
+  operationId + postingKind
+  fingerprint
+  originalBatch
+ }
+ class JournalEntry <<immutable>> {
+  accountId
+  signedDelta: i64
+ }
+ Party "1" -- "*" Account : ownership
+ Account -- ProductVersion
+ Account "1" -- "*" Hold
+ JournalBatch "1" *-- "2..*" JournalEntry
+ JournalEntry "*" -- "1" Account
+}
+package "Documents" {
+ class TermsVersion <<immutable>> {
+  exact UTF8 text
+  digest
+  effective dates
+ }
+ class Acceptance <<immutable>> {
+  issuer / subject
+  application / product / terms
+  digest / channel / time
+ }
+ TermsVersion "1" -- "*" Acceptance
+}
+package "Platform" {
+ class Operation {
+  actor / client / kind / key
+  fingerprint
+  state
+ }
+ class Job {
+  lease
+  fence
+  attempts
+  nextAction
+ }
+ class EventEnvelope {
+  eventId
+  producer
+  aggregateVersion
+  schemaVersion
+ }
+ Operation "1" -- "*" Job
+}
+Application --> Acceptance : current binding
+Application --> CheckRequest : current decision input
+Application --> Party : approved opening
+ContactChange --> CheckRequest
+ContactChange --> Party : version guarded
+Session --> PersonLink : explicit issuer / subject
+CaseProposal ..> CheckResult : review disposition preserves original
+ChangeProposal ..> ProductVersion : independent publication proof
+Job ..> Application : durable continuation
+package "Payments" {
+ class Beneficiary {
+  owner issuer / subject
+  explicit receiving reference / rail
+  verified destination / version
+  state: VERIFIED or REVOKED
+ }
+ class PaymentQuote <<immutable>> {
+  source / recipient / product version
+  exact principal / fee / total
+  UTC date / expiry
+  preallocated economic payment ID
+ }
+ class PaymentIntent {
+  actor / client / request key
+  immutable quote identity
+  action challenge / workflow ID
+  state / reason / journal receipt
+ }
+ class PaymentExecution <<Core immutable receipt>> {
+  economic operation ID
+  full request digest
+  principal / fee / business date
+  unique journal batch
+ }
+ class RailPolicy <<immutable approved version>> {
+  effective dates / principal limit
+  synthetic UTC 24x7 calendar
+ }
+ class RailHead {
+  paused / revision
+ }
+ class RailSubmission <<durable identity>> {
+  original signed request scope
+  attemptedAt / inquiries
+  leaseId / expiry / fence
+ }
+ class RailReceipt <<immutable authenticated evidence>> {
+  evidenceId / provider version
+  exact request digest / principal
+  pending or final provider outcome
+ }
+ class ExternalReservation <<Core immutable authority>> {
+  original instruction digest
+  validUntil / exact total
+ }
+ class DailyPrincipalUsage <<Core guarded>> {
+  payer / UTC business date
+  ACTIVE / POSTED / RELEASED
+ }
+ class ExternalFinality <<Core immutable>> {
+  operationId / requestDigest
+  signed evidenceId / digest
+  SETTLED / DECLINED / CANCELLED
+  settlement batch if settled
+ }
+ class CreditIntent <<Payments sealed identity>> {
+  movementId / evidenceId
+  original signed document / digest
+  Core-derived owner / destination
+  workflow state / operationId
+ }
+ class CreditMovement <<Core immutable>> {
+  INBOUND_SETTLED / RETURN_SETTLED
+  originalPaymentId for return
+  exact principal / businessDate
+  suspenseBatchId
+ }
+ class CreditAllocation <<Core immutable>> {
+  movementId / requestDigest
+  allocationBatchId
+ }
+ class EvidenceQuarantine <<Payments immutable>> {
+  packetDigest / reasonCode
+  related financial identity
+  owned Controls case
+ }
+ class RecoveryRequest <<sealed command identity>> {
+  requester / client / request key
+  original payment ID
+  INQUIRE / CANCEL
+  exact reason / digest
+  operationId / state
+ }
+ class ReconciliationBreak {
+  original payment ID / code
+  stable owned case ID
+  OPEN / MATCHED
+ }
+ class ReconciliationObservation <<immutable>> {
+  break ID / version
+  financial / workflow snapshot
+ }
+ RailHead --> RailPolicy : effective version
+ PaymentQuote --> RailPolicy : bound external policy
+ PaymentIntent "1" -- "0..1" RailSubmission
+ RailSubmission "1" -- "*" RailReceipt
+ PaymentIntent --> ExternalReservation
+ ExternalReservation --> Hold : submitted before possible HTTP
+ ExternalReservation --> DailyPrincipalUsage
+ PaymentExecution --> DailyPrincipalUsage
+ Beneficiary "1" -- "*" PaymentQuote
+ PaymentQuote "1" -- "0..1" PaymentIntent
+ PaymentIntent --> StepUpProof : exact action digest
+ PaymentIntent --> CheckRequest : current signed payment gates
+ PaymentIntent --> Operation : durable scheduling
+ PaymentIntent --> PaymentExecution : evidence for SETTLED
+ PaymentExecution --> JournalBatch
+ PaymentIntent "1" -- "0..1" ExternalFinality
+ ExternalFinality --> Hold : consumes or definitively releases
+ ExternalFinality --> PaymentExecution : settlement only
+ CreditIntent "1" -- "0..1" CreditMovement
+ CreditIntent --> CheckRequest : Core-derived customer checks
+ CreditIntent --> Operation : durable continuation
+ CreditMovement --> PaymentExecution : original-linked return principal cap
+ CreditMovement --> JournalBatch : clearing to suspense
+ CreditMovement "1" -- "0..1" CreditAllocation
+ CreditAllocation --> JournalBatch : suspense to customer
+ CreditMovement --> Account : known destination obligation
+ EvidenceQuarantine --> Case : owned investigation
+ PaymentIntent "1" -- "*" RecoveryRequest
+ RecoveryRequest --> Operation : bounded separate recovery work
+ RecoveryRequest --> RailSubmission : original identity and shared lease / fence
+ ReconciliationBreak --> PaymentIntent : detects missing / inconsistent owner
+ ReconciliationBreak --> ExternalReservation : observes financial truth
+ ReconciliationBreak "1" *-- "*" ReconciliationObservation
+ ReconciliationBreak --> Case : retained even after matching
+}
+package "Finance - exports and immutable observations" {
+ class ChartVersion <<immutable>> {
+  code / version / effective dates
+  declared GL account classes
+  kind and explicit account mappings
+  independent approval identity
+ }
+ class GlExport <<sealed identity>> {
+  unique Core source batch
+  export ID / source digest
+  chart version / chart digest
+  exact mapped legs / control totals
+  state / lease fence / retry generation
+ }
+ class GlBookingReceipt <<immutable>> {
+  original source / input digest
+  provider journal reference
+  exact date / debit / credit totals
+  authenticated evidence ID
+ }
+ class GlRecoveryCommand <<immutable>> {
+  actor / client / request key
+  exact reason / generation
+  original export ID
+  separate durable operation ID
+ }
+ class FinanceExportBreak {
+  source batch / code
+  OPEN / MATCHED
+  retained owned case
+ }
+ class FinanceReport <<immutable format v1>> {
+  reporting period / source membership
+  Core as-of / Finance as-of
+  source / item digests
+  exact controls / completeness at capture
+ }
+ class ReportSource <<immutable>> {
+  ordinal / full Core batch / account kinds
+  source digest / captured chart and receipt
+  match classification / issue codes
+ }
+ class LiquidityEvidence <<independent signed observation>> {
+  provider / scope / currency / version
+  evidence ID / as-of / valid-until
+  settled / available / reserved
+  expected incoming / outgoing
+ }
+ class ReportIssue <<immutable observation>> {
+  report / source ordinal / reason
+  owned Finance case
+ }
+ class ReportRevisionRequest <<sealed command>> {
+  original / replacement artifact IDs and digests
+  exact reason / scope digest / control deltas
+  requester / client / request key
+  canonical maker / fixed expiry
+ }
+ class PublishedReportRevision <<immutable>> {
+  unique original / unique replacement
+  scope digest
+  canonical maker / independent checker
+  original publication time
+ }
+ class ClearingFile <<independent immutable observation>> {
+  file ID / declared period / cutoff
+  nonce-bound authenticated archive
+  provider fee policy version
+ }
+ class ClearingRow <<raw authentic claim>> {
+  line / payment / evidence ID and version
+  principal / provider fee strings
+  currency code and scale / actual date
+ }
+ class FinanceReconciliation <<immutable outgoing scope v1>> {
+  actor / client / request key
+  parent report / file / source digests
+  separate Core and Payments as-of times
+  exact currency-partitioned controls
+ }
+ class PaymentMatch <<immutable observation>> {
+  original payment / quote / accounting references
+  journal / GL / provider row lineage
+  MATCHED / NOT_POSTED / TIMING / PENDING / EXCEPTION
+ }
+ class PaymentMatchIssue <<immutable observation>> {
+  run / ordinal / code
+  recoverable one-time case assignment
+ }
+ class CreditClearingFile <<independent immutable v1>> {
+  file / credit request kind / nonce
+  movement kind / original or receiving reference
+  raw principal / currency / provider fee / value date
+ }
+ class CreditReconciliation <<immutable incoming return scope v1>> {
+  parent report / file / private source hashes
+  separate clocks and stable ordinal membership
+  received / allocated / suspense principal controls
+ }
+ class CreditMatch <<immutable observation>> {
+  signed movement / native receipt digest
+  suspense and allocation journal / GL references
+  original settled payment / lifetime returned principal
+  MATCHED / SUSPENSE / PENDING / TIMING / EXCEPTION
+ }
+ class CreditMatchIssue <<immutable observation>> {
+  original issue / code / stable case origin
+ }
+ class SettlementSet <<provider immutable v1>> {
+  set identity / namespace / period / common cutoff
+  total original row count
+ }
+ class SettlementSetMember <<provider sealed>> {
+  file UUID / canonical digest / row count
+ }
+ class GroupedReconciliation <<immutable observation v1>> {
+  parent / set / native / workflow / item digests
+  separate clocks / scoped completeness / exact controls
+ }
+ class GroupedMatch <<immutable operation union>> {
+  stable ordinal / original identity / classification
+  original outgoing or credit inspection
+ }
+ class ProviderRowReference <<immutable provenance>> {
+  file UUID / original row ordinal / line UUID / digest
+ }
+ SettlementSet "1" *-- "1..10" SettlementSetMember
+ SettlementSetMember --> ClearingFile : outgoing namespace
+ SettlementSetMember --> CreditClearingFile : credit namespace
+ GroupedReconciliation --> FinanceReport : original captured membership
+ GroupedReconciliation --> SettlementSet : signed closed membership digest
+ GroupedReconciliation "1" *-- "*" GroupedMatch
+ GroupedMatch --> PaymentMatch : outgoing inspection only
+ GroupedMatch --> CreditMatch : credit inspection only
+ GroupedMatch "1" *-- "*" ProviderRowReference : duplicate rows remain distinct
+ GroupedMatch --> Case : stable issue origins; wrapping ownership
+ CreditReconciliation --> FinanceReport : frozen journal and GL membership
+ CreditReconciliation --> CreditClearingFile : independent authenticated archive
+ CreditReconciliation "1" *-- "*" CreditMatch
+ CreditMatch --> CreditIntent : read-only source snapshot
+ CreditMatch --> CreditMovement : authoritative received principal
+ CreditMatch --> CreditAllocation : authoritative customer allocation
+ CreditMatch --> PaymentExecution : settled original and lifetime return cap
+ CreditMatch --> GlExport : both captured postings
+ CreditMatch "1" -- "*" CreditMatchIssue
+ CreditMatchIssue --> Case : owned suspense / durable conflicts; wrapping recovery
+ ClearingFile "1" *-- "*" ClearingRow : duplicate claims remain visible
+ FinanceReconciliation --> FinanceReport : original artifact digest
+ FinanceReconciliation --> ClearingFile : signed independent file digest
+ FinanceReconciliation "1" *-- "*" PaymentMatch
+ PaymentMatch --> JournalBatch : original postings only
+ PaymentMatch --> GlExport : captured source mapping and receipt
+ PaymentMatch --> ClearingRow : original identity / currency / principal / fee / date
+ PaymentMatch "1" -- "*" PaymentMatchIssue
+ PaymentMatchIssue --> Case : wrapping ownership recovery; no money command
+ JournalBatch "1" -- "0..1" GlExport : narrow immutable Core read port
+ ChartVersion "1" -- "*" GlExport : mapping sealed once
+ GlExport "1" -- "0..1" GlBookingReceipt : required for BOOKED
+ GlExport "1" -- "*" GlRecoveryCommand : original identity; bounded allowance
+ GlRecoveryCommand --> Operation : prior generations superseded
+ FinanceExportBreak --> JournalBatch
+ FinanceExportBreak --> Case : finance-operations
+ FinanceReport "1" *-- "*" ReportSource : frozen membership and controls
+ ReportSource --> JournalBatch : captured immutable source
+ ReportSource --> GlExport : captured original mapping and receipt
+ FinanceReport --> LiquidityEvidence : captured proof / freshness; never substitutes ledger cash
+ FinanceReport "1" -- "*" ReportIssue
+ ReportIssue --> Case : recoverable assignment; historical observation retained
+ ReportRevisionRequest --> FinanceReport : binds both frozen artifacts
+ ReportRevisionRequest --> PersonLink : canonical independent decision
+ ReportRevisionRequest "1" -- "0..1" PublishedReportRevision : exact FINANCE_REPORT approval
+ PublishedReportRevision --> FinanceReport : linear predecessor/successor; artifacts unchanged
+}
+note bottom of JournalBatch
+Sum of signed entries is zero per batch.
+Runtime roles cannot directly write financial tables.
+An uncertain submitted hold is never timed out into release.
+end note
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+!include <C4/C4_Dynamic>
+!include ../theme.puml
+LAYOUT_LEFT_RIGHT()
+title C4 dynamic — External outgoing payment, successful settlement (proposed)
+Person(customer, "Customer")
+System_Ext(rail, "Enabled payment provider", "Certified finality contract")
+System_Boundary(bank, "Digital Bank") {
+  Container(edge, "Experience APIs", "Channel adaptation", "Requests traverse API Gateway; ingress hop omitted in this view")
+  Container(journey, "Journey processes", "Durable workflow", "Confirmed payment intent")
+  Container(controls, "Controls", "Policy / checks", "Permission, screening, fraud and approval")
+  Container(payments, "Payments engine", "Execution", "Persist intent, submit, reconcile and publish")
+  Container(core, "Core banking", "Financial authority", "Atomic hold and balanced booking")
+  ContainerQueue(bus, "Event Bus", "Durable broker", "At-least-once facts")
+  Container(finance, "Finance", "GL / reconciliation", "Balanced idempotent mapping")
+  Container(data, "Data & engagement", "Queries / alerts", "Customer status and notification")
+}
+RelIndex(1, customer, edge, "Confirms quoted intent + step-up", "HTTPS")
+RelIndex(2, edge, journey, "Creates one scoped operation")
+RelIndex(3, journey, payments, "Persists one payment instruction")
+RelIndex(4, payments, controls, "Validates current required gates")
+RelIndex(5, payments, core, "Reserves authoritative funds once")
+RelIndex(6, payments, rail, "Submits stable provider instruction after durable intent")
+RelIndex(7, rail, payments, "Acknowledges submission; not settlement")
+RelIndex(8, rail, payments, "Sends authenticated final settlement evidence")
+RelIndex(9, payments, core, "Consumes hold + balanced booking once")
+RelIndex(10, payments, bus, "Publishes payment.settled from outbox")
+RelIndex(11, core, bus, "Publishes journal.batch-posted from outbox")
+RelIndex(12, bus, finance, "Delivers deduplicated journal / settlement facts")
+RelIndex(13, bus, data, "Delivers status / alert facts")
+RelIndex(14, customer, edge, "Queries stable payment ID and actual current status")
+SHOW_LEGEND()
+footer Ordered narrative, not a distributed transaction. Events 10/11 can arrive in either order. Failures: UML payment/reconciliation views.
+@enduml

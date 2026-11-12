@@ -1,0 +1,83 @@
+@startuml
+!include ../theme.puml
+left to right direction
+title UML use cases — Full target capability scope (proposed)
+actor Prospect
+actor Customer
+actor "Assisted-channel banker" as Banker
+actor "Operations analyst" as Operator
+actor "Compliance analyst" as Compliance
+actor "Independent approver" as Approver
+actor "Finance analyst" as Finance
+actor "Product administrator" as ProductAdmin
+actor Auditor
+actor "Partner application" as Partner
+actor "Payment provider" as Rail
+actor "Verification provider" as Verification
+Customer --|> Prospect
+rectangle "Digital Bank" {
+  usecase "Discover product / fees" as Discover
+  usecase "Apply and resume" as Apply
+  usecase "Verify and onboard" as Onboard
+  usecase "Review control case" as Review
+  usecase "Open account" as Open
+  usecase "View balance / history" as Inquiry
+  usecase "Service profile / account" as Service
+  usecase "Initiate / track payment" as Pay
+  usecase "Authorize action and details" as Authorize
+  usecase "Evaluate required controls" as Check
+  usecase "Execute / reconcile movement" as Execute
+  usecase "Request cancellation / dispute" as Dispute
+  usecase "Retrieve terms / statements" as Docs
+  usecase "Grant / revoke partner consent" as Consent
+  usecase "Use scoped Open APIs" as OpenAPI
+  usecase "Assist with recorded customer authority" as Assist
+  usecase "Resolve owned exception" as Exception
+  usecase "Approve controlled change" as Approve
+  usecase "Reconcile / export GL / report liquidity" as Reconcile
+  usecase "Configure product / pricing" as Configure
+  usecase "Inspect audit / financial evidence" as Audit
+}
+Prospect --> Discover
+Prospect --> Apply
+Prospect --> Onboard
+Customer --> Open
+Customer --> Inquiry
+Customer --> Service
+Customer --> Pay
+Customer --> Dispute
+Customer --> Docs
+Customer --> Consent
+Banker --> Assist
+Partner --> OpenAPI
+Operator --> Exception
+Compliance --> Review
+Approver --> Approve
+Finance --> Reconcile
+ProductAdmin --> Configure
+Auditor --> Audit
+Rail --> Execute
+Verification --> Check
+Onboard ..> Check : <<include>>
+Review ..> Onboard : <<extend>>\n[manual review required]
+Open ..> Authorize : <<include>>
+Open ..> Check : <<include>>
+Pay ..> Authorize : <<include>>
+Pay ..> Check : <<include>>
+Pay ..> Execute : <<include>>
+Service ..> Authorize : <<include>>
+Assist ..> Authorize : <<include>>
+OpenAPI ..> Authorize : <<include>>
+Exception ..> Authorize : <<include>>
+Configure ..> Approve : <<include>>
+note bottom of Approve
+  Maker and checker are distinct people.
+  Sensitive adjustments require approval;
+  no actor directly edits posted journals.
+end note
+note bottom of OpenAPI
+  R2: registered client + customer grant
+  + resource/action authorization on each call.
+end note
+footer PRD J-01–J-08; all source channels and rails remain in full target, with conditional certification.
+@enduml

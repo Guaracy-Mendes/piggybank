@@ -1,0 +1,14 @@
+.git
+.local
+.cache
+target
+node_modules
+**/node_modules
+**/dist
+**/__pycache__
+.env
+**/*.tfstate*
+**/.terraform
+**/*.tfvars
+playwright-report
+test-results

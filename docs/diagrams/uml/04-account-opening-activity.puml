@@ -1,0 +1,60 @@
+@startuml
+!include ../theme.puml
+title UML activity — Idempotent account opening and activation gates (proposed)
+start
+partition "Customer / channel" {
+  :Choose published product;
+  :Review fees, eligibility and exact terms version;
+  :Submit opening intent + acceptance evidence + idempotency key;
+}
+partition "Journey processes" {
+  :Authenticate actor and verify party authority;
+  if (Equivalent prior operation exists?) then (yes)
+    :Return/resume the persisted operation and account reference;
+    stop
+  else (no)
+    if (Same key has different payload?) then (yes)
+      :Reject conflict without side effects;
+      stop
+    endif
+  endif
+  :Persist opening operation;
+}
+partition "Controls / Product / Documentation" {
+  :Validate current identity, screening, risk,
+  entitlements, product eligibility and terms acceptance;
+  if (Any dependency/check pending?) then (yes)
+    :Keep pending; schedule durable retry or staffed review;
+    stop
+  endif
+  if (Any mandatory gate denied?) then (yes)
+    :Record denial + permitted customer explanation;
+    stop
+  endif
+  :Preserve exact document version and acceptance digest;
+}
+partition "Core banking" {
+  :Create account once by opening business key;
+  :Configure party relationships, currency,
+  product snapshot, limits and restrictions;
+  if (All activation conditions satisfied?) then (yes)
+    :Commit ACTIVE + zero opening balance + outbox;
+  else (no)
+    :Keep PENDING_ACTIVATION restricted;
+    :Record recoverable operation and remediation;
+    stop
+  endif
+}
+partition "Journey / notifications" {
+  :Record account reference and opening completion;
+  :Publish account activation status and safe notification;
+  :Show account ID, terms and funding instructions;
+}
+note right
+  Funding is a separately authorized movement.
+  Lost core responses are queried by the same key.
+  Changed/expired terms require renewed acceptance.
+end note
+stop
+footer FR-ACC-01/02; FR-DOC-01; BR-11/12. Recovery resumes at the durable operation, not a second account creation.
+@enduml

@@ -1,0 +1,92 @@
+@startuml
+!include ../theme.puml
+autonumber
+title UML sequence — Outgoing external payment, holds and uncertain outcomes (proposed)
+actor Customer
+boundary "Gateway / Experience / Journey" as API
+control "Payments engine" as Payments
+database "Payment store + inbox/outbox" as DB
+control Controls
+participant "Core banking" as Core
+participant "Certified payment provider" as Provider
+queue "Event Bus" as Bus
+
+Customer -> API : Confirm quote + beneficiary + amount + step-up + idempotency key
+API -> Payments : Authenticated actor + stable request fingerprint
+Payments -> Controls : Verify caller entitlement / ownership context
+Controls --> Payments : Allow or deny command access
+break Unauthorized command
+  Payments --> Customer : Denial via channel; no payment side effect
+end
+Payments -> DB : Get/create instruction by scoped key and fingerprint
+alt Existing equivalent request
+  DB --> Payments : Same operation/payment/result
+  Payments --> Customer : Same authorized status via channel
+else Same key with changed material payload
+  DB --> Payments : Fingerprint conflict
+  Payments --> Customer : Conflict via channel; no new instruction
+else New durable instruction
+  DB --> Payments : Payment ID + operation ID
+  Payments --> Customer : 202 + status reference via channel
+  Payments -> Controls : Current entitlement, approval, limits, screening and fraud gates
+  alt Denied or review-required
+    Controls --> Payments : Deny / review + evidence refs
+    Payments -> DB : REJECTED or REVIEW_REQUIRED + audit/outbox
+    note over Payments, Provider : No provider submission; review must revalidate gates before continuation.
+  else All mandatory gates cleared
+    Controls --> Payments : Valid decision set + material-details digest
+    Payments -> Core : Reserve once(operationId, account, amount, currency)
+    Core -> Core : Atomic restriction/availability check + hold + business key
+    alt Reserve denied
+      Core --> Payments : Definitive denial / existing result
+      Payments -> DB : REJECTED + attributable result
+    else Reserved
+      Core --> Payments : Stable hold ID
+      Payments -> DB : FUNDS_RESERVED; then durable submission intent / SUBMITTING
+      Payments -> Provider : Submit with stable provider key / reference
+      alt Definitive rejection; non-execution proven
+        Provider --> Payments : Authenticated rejection
+        Payments -> Core : Release hold once(operationId, holdId)
+        Core --> Payments : Release committed / prior result
+        Payments -> DB : FAILED + evidence + outbox
+      else Timeout / response lost / ambiguous result
+        Provider --> Payments : Unknown outcome
+        Payments -> DB : RECONCILING + inquiry work + keep hold
+        note over Payments, Provider
+          Inquire with original identity; do not blindly resubmit.
+          No automatic hold release while execution is uncertain.
+          See reconciliation sequence for recovery.
+        end note
+      else Provider acknowledges accepted instruction
+        Provider --> Payments : Accepted + provider instruction reference
+        Payments -> DB : SUBMITTED + provider reference
+        note over Payments, Provider : Accepted is not settled; customer sees pending.
+        Provider -> Payments : Authenticated settlement evidence
+        Payments -> DB : Persist/deduplicate inbox evidence before acknowledgement
+        Payments --> Provider : Durable-receipt acknowledgement
+        Payments -> Payments : Match reference, amount, currency and finality policy
+        alt Evidence valid and final
+          Payments -> Core : Post once(operationId, OUTGOING_SETTLEMENT, evidenceRef)
+          Core -> Core : Atomic balanced batch + consume hold + outbox
+          alt Core committed or prior equivalent result found
+            Core --> Payments : Unique journal batch reference
+            Payments -> DB : SETTLED + booking ref + lifecycle outbox
+            Payments -> Bus : Publish payment.settled from outbox
+            Core -> Bus : Publish journal.batch-posted from core outbox
+          else Core response unknown or posting pending
+            Core --> Payments : Unknown / unavailable
+            Payments -> DB : RECONCILING + settlement-confirmed subreason
+            note over Payments, Core : Query/retry same business posting key; never create a second posting.
+          end
+        else Conflicting / incomplete evidence
+          Payments -> DB : Quarantine evidence + owned reconciliation case
+        end
+      end
+    end
+  end
+end
+Customer -> API : Query paymentId
+API -> Payments : Authorize status request
+Payments --> Customer : Actual state, dates, fees and permitted actions via channel
+footer FR-PAY-01–09; AT-06–11. Internal transfers instead post both customer accounts atomically with no external provider.
+@enduml

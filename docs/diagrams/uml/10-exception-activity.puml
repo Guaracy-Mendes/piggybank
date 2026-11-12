@@ -1,0 +1,63 @@
+@startuml
+!include ../theme.puml
+title UML activity — Payment/control exception and customer dispute resolution (proposed)
+start
+partition "Detection / customer service" {
+  :Receive dispute, control alert,
+  unknown outcome or reconciliation break;
+  :Create/deduplicate case with operation,
+  evidence, severity and policy deadline;
+}
+partition "Operations / specialist analyst" {
+  :Assign owner and next action;
+  :Authorize analyst access to required evidence;
+  :Investigate core, provider and customer records;
+  if (Evidence still incomplete/unknown?) then (yes)
+    :Request provider/customer information;
+    :Retain safe financial restriction where required;
+    :Schedule escalation and keep case open;
+    stop
+  endif
+  if (Financial correction required?) then (yes)
+    :Propose bounded correction with original links,
+    amount, reason and policy authority;
+  else (no)
+    :Propose nonfinancial disposition;
+  endif
+}
+partition "Controls / independent approver" {
+  :Verify current entitlement and required
+  maker/checker separation across identities;
+  if (Required approval granted?) then (yes)
+    :Persist attributable disposition + evidence;
+  else (no)
+    :Keep/reassign case; record denial and next action;
+    stop
+  endif
+}
+partition "Core / payment recovery" {
+  if (Approved financial correction?) then (yes)
+    :Create linked correction movement with unique business key;
+    :Commit new balanced entries atomically;
+    if (Commit/result uncertain?) then (yes)
+      :Query/recover same key; keep case pending;
+      stop
+    endif
+  endif
+  :Verify final operation, hold, settlement
+  and reconciliation disposition;
+}
+partition "Operations / customer records" {
+  :Notify permitted parties using approved disclosure policy;
+  :Record resolution, audit, report and correction refs;
+  :Close only after required evidence and effects complete;
+}
+stop
+note right
+  No direct editing of original journal entries.
+  Customer complaint deadlines and provisional
+  credit rules require jurisdiction/rail supplements.
+  An unknown payment is not presumed failed.
+end note
+footer J-06; FR-ACC-07; FR-CTRL-03/07; FR-FIN-02; AT-10/12/20.
+@enduml

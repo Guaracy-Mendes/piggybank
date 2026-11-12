@@ -1,0 +1,29 @@
+@startuml
+!include <C4/C4_Context>
+!include ../theme.puml
+LAYOUT_LEFT_RIGHT()
+title C4 L1 — Digital Bank system context (proposed)
+
+Person(customer, "Prospect / customer", "Discovers, applies, opens/services accounts, moves money and retrieves records")
+Person(banker, "Banker / support staff", "Assists customers within delegated authority")
+Person(operator, "Operations / Finance / control analyst", "Reviews cases, reconciles and operates controlled exceptions")
+Person(auditor, "Auditor", "Reads permitted control and financial evidence")
+System(bank, "Digital Bank", "Channels, APIs, onboarding, core banking, payments, controls, finance, documentation and governed data")
+System_Ext(partner, "Partner application", "Customer-consented data access and permitted payment initiation")
+System_Ext(identity, "Identity / screening providers", "Verification, screening evidence and provider inquiry")
+System_Ext(rails, "Payment networks / processors", "ACH, checks, debit, bill pay, wire, lockbox, SWIFT and P2P; enablement conditional")
+System_Ext(journeys, "Journey analytics partners", "Minimized consented signals and advisory journey recommendations")
+Rel(customer, bank, "Uses mobile / desktop; assisted channels in expansion", "Authenticated channel protocols")
+Rel(banker, bank, "Assists with explicit actor/customer context", "Scoped staff access")
+Rel(operator, bank, "Reviews, approves and reconciles", "Restricted workbench")
+Rel(auditor, bank, "Inspects attributable evidence", "Read-only access")
+Rel(partner, bank, "Uses scoped consented Open APIs", "Authenticated HTTPS")
+Rel(bank, identity, "Requests required checks and inquiries", "Authenticated provider API")
+Rel(identity, bank, "Returns authenticated evidence", "Callback / inquiry result")
+Rel(bank, rails, "Submits one instruction; inquires and reconciles", "Certified provider contracts")
+Rel(rails, bank, "Sends inbound, status and settlement evidence", "Authenticated callbacks / files")
+Rel(bank, journeys, "Sends purpose-limited signals", "Approved integration")
+Rel(journeys, bank, "Returns advisory recommendations", "Approved integration")
+SHOW_LEGEND()
+footer Scope: bank-owned logical system. Providers, legal model, market and enabled rails are TBD. PRD J-01–J-08.
+@enduml

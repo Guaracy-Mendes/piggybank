@@ -1,0 +1,184 @@
+@startuml
+!include ../theme.puml
+hide empty methods
+title UML domain model — Business entities and ownership (proposed)
+
+package "Journey processes" {
+  class Application {
+    applicationId: ID
+    state: ApplicationState
+    productVersionRef: ID
+    version: Integer
+  }
+}
+package "Core banking" {
+  class Party {
+    partyId: ID
+    verifiedAttributeRefs: ID[]
+    iamSubjectRef: ID
+  }
+  class AccountRelationship {
+    role: OwnerOrDelegate
+    effectivePeriod: Period
+    authorityRef: ID
+  }
+  class Account {
+    accountId: ID
+    currency: Currency
+    state: AccountState
+    postedBalanceMinor: Integer
+  }
+  class ProductVersion {
+    productId: ID
+    version: Integer
+    effectivePeriod: Period
+    pricingAndLimitsRef: ID
+    termsVersionRef: ID
+  }
+  class Hold {
+    holdId: ID
+    operationId: ID
+    amountMinor: Integer
+    currency: Currency
+    state: ActiveConsumedReleased
+  }
+  class JournalBatch {
+    batchId: ID
+    operationId: ID
+    postingKind: String
+    currency: Currency
+    businessDate: Date
+    correctsBatchRef: ID [0..1]
+  }
+  class JournalEntry {
+    entryId: ID
+    ledgerAccountRef: ID
+    side: DebitOrCredit
+    amountMinor: Integer
+  }
+}
+package "Payments engine" {
+  class PaymentInstruction {
+    paymentId: ID
+    operationId: ID
+    requestFingerprint: Digest
+    amountMinor: Integer
+    currency: Currency
+    rail: RailType
+    state: PaymentState
+    originalMovementRef: ID [0..1]
+  }
+  class Beneficiary {
+    beneficiaryId: ID
+    ownerPartyRef: ID
+    routingToken: String
+    verificationState: String
+  }
+  class SettlementRecord {
+    evidenceId: ID
+    providerRecordId: String
+    providerInstructionRef: String
+    amountMinor: Integer
+    currency: Currency
+    settlementDate: Date
+    integrityDigest: Digest
+  }
+}
+package "Controls" {
+  class ControlDecision {
+    decisionId: ID
+    checkType: IdentityScreeningRiskFraud
+    outcome: AllowDenyReviewPending
+    policyVersion: String
+    validUntil: Instant
+    evidenceRef: ID
+  }
+  class ControlCase {
+    caseId: ID
+    ownerRef: ID
+    state: CaseState
+    makerPersonRef: ID
+    checkerPersonRef: ID [0..1]
+    reasonRef: ID
+  }
+}
+package "IAM" {
+  class ConsentGrant {
+    grantId: ID
+    subjectRef: ID
+    clientRef: ID
+    scopeAndResourceRefs: String[]
+    expiry: Instant
+    revokedAt: Instant [0..1]
+  }
+}
+package "Documentation" {
+  class TermsAcceptance {
+    acceptanceId: ID
+    partyRef: ID
+    documentVersionRef: ID
+    actorAndChannel: String
+    acceptedAt: Instant
+  }
+  class DocumentVersion {
+    documentVersionId: ID
+    kind: TermsOrStatement
+    periodSnapshotRef: ID [0..1]
+    digest: Digest
+    supersedesRef: ID [0..1]
+    retentionClass: String
+  }
+}
+package "Finance" {
+  class ReconciliationCase {
+    reconciliationId: ID
+    businessDate: Date
+    classification: String
+    ownerRef: ID
+    state: String
+  }
+  class GLExport {
+    exportId: ID
+    mappingVersion: String
+    uniqueJournalRefs: ID[]
+    state: String
+  }
+}
+Application "0..*" --> "0..1" Party : approved party reference
+Application "0..*" --> "1" ProductVersion : requested offer snapshot
+Party "1" -- "0..*" AccountRelationship
+Account "1" -- "1..*" AccountRelationship
+Account "0..*" --> "1" ProductVersion
+Account "1" -- "0..*" Hold
+JournalBatch "1" *-- "2..*" JournalEntry
+JournalEntry "0..*" --> "0..1" Account : customer subledger link
+PaymentInstruction "0..*" --> "1" Account : customer account
+PaymentInstruction "0..*" --> "0..1" Account : internal destination
+PaymentInstruction "0..*" --> "0..1" Beneficiary
+PaymentInstruction "1" --> "0..*" Hold : operation reference
+PaymentInstruction "1" --> "0..*" JournalBatch : unique posting kinds
+PaymentInstruction "1" --> "0..*" SettlementRecord : matched evidence
+PaymentInstruction "0..*" --> "0..1" PaymentInstruction : correction of
+Application "1" --> "0..*" ControlDecision
+PaymentInstruction "1" --> "0..*" ControlDecision
+ControlCase "0..*" --> "1..*" ControlDecision : investigation
+Party "1" --> "0..*" ConsentGrant
+Party "1" --> "0..*" TermsAcceptance
+Account "1" --> "0..*" TermsAcceptance
+TermsAcceptance "0..*" --> "1" DocumentVersion
+Account "1" --> "0..*" DocumentVersion : statement references
+ReconciliationCase "0..*" --> "0..*" SettlementRecord
+ReconciliationCase "0..*" --> "0..*" JournalBatch
+GLExport "0..*" --> "1..*" JournalBatch : deduplicated mapping
+note bottom of JournalBatch
+  Sum(debits) = Sum(credits), by currency.
+  Unique(operationId, postingKind).
+  Corrections add new immutable batches.
+end note
+note bottom of Party
+  Cross-package links are stable references,
+  not cross-store foreign-key transactions.
+  Matching email does not establish identity.
+end note
+footer Conceptual model; physical schemas and retention periods TBD. See C4 L4 for the narrower payment implementation proposal.
+@enduml

@@ -1,0 +1,51 @@
+@startuml
+title UML - Sealed GL export, lost acknowledgment and audited recovery
+actor "Finance adjuster" as staff
+participant "Controls" as controls
+participant "Finance" as finance
+database "Finance store" as fs
+participant "Core read port" as core
+participant "Worker / Platform" as worker
+participant "Synthetic GL" as gl
+database "Simulator store" as gs
+staff -> controls : propose exact FINANCE_CHART document
+actor "Independent approver" as checker
+checker -> controls : approve as a different canonical person
+staff -> finance : publish exact approved chart
+finance -> controls : recheck current grants, kind, digest and expiry
+finance -> fs : immutable chart version + durable audit intent
+worker -> core : bounded immutable journal page
+core --> finance : source batch / operation / legs / account kinds
+finance -> fs : seal effective chart, exact mapped legs and totals\nunique source batch + export identity
+finance -> worker : stable original export job
+worker -> fs : commit attempt, transport lease and fence
+worker -> gl : signed original sealed batch
+gl -> gs : persist source deduplication + exact receipt
+gs --> gl : committed original provider journal reference
+gl -x worker : response lost after commit
+worker -> fs : OUTCOME_UNKNOWN; retain original request
+worker -> gl : signed inquiry of original source and digest
+gl -> gs : recover immutable original receipt after restart
+gl --> worker : fresh signed envelope / same receipt identity
+worker -> fs : under current fence: receipt + BOOKED + audit atomically
+note over worker,fs
+No database transaction spans HTTP.
+GL export has no Core money command.
+end note
+alt conflicting receipt or bounded retry budget exhausted
+ worker -> fs : REVIEW_REQUIRED + immutable packet observation
+ finance -> controls : stable owned Finance case
+ staff -> finance : recovery(reason, scoped idempotency key)
+ finance -> controls : current Finance adjuster + REVIEW queue
+ finance -> fs : immutable request, greater generation, eight more attempts
+ finance -> worker : stable recovery job (old generations superseded)
+ worker -> gl : original sealed batch inquiry
+ alt authenticated original NOT_FOUND
+  worker -> fs : record signed NOT_FOUND under current fence
+  worker -> gl : replay exact original sealed batch
+  gl -> gs : strict unique original source / export
+ end
+ gl --> worker : original authenticated BOOKED receipt
+ worker -> fs : receipt + BOOKED; retain case and audit history
+end
+@enduml

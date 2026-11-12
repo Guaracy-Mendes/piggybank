@@ -1,0 +1,93 @@
+@startuml
+title UML - Implemented authenticated finality, suspense and linked returns
+autonumber
+actor "Provider callback fixture" as Provider
+boundary "Axum evidence ingress" as API
+control "Payments" as Payments
+database "Payments store" as Store
+control "Durable worker" as Worker
+control "Core financial authority" as Core
+database "Core immutable ledger" as Ledger
+control "Controls" as Controls
+actor "Customer / authorized workforce" as User
+
+Provider -> API : POST signed RailEvidence or CreditEvidence
+API -> Payments : verify live HMAC and timestamp; validate typed scope
+alt invalid signature or stale packet
+ Payments --> API : authentication failure
+ API --> Provider : 401
+else authenticated financial-scope / identity conflict
+ Payments -> Store : immutable quarantine packet + digest + reason
+ Payments -> Controls : durable audit and owned investigation case
+ API --> Provider : 409
+else exact new receipt or duplicate
+ Payments -> Store : original evidence identity + full digest; durable acceptance
+ note right of Store
+ Global evidence ID cannot be reused across types.
+ A replay never overwrites original financial facts.
+ end note
+ API --> Provider : 202 (accepted for processing)
+end
+
+group Outgoing finality
+ Worker -> Payments : resume original payment
+ Payments -> Core : recover finality receipt, otherwise apply archived packet
+ Core -> Core : HMAC integrity + exact original scope
+ alt SETTLED and no prior financial receipt
+  Core -> Ledger : atomic hold consumption + balanced principal/fee journal
+  Core -> Ledger : daily usage POSTED + immutable finality receipt
+ else REJECTED or CANCELLED
+  Core -> Ledger : exact submitted hold release + usage RELEASED + finality
+ else prior receipt
+  Ledger --> Core : same immutable result / batch
+ end
+ Core --> Payments : authoritative financial outcome
+ note over Payments,Core
+ Lost acknowledgment is recovered by original business identity.
+ Pending/NOT_FOUND never releases funds.
+ Contradictory final evidence cannot release a consumed hold.
+ end note
+ Payments -> Store : settle / decline / cancel only against Core receipt
+end
+
+group Incoming or original-linked return
+ Worker -> Payments : resume original credit movement
+ Payments -> Core : verify archived packet; record movement
+ Core -> Core : derive target and owner from Core reference / original payer
+ alt RETURN_SETTLED
+  Core -> Ledger : lock original settled payment; sum all accepted returns
+  Ledger --> Core : accepted total + new principal <= original principal
+  note right of Core
+  Includes unallocated suspense principal.
+  Original journal, fee and gross daily usage remain intact.
+  end note
+ end
+ Core -> Ledger : one balanced clearing -> suspense journal + movement receipt
+ Core --> Payments : target / original customer / suspense receipt
+ alt unknown, closed or credit-restricted target
+  Payments -> Controls : owned payment case; retain funds in suspense
+ else known eligible destination
+  Payments -> Controls : signed current checks for Core-derived customer
+  alt pending, review or deny
+   Controls --> Payments : current outcome
+   Payments -> Controls : retain suspense; own review / denied handling
+  else current allow
+   Controls --> Payments : bound signed decisions
+   Payments -> Core : allocate exact movement with trusted expiring permit
+   Core -> Core : ordered account locks; recheck current destination and permit
+   Core -> Ledger : atomic suspense -> customer journal + allocation receipt
+   Core --> Payments : same allocation receipt on retry
+   Payments -> Store : CREDITED + versioned fact / durable audit
+  end
+ end
+end
+
+User -> API : scoped payment / credit / quarantine inquiry
+API -> Core : authoritative booking, allocation and return totals
+API --> User : original SETTLED payment + separate return summary / history
+note over API,User
+Only Core allocation makes incoming funds available.
+Unconfirmed DRAFT cancellation has no financial effect.
+Submitted cancellation uses the separate original-identity recovery workflow.
+end note
+@enduml

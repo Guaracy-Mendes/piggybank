@@ -1,0 +1,51 @@
+@startuml
+title UML sequence - Implemented saved opening and independent control review
+actor Customer
+participant "Customer web" as Web
+participant "API / BFF" as API
+participant "Journeys" as Journeys
+participant "Platform jobs" as Jobs
+participant "Worker" as Worker
+participant "Controls" as Controls
+participant "Signed simulator" as Provider
+actor Reviewer
+actor Approver
+participant "Core" as Core
+participant "Documents" as Docs
+Customer -> Web : Save profile, evidence and accepted exact terms
+Web -> API : Scoped command + CSRF + stable key
+API -> Journeys : Save durable generation and references
+Journeys -> Docs : Validate current attributable acceptance
+API -> Journeys : Submit current generation
+Journeys -> Jobs : Accept original operation and schedule work
+Jobs --> Web : Accepted / operation reference
+Worker -> Jobs : Claim bounded lease and fence
+Worker -> Journeys : Process original operation
+Journeys -> Controls : Current identity, sanctions and risk gates
+Controls -> Provider : Original request + input / policy identity
+Provider --> Controls : Authenticated signed decision
+alt Current REVIEW
+ Controls -> Controls : Preserve original; create owned case
+ Journeys -> Jobs : Review required (same operation)
+ Reviewer -> Controls : Claim; inspect; propose disposition
+ Approver -> Controls : Approve as a different canonical person
+ Controls -> Controls : Immutable independent manual decision
+ Worker -> Journeys : Resume original operation when current gates allow
+else Current DENY
+ Journeys -> Journeys : Final declined application; no account
+end
+Journeys -> Docs : Recheck current acceptance before positive opening
+Journeys -> Core : Stable party and restricted account business key
+Core -> Journeys : Validate concrete opening policy at activation
+Journeys --> Core : Bound current control / terms / generation evidence
+Core -> Core : Activate once; emit owned outbox fact
+Core --> Journeys : Existing or newly activated account ID
+Journeys -> Journeys : Save ACTIVE / account reference
+Worker -> Jobs : Fenced completion
+Customer -> Web : Reload or return after fresh issuer login
+Web -> API : Retrieve same saved application / operation
+note over Journeys,Core
+Lost Core acknowledgement retries the same opening identity.
+Current terms and changed generation block stale activation.
+end note
+@enduml

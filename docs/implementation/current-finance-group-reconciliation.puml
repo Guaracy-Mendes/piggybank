@@ -1,0 +1,57 @@
+@startuml
+title UML - closed multi-file clearing snapshot, exact matching and durable observations
+actor "Finance adjuster" as maker
+actor "Independent provider operator" as operator
+participant "Provider file stores" as files
+participant "Provider manifest store" as sets
+participant "Finance API / current authority" as api
+participant "Frozen parent report / GL" as report
+participant "Core read port" as core
+participant "Payments read port" as payments
+database "Finance group artifacts" as store
+participant "Recovery worker / Controls cases" as worker
+operator -> files : publish independent bounded chunks
+files --> operator : immutable file IDs
+operator -> sets : seal(setId, kind, period, cutoff, file IDs)
+sets -> files : verify every member / namespace / common period / cutoff
+files --> sets : original row counts and canonical digests
+sets -> sets : seal sorted closed membership; max 10 files / 1000 rows
+maker -> api : capture(reportId, setId, actor/client/key)
+api -> api : current Finance role / REVIEW + BFF / CSRF / origin
+api -> store : prior exact accepted key lookup
+alt accepted request replay
+ store --> api : original sealed observation; no provider refresh
+else new capture
+ api -> report : verify parent membership / source archives / digest
+ api -> sets : signed set query + request nonce
+ sets --> api : signed exact request + closed manifest
+ loop every declared member; no silent omission
+  api -> files : existing signed file inquiry + nonce
+  files --> api : signed original file + exact request binding
+  api -> api : match member ID / digest / count / period / cutoff
+ end
+ api -> core : discover bounded native identities
+ core --> api : original accounting / finality / credit and return receipts
+ api -> payments : capture bounded original workflow / evidence
+ payments --> api : original receipts, quote/transport and separate source clock
+ api -> core : confirm native facts with all explicit identities
+ core --> api : committed facts and native source clock
+ api -> api : union source identities; reuse pure outgoing / credit inspections
+ api -> api : retain cross-file duplicates, exact i128 controls and file/row provenance
+ api -> store : lock actor/client/key; recheck authority
+ api -> store : commit immutable manifest/member packets, sources, items, issues and audit
+end
+api --> maker : saved group / closed files / controls / digest / scoped completeness
+worker -> store : next 50 unowned issues, wrapping cursor
+worker -> worker : stable issue origin; skip failed scopes; recover lost acknowledgment
+worker -> store : one-time original case links
+maker -> api : reopen / stable ordinal page
+api -> api : verify manifest + all member HMAC archives and hashes
+api -> api : bind public row claims to independently signed files
+api --> maker : retained source lineage + current ownership wrapper
+note over api,core
+Separate source clocks; no global atomic snapshot.
+No financial command or invented signed aggregate file.
+Old V1 artifacts and prior group observations remain unchanged.
+end note
+@enduml

@@ -1,0 +1,3 @@
+CREATE INDEX journal_entries_by_account ON core.journal_entries(account_id,batch_id);
+CREATE TABLE core.history_snapshots(id uuid PRIMARY KEY,account_id uuid NOT NULL REFERENCES core.ledger_accounts(id),issuer text NOT NULL,subject text NOT NULL,as_of timestamptz NOT NULL DEFAULT clock_timestamp(),expires_at timestamptz NOT NULL DEFAULT now()+interval '15 minutes',from_date date NOT NULL,to_date date NOT NULL,item_count integer NOT NULL DEFAULT 0 CHECK(item_count BETWEEN 0 AND 10000));
+CREATE TABLE core.history_items(snapshot_id uuid NOT NULL REFERENCES core.history_snapshots(id) ON DELETE CASCADE,ordinal integer NOT NULL,batch_id uuid NOT NULL REFERENCES core.journal_batches(id),PRIMARY KEY(snapshot_id,ordinal),UNIQUE(snapshot_id,batch_id));

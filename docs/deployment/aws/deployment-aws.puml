@@ -1,0 +1,37 @@
+@startuml
+!include <C4/C4_Deployment>
+LAYOUT_TOP_DOWN()
+title AWS - implemented synthetic evaluation deployment
+Person(operator,"Trusted operator","Separate browser profiles; synthetic identities")
+Deployment_Node(workstation,"Operator workstation","Loopback access") {
+ Container(browser,"Customer / workforce browser","HTTP 127.0.0.1","4300 / 4301; issuer 18280; BFF 4180")
+ Container(tunnels,"AWS CLI + Session Manager plugin","Five local sessions","Default loopback ports; optional provider 4182")
+}
+Deployment_Node(aws,"AWS evaluation account","Dedicated IAM / budget") {
+ Container(ssm,"Systems Manager","Authenticated access","Port forwarding / privileged shell / reviewed Run Command")
+ Container(artifacts,"Private versioned S3","Releases + stopped backups","Encryption / TLS policy; scoped VM prefix access")
+ Container(state,"Private versioned S3 backend","Terraform lockfile","Separate state bucket")
+ Deployment_Node(vpc,"Custom VPC / public subnet","IGW for outbound traffic") {
+  Deployment_Node(vm,"Ubuntu 24.04 amd64 EC2 / Nitro","Public outbound address; zero ingress rules") {
+   Container(agent,"SSM Agent","Outbound HTTPS","No SSH key; IMDSv2 instance profile")
+   Container(web,"Compiled React portals","NGINX","Loopback 4300 / 4301; channel filters")
+   Container(api,"API / worker","Rust containers","Loopback 4180 / 4181; separate module DB roles")
+   Container(provider,"Synthetic provider","Rust container","Loopback; signed controls / rails / GL / cash / clearing files")
+   Container(deps,"PostgreSQL + Keycloak + NATS","Pinned containers","Loopback; owned schemas and durable transport")
+   ContainerDb(disk,"Protected encrypted gp3 EBS","/srv/piggybank","PG / broker / evidence / original keys; releases and backups")
+  }
+ }
+}
+Rel(operator,browser,"Uses")
+Rel(browser,tunnels,"Fixed loopback endpoints")
+Rel(tunnels,ssm,"Authenticated sessions")
+Rel(agent,ssm,"Outbound managed-node channels")
+Rel(agent,web,"Forwards two channels locally")
+Rel(web,api,"Scoped same-channel proxy")
+Rel(api,deps,"OIDC / module data / durable events")
+Rel(api,provider,"Original-identity signed inquiry")
+Rel(agent,provider,"Optional trusted-operator fixture forward on 4182")
+Rel(vm,disk,"Bind-mounted durable state")
+Rel(vm,artifacts,"Read verified release; read/create owned backups","Instance role")
+Rel(operator,state,"Reviewed Terraform with separate provisioner identity")
+@enduml

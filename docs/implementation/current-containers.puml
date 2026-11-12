@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_TOP_DOWN()
+title C4 L2 - Implemented local containers (WP-01 through WP-23 + WP-24 Finance observations)
+Person(customer,"Synthetic customer","OIDC customer identity; owned resources")
+Person(staff,"Workforce","Current role, queue and independent person checks")
+System_Boundary(local,"Piggybank - loopback synthetic profile") {
+ Container(web,"Customer web :4300","React / TypeScript / Vite","Saved onboarding, accounts, payments, incoming funds, returns and support")
+ Container(workbench,"Staff web :4301","React / TypeScript / Vite","Evidence queues, payment recovery, GL exports, frozen Finance reports and independent liquidity")
+ Container(api,"bank-api :4180","Rust / Axum","Ingress, OIDC BFF, scoped domain APIs")
+ Container(worker,"bank-worker :4181","Rust / Tokio","Leased jobs; control polling; outbox/inbox processing")
+ Container(provider,"provider-simulator :4182","Rust / Axum","Persistent signed controls, deduplicated rails / GL and independently signed cash observations")
+ Container(iam,"Keycloak :18280","OIDC / PKCE / RS256","Separate customer and workforce realms")
+ ContainerDb(db,"PostgreSQL :15432","Ten module schemas + separate IAM database","Dedicated runtime roles; guarded Core routines; immutable journals")
+ ContainerQueue(bus,"NATS :14222","JetStream","Durable versioned domain facts; no financial authority")
+ ContainerDb(objects,"Private evidence directory","Filesystem adapter","Opaque IDs; bounded reads; digest verification; no symlinks")
+}
+Rel(customer,web,"Uses","HTTP loopback")
+Rel(staff,workbench,"Uses","HTTP loopback")
+Rel(web,api,"Generated API client + opaque session / CSRF")
+Rel(workbench,api,"Workforce BFF session / CSRF")
+Rel(api,iam,"Code / PKCE, refresh, step-up, logout","OIDC")
+Rel(api,db,"Owned repositories and module service ports")
+Rel(worker,db,"Leases, fences, domain effects, inbox/outbox")
+Rel(worker,provider,"Bounded signed controls, rail submit / inquiry / cancellation and original-source GL export / inquiry")
+Rel(provider,api,"Signed rail finality / incoming / return evidence","HTTP callback fixture")
+Rel(provider,db,"Simulator schema only")
+Rel(worker,bus,"Publishes and consumes durable facts")
+Rel(api,objects,"Private staged evidence writes / authorized reads")
+Rel(iam,db,"Separate IAM database")
+SHOW_LEGEND()
+@enduml

@@ -1,0 +1,2655 @@
+{
+  "schema_version": 1,
+  "plan_id": "DB-IMPL-001",
+  "baseline_date": "2026-10-23",
+  "status": "in_progress",
+  "scope": "Full PRD target, local engineering first, with separate provider and production gates",
+  "next_work_package": "WP-24",
+  "requirement_owners": {
+    "FR-CH-01": "WP-27",
+    "FR-CH-02": "WP-18",
+    "FR-CH-03": "WP-34",
+    "FR-CH-04": "WP-35",
+    "FR-CH-05": "WP-06",
+    "FR-CH-06": "WP-18",
+    "FR-IAM-01": "WP-04",
+    "FR-IAM-02": "WP-05",
+    "FR-IAM-03": "WP-05",
+    "FR-IAM-04": "WP-05",
+    "FR-IAM-05": "WP-33",
+    "FR-IAM-06": "WP-28",
+    "FR-ACQ-01": "WP-11",
+    "FR-ACQ-02": "WP-15",
+    "FR-ACQ-03": "WP-15",
+    "FR-ACQ-04": "WP-38",
+    "FR-ONB-01": "WP-15",
+    "FR-ONB-02": "WP-13",
+    "FR-ONB-03": "WP-13",
+    "FR-ONB-04": "WP-15",
+    "FR-ONB-05": "WP-15",
+    "FR-ONB-06": "WP-13",
+    "FR-ACC-01": "WP-15",
+    "FR-ACC-02": "WP-12",
+    "FR-ACC-03": "WP-17",
+    "FR-ACC-04": "WP-17",
+    "FR-ACC-05": "WP-17",
+    "FR-ACC-06": "WP-17",
+    "FR-ACC-07": "WP-14",
+    "FR-ACC-08": "WP-33",
+    "FR-PAY-01": "WP-20",
+    "FR-PAY-02": "WP-08",
+    "FR-PAY-03": "WP-20",
+    "FR-PAY-04": "WP-20",
+    "FR-PAY-05": "WP-21",
+    "FR-PAY-06": "WP-23",
+    "FR-PAY-07": "WP-22",
+    "FR-PAY-08": "WP-22",
+    "FR-PAY-09": "WP-22",
+    "FR-PAY-10": "WP-36",
+    "FR-CORE-01": "WP-10",
+    "FR-CORE-02": "WP-11",
+    "FR-CORE-03": "WP-10",
+    "FR-CORE-04": "WP-10",
+    "FR-CORE-05": "WP-09",
+    "FR-CORE-06": "WP-24",
+    "FR-CTRL-01": "WP-13",
+    "FR-CTRL-02": "WP-13",
+    "FR-CTRL-03": "WP-14",
+    "FR-CTRL-04": "WP-26",
+    "FR-CTRL-05": "WP-26",
+    "FR-CTRL-06": "WP-05",
+    "FR-CTRL-07": "WP-07",
+    "FR-DATA-01": "WP-17",
+    "FR-DATA-02": "WP-17",
+    "FR-DATA-03": "WP-37",
+    "FR-DATA-04": "WP-38",
+    "FR-DATA-05": "WP-26",
+    "FR-DOC-01": "WP-16",
+    "FR-DOC-02": "WP-25",
+    "FR-DOC-03": "WP-25",
+    "FR-DOC-04": "WP-25",
+    "FR-FIN-01": "WP-24",
+    "FR-FIN-02": "WP-24",
+    "FR-FIN-03": "WP-24",
+    "FR-FIN-04": "WP-24",
+    "FR-FIN-05": "WP-40",
+    "FR-EXT-01": "WP-21",
+    "FR-EXT-02": "WP-33",
+    "FR-EXT-03": "WP-23",
+    "FR-EXT-04": "WP-38",
+    "FR-EXT-05": "WP-21",
+    "FR-OPS-01": "WP-19",
+    "FR-OPS-02": "WP-26",
+    "FR-OPS-03": "WP-09",
+    "FR-OPS-04": "WP-30",
+    "FR-OPS-05": "WP-21",
+    "BR-01": "WP-02",
+    "BR-02": "WP-10",
+    "BR-03": "WP-10",
+    "BR-04": "WP-08",
+    "BR-05": "WP-08",
+    "BR-06": "WP-20",
+    "BR-07": "WP-22",
+    "BR-08": "WP-23",
+    "BR-09": "WP-23",
+    "BR-10": "WP-22",
+    "BR-11": "WP-11",
+    "BR-12": "WP-15",
+    "BR-13": "WP-12",
+    "BR-14": "WP-05",
+    "BR-15": "WP-24",
+    "SEC-01": "WP-05",
+    "SEC-02": "WP-28",
+    "SEC-03": "WP-28",
+    "SEC-04": "WP-29",
+    "SEC-05": "WP-07",
+    "SEC-06": "WP-07",
+    "SEC-07": "WP-28",
+    "SEC-08": "WP-22",
+    "SEC-09": "WP-29",
+    "SEC-10": "WP-28",
+    "NFR-01": "WP-30",
+    "NFR-02": "WP-30",
+    "NFR-03": "WP-30",
+    "NFR-04": "WP-30",
+    "NFR-05": "WP-30",
+    "NFR-06": "WP-31",
+    "NFR-07": "WP-31",
+    "NFR-08": "WP-26",
+    "NFR-09": "WP-04",
+    "NFR-10": "WP-29",
+    "NFR-11": "WP-27",
+    "NFR-12": "WP-29",
+    "NFR-13": "WP-10",
+    "NFR-14": "WP-24",
+    "KPI-01": "WP-41",
+    "KPI-02": "WP-41",
+    "KPI-03": "WP-41",
+    "KPI-04": "WP-41",
+    "KPI-05": "WP-41",
+    "KPI-06": "WP-41",
+    "KPI-07": "WP-41",
+    "KPI-08": "WP-41"
+  },
+  "work_packages": [
+    {
+      "id": "WP-01",
+      "stage": "S0",
+      "release": "R0",
+      "size": "M",
+      "title": "Establish repository, toolchain and local runtime baseline",
+      "status": "done",
+      "depends_on": [],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [],
+      "acceptance_scenarios": [
+        "AT-20"
+      ],
+      "implementation_steps": [
+        "Inspect existing files and repository state; preserve the documentation and user changes. Record Git handling.",
+        "Resolve a supported compatible Rust/Node toolchain and pin package versions, image digests and lockfiles; provide documented tool installation.",
+        "Create the API/worker workspace with health/readiness endpoints and a minimal persistent local Compose environment; add clients only when needed.",
+        "Document module-to-runtime co-location and development profiles, ports, synthetic secrets and startup/shutdown behavior."
+      ],
+      "planned_artifacts": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "package.json",
+        "package-lock.json",
+        "apps/bank-api/",
+        "apps/bank-worker/",
+        "infra/compose/",
+        "docs/runbooks/local-development.md"
+      ],
+      "definition_of_done": [
+        "A clean environment can build locked executables and start/restart dependencies using documented commands.",
+        "Readiness is bounded and reports missing dependencies; liveness does not claim business readiness.",
+        "Existing documentation checks still pass and the implementation deployment mapping is recorded."
+      ],
+      "verification": [
+        "Locked build, version/digest inspection, readiness failure and persistent restart smoke."
+      ],
+      "completion_notes": "Persistent local runtime, pinned toolchains/images, API/worker health, bounded failure and restart checks implemented and verified.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:37:43.657136+00:00",
+          "environment": "local",
+          "command": "make app-check; make dev-smoke; make test-foundation; scripts/cargo.sh test --workspace --locked --lib",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-01.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-02",
+      "stage": "S0",
+      "release": "R0",
+      "size": "M",
+      "title": "Define executable domain contracts and invariant vocabulary",
+      "status": "done",
+      "depends_on": [
+        "WP-01"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "BR-01"
+      ],
+      "acceptance_scenarios": [
+        "AT-07",
+        "AT-10",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Implement typed opaque IDs, checked Money, currency/scale registry, UTC/business-date types and an injectable clock.",
+        "Specify operation, actor/delegation, approval-detail digest, error and versioned event-envelope contracts.",
+        "Translate application/account/payment state models into transition rules with evidence guards; publish initial API/event schema conventions."
+      ],
+      "planned_artifacts": [
+        "crates/platform/",
+        "contracts/openapi/",
+        "contracts/events/",
+        "tests/integration/contracts/"
+      ],
+      "definition_of_done": [
+        "Invalid scale, overflow, nonpositive command amounts and unsupported currency fail before financial effects.",
+        "Every financial command has durable business identity, canonical fingerprint rules and an explicit permitted state transition.",
+        "TypeScript money representation cannot lose precision; clock-dependent tests are deterministic."
+      ],
+      "verification": [
+        "Domain boundary/property tests and schema fixtures covering invalid transitions and monetary precision."
+      ],
+      "completion_notes": "Typed identities, exact money, canonical fingerprints, clocks, actor/event contracts and evidence-guarded state rules implemented; eight domain/health tests and warning-free checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:39:38.065447+00:00",
+          "environment": "local",
+          "command": "make app-check; make test-unit",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-02.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-03",
+      "stage": "S0",
+      "release": "R0",
+      "size": "M",
+      "title": "Create owned schemas, migrations and database access boundaries",
+      "status": "done",
+      "depends_on": [
+        "WP-02"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [],
+      "acceptance_scenarios": [
+        "AT-06",
+        "AT-13"
+      ],
+      "implementation_steps": [
+        "Create one ordered migration registry with schema/module ownership and dedicated migration/runtime roles.",
+        "Implement per-module SQLx pools, explicit transaction helpers and database test lifecycle.",
+        "Add clean-install and forward-migration checks; prohibit cross-module table mutation through runtime grants."
+      ],
+      "planned_artifacts": [
+        "migrations/",
+        "crates/platform/src/database/",
+        "infra/compose/",
+        "tests/integration/migrations/"
+      ],
+      "definition_of_done": [
+        "Fresh and upgraded disposable PostgreSQL databases reach the same expected schema.",
+        "Runtime principals cannot alter schema or write another module's financial tables.",
+        "Integration checks fail explicitly when their required database is unavailable."
+      ],
+      "verification": [
+        "Real PostgreSQL migration/grant/rollback tests; no SQLite replacement."
+      ],
+      "completion_notes": "Ordered embedded migrations, ten owned schemas/runtime roles, safe pool construction and real PostgreSQL DDL/grant/rollback tests implemented and verified.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:43:13.041414+00:00",
+          "environment": "local",
+          "command": "make migrate; make test-integration; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-03.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-04",
+      "stage": "S0",
+      "release": "R0",
+      "size": "L",
+      "title": "Integrate OIDC identities, browser sessions and revocation",
+      "status": "done",
+      "depends_on": [
+        "WP-01",
+        "WP-03"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-IAM-01",
+        "NFR-09"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-14",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Configure the local issuer's customer/workforce/service trust contexts and distinct clients/audiences.",
+        "Implement issuer/JWKS validation with bounded key refresh, secure BFF sessions, code/PKCE integration, logout and CSRF defenses.",
+        "Link identities by issuer/subject; implement revocation propagation, factor enrollment hooks and auditable session lifecycle."
+      ],
+      "planned_artifacts": [
+        "crates/identity/",
+        "infra/identity/",
+        "apps/bank-api/src/session/",
+        "tests/integration/identity/"
+      ],
+      "definition_of_done": [
+        "Customer credentials cannot enter workforce/service paths; mismatched issuer/audience/algorithm is denied.",
+        "Browser credentials stay server-side; logout/revocation invalidates applicable access within the planned objective.",
+        "Identity links never merge on email and key rotation does not disable validation."
+      ],
+      "verification": [
+        "Local-issuer integration, CSRF/session fixation, audience confusion, logout and key rotation cases."
+      ],
+      "completion_notes": "Real Keycloak code/PKCE BFF login, trust separation, JWT/JWKS validation, CSRF, refresh, revocation, logout and issuer security hooks implemented; real issuer and Chromium acceptance branches pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:51:18.133366+00:00",
+          "environment": "local",
+          "command": "make app-check; make test-identity; make test-browser; make test-unit; make test-integration",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-04.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-05",
+      "stage": "S0",
+      "release": "R0",
+      "size": "L",
+      "title": "Implement entitlements, action-bound approval and maker/checker",
+      "status": "done",
+      "depends_on": [
+        "WP-02",
+        "WP-04",
+        "WP-07"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-IAM-02",
+        "FR-IAM-03",
+        "FR-IAM-04",
+        "FR-CTRL-06",
+        "BR-14",
+        "SEC-01"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-14",
+        "AT-21",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Implement resource/action authorization with current account relationships and actor/delegation context.",
+        "Create signed/server-recorded expiring approval challenges bound to canonical material payment/configuration details.",
+        "Enforce independent durable person identities for restricted approval; record policy versions and revocation."
+      ],
+      "planned_artifacts": [
+        "crates/controls/src/entitlements/",
+        "crates/identity/src/approval/",
+        "tests/integration/authorization/"
+      ],
+      "definition_of_done": [
+        "Cross-customer resource substitution, staff impersonation and self-approval are denied.",
+        "Changed beneficiary/amount/fee or stale/revoked authority invalidates approval.",
+        "Cached idempotent responses and queued execution still reevaluate current authorization."
+      ],
+      "verification": [
+        "Ownership, confused-deputy, changed-details, two-session self-approval and mid-flight revocation tests."
+      ],
+      "completion_notes": "Resource entitlements, canonical-person maker/checker, role lifecycle and operation/detail-bound real OIDC reauthentication proofs implemented; database, issuer, browser and ingress checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:05:24.992106+00:00",
+          "environment": "local",
+          "command": "make app-check; make test-integration; make test-identity; make test-browser; make test-ingress",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-05.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-06",
+      "stage": "S0",
+      "release": "R0",
+      "size": "M",
+      "title": "Implement API ingress, contracts, limits and safe errors",
+      "status": "done",
+      "depends_on": [
+        "WP-02",
+        "WP-04"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CH-05"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-27"
+      ],
+      "implementation_steps": [
+        "Create versioned owned-channel/workforce/provider route groups and OpenAPI compatibility checks against the router.",
+        "Implement request size/time/resource limits, correlation, bounded pagination and safe structured errors.",
+        "Add a generated TypeScript API client and a drift check; use real configurable rate limiting with verified multi-instance behavior before production."
+      ],
+      "planned_artifacts": [
+        "apps/bank-api/src/routes/",
+        "contracts/openapi/",
+        "packages/api-client/",
+        "infra/containers/ingress/"
+      ],
+      "definition_of_done": [
+        "Malformed, oversized, over-quota, unauthenticated and unsupported-version requests fail without side effects.",
+        "Router and OpenAPI agree on actual methods/paths/statuses and exposure policy.",
+        "Logs and public errors do not disclose credentials, screening evidence or another customer's resource."
+      ],
+      "verification": [
+        "HTTP contract/negative tests, bounded request tests and generated-client drift check."
+      ],
+      "completion_notes": "Bounded ingress, safe errors, shared PostgreSQL quotas, verified OpenAPI routes and generated typed client implemented; HTTP, two-instance, issuer and browser checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:55:26.472491+00:00",
+          "environment": "local",
+          "command": "make app-check; make test-ingress; make test-identity; make test-browser",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-06.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-07",
+      "stage": "S0",
+      "release": "R0",
+      "size": "M",
+      "title": "Implement audit and restricted evidence/object storage",
+      "status": "done",
+      "depends_on": [
+        "WP-02",
+        "WP-03"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CTRL-07",
+        "SEC-05",
+        "SEC-06"
+      ],
+      "acceptance_scenarios": [
+        "AT-15",
+        "AT-16",
+        "AT-25",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Persist attributable append-only audit records with actor/customer, resource, action, decision, reason, policy and correlation.",
+        "Implement opaque safe object paths, immutable versions, integrity digests, restricted retrieval and orphan-object recovery.",
+        "Provide the synthetic filesystem adapter and storage port; redact sensitive telemetry and record access/export."
+      ],
+      "planned_artifacts": [
+        "crates/controls/src/audit/",
+        "crates/adapters/src/object_store/",
+        "migrations/",
+        "tests/integration/evidence/"
+      ],
+      "definition_of_done": [
+        "Unauthorized read/update/delete attempts fail and critical state changes have reconstructible audit.",
+        "Path traversal, malformed object references and integrity mismatch cannot expose evidence.",
+        "Object/metadata partial failure recovers without publishing incomplete records."
+      ],
+      "verification": [
+        "Audit/grant, object integrity, path traversal, unauthorized retrieval and partial-write recovery tests."
+      ],
+      "completion_notes": "Protected idempotent audit chains and restricted immutable object services implemented; real PostgreSQL concurrency, privilege, ownership, corruption, symlink and staged recovery cases pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T20:58:29.190602+00:00",
+          "environment": "local",
+          "command": "make test-integration; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-07.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-08",
+      "stage": "S0",
+      "release": "R0",
+      "size": "L",
+      "title": "Implement durable operations, scoped idempotency and recoverable jobs",
+      "status": "done",
+      "depends_on": [
+        "WP-02",
+        "WP-03",
+        "WP-07"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-02",
+        "BR-04",
+        "BR-05"
+      ],
+      "acceptance_scenarios": [
+        "AT-02",
+        "AT-05",
+        "AT-07",
+        "AT-08",
+        "AT-20"
+      ],
+      "implementation_steps": [
+        "Persist operation identity, scoped key/fingerprint and durable command result with explicit acceptance semantics.",
+        "Implement versioned workflow state, job leases/fencing, retry classification, timers and status queries.",
+        "Keep business deduplication independent of response-cache expiry and recheck authority on retrieval/replay."
+      ],
+      "planned_artifacts": [
+        "crates/platform/src/operations/",
+        "crates/platform/src/jobs/",
+        "apps/bank-worker/",
+        "migrations/"
+      ],
+      "definition_of_done": [
+        "Equivalent retries return one operation; changed request under the same key conflicts.",
+        "A crash at each acceptance/lease boundary preserves accepted work and prevents stale-worker effects.",
+        "Pending/degraded states expose a next action rather than claiming completion."
+      ],
+      "verification": [
+        "Concurrent idempotency, crash-after-acceptance, lease expiry/fencing and authorized replay integration tests."
+      ],
+      "completion_notes": "Atomic scoped command acceptance, durable continuation jobs, owner status APIs, lease fencing, retry/review semantics and idempotent completion implemented; concurrency and restart-state integration cases pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:09:55.484972+00:00",
+          "environment": "local",
+          "command": "make test-integration; make app-check; make test-ingress",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-08.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-09",
+      "stage": "S0",
+      "release": "R0",
+      "size": "L",
+      "title": "Implement outbox, JetStream, inbox and controlled replay",
+      "status": "done",
+      "depends_on": [
+        "WP-08"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CORE-05",
+        "FR-OPS-03"
+      ],
+      "acceptance_scenarios": [
+        "AT-13",
+        "AT-23",
+        "AT-28",
+        "AT-30"
+      ],
+      "implementation_steps": [
+        "Commit each producer's outbox with local domain state; publish stable event IDs and schema versions.",
+        "Implement durable consumers, receipt/local-effect atomicity, aggregate version gap handling and bounded backpressure.",
+        "Add owned retry/dead-letter queues, replay audit and notification suppression policy."
+      ],
+      "planned_artifacts": [
+        "crates/platform/src/events/",
+        "apps/bank-worker/",
+        "contracts/events/",
+        "tests/resilience/events/"
+      ],
+      "definition_of_done": [
+        "Commit-before-publish and consume-before-ack crashes lose no accepted domain effect.",
+        "Duplicate/out-of-order events do not duplicate business effects; gaps/conflicts are visible.",
+        "Replay repairs projections without resubmitting external financial instructions."
+      ],
+      "verification": [
+        "Real PostgreSQL/JetStream restart, redelivery, schema incompatibility, DLQ and replay tests."
+      ],
+      "completion_notes": "Transactional module outboxes, durable JetStream consumption, inbox projections, quarantine and authorized replay implemented; real broker redelivery and worker restart checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:15:37.874699+00:00",
+          "environment": "local",
+          "command": "make migrate; make test-integration; make test-events; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-09.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-10",
+      "stage": "S1",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement authoritative journal, balances, holds and financial transactions",
+      "status": "done",
+      "depends_on": [
+        "WP-03",
+        "WP-08",
+        "WP-09"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CORE-01",
+        "FR-CORE-03",
+        "FR-CORE-04",
+        "BR-02",
+        "BR-03",
+        "NFR-13"
+      ],
+      "acceptance_scenarios": [
+        "AT-06",
+        "AT-07",
+        "AT-10",
+        "AT-17",
+        "AT-24"
+      ],
+      "implementation_steps": [
+        "Implement immutable balanced journal batches/entries and account balance/hold state inside Core's unit of work.",
+        "Enforce unique operation/posting kind, checked exact arithmetic, no-overdraft availability and account restriction checks.",
+        "Implement stable multi-account lock ordering, reserve/consume/release, business-key query recovery and linked corrections.",
+        "Add database-enforced commit invariants and prevent runtime bypass of posting paths."
+      ],
+      "planned_artifacts": [
+        "crates/core/src/journal/",
+        "crates/core/src/holds/",
+        "migrations/",
+        "tests/integration/core/",
+        "tests/resilience/core/"
+      ],
+      "definition_of_done": [
+        "Unbalanced/overflow/duplicate commits fail atomically; no unauthorized direct journal mutation is possible.",
+        "Concurrent reserves cannot spend the same funds and lost acknowledgements recover one posting.",
+        "Hold consumption/release and financial effects cannot diverge on crash or retry."
+      ],
+      "verification": [
+        "Real PostgreSQL concurrency, rollback, deadlock/serialization retry, invariant bypass and property tests."
+      ],
+      "completion_notes": "Guarded immutable balanced ledger, exact balances, concurrent holds, atomic internal posting, business-key recovery and independently approved linked corrections implemented and tested.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:20:04.018266+00:00",
+          "environment": "local",
+          "command": "make test-integration; make migrate; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-10.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-11",
+      "stage": "S1",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement versioned products, eligibility, pricing and approval",
+      "status": "done",
+      "depends_on": [
+        "WP-05",
+        "WP-10"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-03"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACQ-01",
+        "FR-CORE-02",
+        "BR-11"
+      ],
+      "acceptance_scenarios": [
+        "AT-05",
+        "AT-24",
+        "AT-26"
+      ],
+      "implementation_steps": [
+        "Implement effective-dated products, currency/limits/fees, published offers and fixture chart-of-accounts mapping.",
+        "Add controlled product change workflow, pricing snapshots, exact rounding and historical lookup.",
+        "Represent synthetic policy inputs explicitly and preserve the production policy boundary."
+      ],
+      "planned_artifacts": [
+        "crates/core/src/products/",
+        "contracts/openapi/",
+        "migrations/",
+        "tests/integration/products/"
+      ],
+      "definition_of_done": [
+        "Displayed and applied offer/fee/limit versions resolve historically without retrospective edits.",
+        "Unapproved configuration cannot activate and makers cannot approve their own restricted changes.",
+        "Fixture products are labeled synthetic and do not establish actual legal terms or pricing."
+      ],
+      "verification": [
+        "Effective-date/cut-off, fee precision, historical snapshot and maker/checker cases."
+      ],
+      "completion_notes": "Immutable effective-dated synthetic products, exact versioned pricing/limits, historical lookup and independent configuration approvals implemented and tested.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:20:04.143485+00:00",
+          "environment": "local",
+          "command": "make test-integration; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-11.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-12",
+      "stage": "S1",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement parties, account registry, relationships and lifecycle",
+      "status": "done",
+      "depends_on": [
+        "WP-05",
+        "WP-10",
+        "WP-11"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-01",
+        "DEC-03"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACC-02",
+        "BR-13"
+      ],
+      "acceptance_scenarios": [
+        "AT-02",
+        "AT-05",
+        "AT-06",
+        "AT-11",
+        "AT-26"
+      ],
+      "implementation_steps": [
+        "Implement authoritative party identity and governed duplicate-suspicion references without email-based merges.",
+        "Implement account creation/activation, ownership, restrictions and closure preconditions behind Core APIs.",
+        "Keep opening business keys and party/application links stable; expose authoritative balance snapshots."
+      ],
+      "planned_artifacts": [
+        "crates/core/src/parties/",
+        "crates/core/src/accounts/",
+        "migrations/",
+        "tests/integration/accounts/"
+      ],
+      "definition_of_done": [
+        "Repeated approved opening creates one account; partial creation remains restricted and recoverable.",
+        "Activation gates and account debit/credit restrictions are versioned and enforced.",
+        "Closure cannot discard residual value, active holds or unresolved obligations."
+      ],
+      "verification": [
+        "Idempotent opening, partial-failure, restriction, closure and cross-customer ownership tests."
+      ],
+      "completion_notes": "Canonical parties, stable restricted account opening, current activation policy port, owner/support authority, restrictions and obligation-aware closure implemented; real concurrency and negative tests pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:26:38.623907+00:00",
+          "environment": "local",
+          "command": "make test-integration; make migrate; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-12.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-13",
+      "stage": "S1",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement distinct control decisions and identity/screening simulators",
+      "status": "done",
+      "depends_on": [
+        "WP-05",
+        "WP-07",
+        "WP-08",
+        "WP-09"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-01",
+        "DEC-06",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ONB-02",
+        "FR-ONB-03",
+        "FR-ONB-06",
+        "FR-CTRL-01",
+        "FR-CTRL-02"
+      ],
+      "acceptance_scenarios": [
+        "AT-03",
+        "AT-04",
+        "AT-25",
+        "AT-27"
+      ],
+      "implementation_steps": [
+        "Build separate identity, sanctions, risk and real-time fraud ports/decision records with evidence/policy/expiry.",
+        "Implement deterministic provider-simulator endpoints for allow/deny/review/pending/timeout and conflicting/late callbacks.",
+        "Persist control requests/results and required-gate composition; schedule rescreening/reverification.",
+        "Keep raw restricted evidence outside broad events and customer profiles."
+      ],
+      "planned_artifacts": [
+        "crates/controls/src/checks/",
+        "apps/provider-simulator/",
+        "contracts/providers/identity/",
+        "tests/integration/controls/"
+      ],
+      "definition_of_done": [
+        "Passing one check never clears a different blocking check; dependency outage leaves safe pending work.",
+        "Duplicate/expired/conflicting evidence cannot create extra customers or unsafe approval.",
+        "Current required decisions and their provenance can be reconstructed."
+      ],
+      "verification": [
+        "Provider fault, stale evidence, rescreening, forged callback and distinct-decision tests."
+      ],
+      "completion_notes": "Distinct signed control requests/results, mandatory gates, persistent fault simulator, safe pending/retry, scheduled rescreen and conflict/expiry rejection implemented; real HTTP, process and database checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:33:35.178717+00:00",
+          "environment": "local",
+          "command": "make migrate; make test-integration; make test-ingress; make test-events; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-13.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-14",
+      "stage": "S1",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement owned cases, reviews, escalation and restricted actions",
+      "status": "done",
+      "depends_on": [
+        "WP-05",
+        "WP-07",
+        "WP-13"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACC-07",
+        "FR-CTRL-03"
+      ],
+      "acceptance_scenarios": [
+        "AT-04",
+        "AT-10",
+        "AT-12",
+        "AT-20",
+        "AT-30"
+      ],
+      "implementation_steps": [
+        "Implement case creation/deduplication, ownership, severity, evidence, information requests, deadlines and disposition.",
+        "Add independent approval and restricted correction/action requests with immutable links.",
+        "Expose staff queue APIs and escalation metrics before using manual review as a fallback."
+      ],
+      "planned_artifacts": [
+        "crates/controls/src/cases/",
+        "apps/bank-api/src/routes/staff/",
+        "tests/integration/cases/",
+        "docs/runbooks/case-management.md"
+      ],
+      "definition_of_done": [
+        "Every blocking/manual exception has an owner and next action; age and escalation are visible.",
+        "A case decision cannot bypass entitlement or produce an unsupported financial override.",
+        "Permitted customer explanations are separated from restricted analyst evidence."
+      ],
+      "verification": [
+        "Review/information cycle, self-approval denial, deadline/escalation and controlled correction cases."
+      ],
+      "completion_notes": "Owned deduplicated queues, restricted evidence/information exchange, independent bounded control disposition and escalation implemented with protected HTTP routes; database and ingress checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:33:35.301100+00:00",
+          "environment": "local",
+          "command": "make migrate; make test-integration; make app-check; make test-ingress",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-14.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-15",
+      "stage": "S1",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement acquisition, onboarding and integrated account opening",
+      "status": "done",
+      "depends_on": [
+        "WP-08",
+        "WP-09",
+        "WP-11",
+        "WP-12",
+        "WP-13",
+        "WP-14",
+        "WP-16"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-01",
+        "DEC-03",
+        "DEC-06"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACQ-02",
+        "FR-ACQ-03",
+        "FR-ONB-01",
+        "FR-ONB-04",
+        "FR-ONB-05",
+        "FR-ACC-01",
+        "BR-12"
+      ],
+      "acceptance_scenarios": [
+        "AT-02",
+        "AT-03",
+        "AT-04",
+        "AT-05",
+        "AT-23",
+        "AT-26"
+      ],
+      "implementation_steps": [
+        "Implement product discovery, secure application resume, required fields and versioned consent/preferences.",
+        "Orchestrate distinct checks, information/review outcomes, expiry/reverification and one party link.",
+        "Integrate current terms, product/eligibility/control gates and idempotent Core activation.",
+        "Preserve attribution purpose and marketing withdrawal independently of retained application/financial evidence."
+      ],
+      "planned_artifacts": [
+        "crates/journeys/",
+        "apps/bank-api/src/routes/applications/",
+        "tests/acceptance/onboarding/"
+      ],
+      "definition_of_done": [
+        "Synthetic applicant completes each allowed path to one active account and valid denial/review variants.",
+        "Timeouts, repeated submissions and lost Core responses recover the same application/account identities.",
+        "No incomplete/blocked/expired evidence or stale terms can activate spending."
+      ],
+      "verification": [
+        "AT application/opening flows against persistent API, issuer, worker, Core and simulator."
+      ],
+      "completion_notes": "Persistent applications, consent/evidence/terms, durable submission recovery and current-gate Core activation implemented; real OIDC API/worker/provider restart and failure branches pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:47:52.418820+00:00",
+          "environment": "local",
+          "command": "make test-integration; make test-lifecycle; make test-identity; make test-ingress; make migrate; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-15.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-16",
+      "stage": "S1",
+      "release": "R1",
+      "size": "M",
+      "title": "Implement exact terms versions and acceptance evidence",
+      "status": "done",
+      "depends_on": [
+        "WP-07",
+        "WP-08",
+        "WP-11"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-06"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-DOC-01"
+      ],
+      "acceptance_scenarios": [
+        "AT-05",
+        "AT-15",
+        "AT-16"
+      ],
+      "implementation_steps": [
+        "Publish immutable synthetic terms versions and integrity digests linked to product offers.",
+        "Record idempotent acceptance with subject, actor/channel, time and application/account context.",
+        "Reject changed/expired offer terms and provide authorized evidence lookup."
+      ],
+      "planned_artifacts": [
+        "crates/documents/src/terms/",
+        "migrations/",
+        "tests/integration/terms/"
+      ],
+      "definition_of_done": [
+        "The exact accepted text/version is reproducible and cannot be silently replaced.",
+        "Repeated acceptance is stable; another customer's evidence is inaccessible.",
+        "Opening cannot reuse acceptance for materially changed terms."
+      ],
+      "verification": [
+        "Terms-version integrity, renewal, idempotency and authorization tests."
+      ],
+      "completion_notes": "Immutable exact terms, independent publication approval, current version checks, scope-bound acceptance and reproducible text/digests implemented and verified on PostgreSQL.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T21:37:37.889360+00:00",
+          "environment": "local",
+          "command": "make test-integration; make migrate; make app-check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-16.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-17",
+      "stage": "S1",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement account servicing, inquiry, projections and mastered links",
+      "status": "done",
+      "depends_on": [
+        "WP-09",
+        "WP-12",
+        "WP-13",
+        "WP-15"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-08"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACC-03",
+        "FR-ACC-04",
+        "FR-ACC-05",
+        "FR-ACC-06",
+        "FR-DATA-01",
+        "FR-DATA-02"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-06",
+        "AT-11",
+        "AT-18",
+        "AT-23",
+        "AT-26",
+        "AT-27"
+      ],
+      "implementation_steps": [
+        "Expose paged stable transaction history, current balance/holds/source/as-of, profile changes and service cases.",
+        "Implement restriction/closure requests with rechecks and late inbound/return exception handling.",
+        "Build customer/account/transaction projections and governed master-reference conflict/merge history; commands remain delegated to owners."
+      ],
+      "planned_artifacts": [
+        "crates/journeys/src/servicing/",
+        "crates/data/src/projections/",
+        "crates/data/src/mastered/",
+        "tests/acceptance/servicing/"
+      ],
+      "definition_of_done": [
+        "Balance freshness and posted/held/available semantics are explicit; spending still uses Core.",
+        "Stable history pagination and linked corrections have no duplicate/omitted rows within the selected snapshot.",
+        "Verified profile and master-reference changes preserve provenance and financial ownership history."
+      ],
+      "verification": [
+        "Servicing, stable pagination, stale-projection, identity-conflict and closure scenarios."
+      ],
+      "completion_notes": "Authorized Core inquiry/snapshots, restrictions/closure/support, durable verified contacts and governed Core/Data projections/replay/master lineage implemented; financial ownership and real HTTP checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T22:00:43.056565+00:00",
+          "environment": "local",
+          "command": "make app-check; make test-integration; make migrate; make test-ingress; make test-lifecycle",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-17.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-18",
+      "stage": "S1",
+      "release": "R1",
+      "size": "XL",
+      "title": "Deliver customer web journeys and accessible state handling",
+      "status": "done",
+      "depends_on": [
+        "WP-06",
+        "WP-15",
+        "WP-16",
+        "WP-17"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CH-02",
+        "FR-CH-06"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-19",
+        "AT-26"
+      ],
+      "implementation_steps": [
+        "Build product/application/status, onboarding/opening, account/history, profile/security and support views.",
+        "Integrate the generated client/BFF; implement pending/error/resume states, local display and accessible navigation.",
+        "Add payment/document entry points progressively as their APIs land; close this package's lifecycle views before its dependencies' later client integrations."
+      ],
+      "planned_artifacts": [
+        "apps/customer-web/",
+        "packages/ui/",
+        "tests/browser/customer/"
+      ],
+      "definition_of_done": [
+        "A real browser can complete customer lifecycle and servicing using persistent APIs.",
+        "Session interruption resumes saved work; stale and pending states are truthful.",
+        "Keyboard/screen-reader review covers implemented critical screens; hidden UI is not an authorization boundary."
+      ],
+      "verification": [
+        "Playwright lifecycle and cross-customer cases plus accessibility review of implemented screens."
+      ],
+      "completion_notes": "Persistent customer web lifecycle, exact balances, scoped servicing, issuer logout/resume and browser accessibility checks pass.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-23T22:29:39.494837+00:00",
+          "environment": "local",
+          "command": "make app-check web-build; make test-integration; make test-customer",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-18.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-19",
+      "stage": "S1",
+      "release": "R1",
+      "size": "XL",
+      "title": "Deliver staff workbench and controlled administration",
+      "status": "done",
+      "depends_on": [
+        "WP-06",
+        "WP-11",
+        "WP-14",
+        "WP-17"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-OPS-01"
+      ],
+      "acceptance_scenarios": [
+        "AT-04",
+        "AT-14",
+        "AT-20",
+        "AT-24",
+        "AT-25"
+      ],
+      "implementation_steps": [
+        "Build separate workforce login/client, review/evidence queues, case actions and authorized customer support.",
+        "Implement product/pricing proposals/approvals and auditable role/entitlement administration.",
+        "Add payment/reconciliation/financial adjustment screens as later domain APIs land; preserve actor/customer context."
+      ],
+      "planned_artifacts": [
+        "apps/staff-web/",
+        "packages/ui/",
+        "tests/browser/staff/"
+      ],
+      "definition_of_done": [
+        "Authorized staff can complete seeded review and support workflows with independent approval.",
+        "Customer sessions and unauthorized staff cannot access workforce evidence/actions.",
+        "No UI offers direct journal editing or falsely final unknown-payment disposition."
+      ],
+      "verification": [
+        "Workforce browser review, maker/checker, evidence denial and configuration history tests."
+      ],
+      "completion_notes": "Workforce case/evidence/support, independent immutable configuration publication and audited role administration pass browser, authorization, accessibility and database checks.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-27T01:14:12.530383+00:00",
+          "environment": "local",
+          "command": "make app-check; make web-check web-build; make migrate test-integration; make test-ingress test-unit; make test-staff; make test-customer; make diagrams; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-19.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-20",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement beneficiaries, quotes, action approval and internal transfers",
+      "status": "done",
+      "depends_on": [
+        "WP-05",
+        "WP-08",
+        "WP-10",
+        "WP-11",
+        "WP-12",
+        "WP-13",
+        "WP-18",
+        "WP-19"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-01",
+        "FR-PAY-03",
+        "FR-PAY-04",
+        "BR-06"
+      ],
+      "acceptance_scenarios": [
+        "AT-06",
+        "AT-07",
+        "AT-14",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Implement beneficiary verification, versioned fee/date quotes and one confirmed payment operation.",
+        "Compose all current execution gates and perform same-ledger/currency internal debit/credit atomically.",
+        "Integrate customer confirmation/tracking and staff inquiry, preserving request fingerprint and approval details."
+      ],
+      "planned_artifacts": [
+        "crates/payments/src/intent/",
+        "crates/payments/src/internal/",
+        "apps/customer-web/",
+        "apps/staff-web/",
+        "tests/acceptance/payments/"
+      ],
+      "definition_of_done": [
+        "Malformed/unauthorized/changed/expired instruction cannot execute.",
+        "Internal transfer commits balanced effects once under concurrent retries and lost replies.",
+        "Customer sees fees, dates, reference and actual status; fixtures fund accounts through balanced movements."
+      ],
+      "verification": [
+        "AT-06/07/14/28 HTTP-to-Core cases and browser payment confirmation/tracking."
+      ],
+      "completion_notes": "Verified receiving references, immutable exact quotes, real action-bound issuer approval, durable intent, current signed gates, atomic internal principal/fee/daily budget and receipt-based lost-response recovery with customer/staff UI.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-28T03:03:25.933450+00:00",
+          "environment": "local",
+          "command": "make app-check web-build check; make test-integration; make test-payments test-customer test-staff test-ingress test-unit test-identity; standalone payment and shared-pool regressions; make diagrams",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-20.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-21",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement simulated outgoing rail submission and durable intent",
+      "status": "done",
+      "depends_on": [
+        "WP-09",
+        "WP-20"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-04",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-05",
+        "FR-EXT-01",
+        "FR-EXT-05",
+        "FR-OPS-05"
+      ],
+      "acceptance_scenarios": [
+        "AT-08",
+        "AT-20",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Implement a SIMULATED rail port/adapter, effective enablement, limits and fixture calendar/routing.",
+        "Persist provider work before calling it; propagate stable instruction/idempotency identity and classify outcomes.",
+        "Persist simulator provider instructions across crashes and support accepted-but-response-lost faults."
+      ],
+      "planned_artifacts": [
+        "crates/payments/src/execution/",
+        "crates/adapters/src/payments/simulated/",
+        "apps/provider-simulator/",
+        "contracts/providers/payments/"
+      ],
+      "definition_of_done": [
+        "Two retries cannot cause two provider economic instructions.",
+        "Provider acknowledgement is shown as pending; ambiguous response remains restricted and recoverable.",
+        "Pausing submissions does not stop inquiries, callbacks or existing settlement processing."
+      ],
+      "verification": [
+        "Timeout-after-acceptance, crash boundaries, duplicate submit and emergency pause tests."
+      ],
+      "completion_notes": "Implemented authenticated durable SIMULATED submission with exact reservations/shared daily budget, original provider identity and inquiry recovery, immutable provider history, submitted-hold SQL guards and independent pause/resume controls; all local checks passed.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-29T02:42:38.731023+00:00",
+          "environment": "local",
+          "command": "make app-check web-build check; make test-integration; make test-payments test-customer test-staff test-ingress test-unit test-identity; make diagrams",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-21.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-22",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement evidence ingress, settlement, inbound and linked returns",
+      "status": "done",
+      "depends_on": [
+        "WP-07",
+        "WP-13",
+        "WP-21"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-04",
+        "DEC-06",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-07",
+        "FR-PAY-08",
+        "FR-PAY-09",
+        "BR-07",
+        "BR-10",
+        "SEC-08"
+      ],
+      "acceptance_scenarios": [
+        "AT-09",
+        "AT-10",
+        "AT-11"
+      ],
+      "implementation_steps": [
+        "Verify callback/file authenticity, replay identity and durable receipt; normalize provider status/finality.",
+        "Implement validated settlement evidence to idempotent Core booking and consume hold atomically.",
+        "Implement inbound acceptance/restricted destination handling and partial/multiple linked returns with exact amount caps.",
+        "Integrate payment details, safe cancellation affordances and correction history into both browser clients."
+      ],
+      "planned_artifacts": [
+        "crates/payments/src/evidence/",
+        "crates/payments/src/inbound/",
+        "crates/payments/src/returns/",
+        "apps/customer-web/",
+        "apps/staff-web/"
+      ],
+      "definition_of_done": [
+        "Forged/replayed/conflicting evidence never double-credits or silently overwrites history.",
+        "SETTLED requires valid evidence plus Core booking; closed/restricted destinations create owned handling.",
+        "Returns preserve original journal and cannot over-refund or release consumed holds."
+      ],
+      "verification": [
+        "AT-09/10/11 plus settlement-booking partial failure and customer/staff lifecycle display tests."
+      ],
+      "completion_notes": "Authenticated finality, controlled incoming suspense/allocation, principal-capped linked returns and both browser histories verified locally.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-10-30T21:34:02.386100+00:00",
+          "environment": "local",
+          "command": "make test-integration test-payments test-customer test-staff test-ingress test-unit test-identity app-check web-build diagrams check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-22.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-23",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement unknown-outcome recovery, cancellation and payment reconciliation",
+      "status": "done",
+      "depends_on": [
+        "WP-10",
+        "WP-14",
+        "WP-21",
+        "WP-22"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-04",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-06",
+        "FR-EXT-03",
+        "BR-08",
+        "BR-09"
+      ],
+      "acceptance_scenarios": [
+        "AT-08",
+        "AT-10",
+        "AT-12",
+        "AT-20"
+      ],
+      "implementation_steps": [
+        "Implement provider inquiry by original identity, aging, retry budgets and controlled evidence-backed resolution.",
+        "Recover lost Core booking/release acknowledgements using the same business key.",
+        "Implement pre-/post-submission cancellation semantics and owned reconciliation breaks.",
+        "Expose operator recovery actions and runbooks; never automatically expire an uncertain submitted hold."
+      ],
+      "planned_artifacts": [
+        "crates/payments/src/recovery/",
+        "crates/payments/src/reconciliation/",
+        "docs/runbooks/payment-recovery.md",
+        "tests/resilience/payments/"
+      ],
+      "definition_of_done": [
+        "Unknown response can recover one original provider instruction and one Core posting.",
+        "No unknown operation is resolved as failed/cancelled or released without sufficient evidence.",
+        "Seeded mismatches/overdue holds become owned cases and safe operator actions."
+      ],
+      "verification": [
+        "Crash/restart, contradictory evidence, cancellation windows, aged unknown and idempotent recovery cases."
+      ],
+      "completion_notes": "Original-identity inquiry/cancellation, bounded retry ownership, paginated recovery and financial reconciliation verified with 32 database cases and three real browser flows.",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-11-01T02:47:15.435569+00:00",
+          "environment": "local",
+          "command": "make test-integration test-payments test-ingress test-customer test-staff test-unit app-check web-build diagrams check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-23.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-24",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Implement finance, GL uniqueness, reporting and liquidity",
+      "status": "in_progress",
+      "depends_on": [
+        "WP-09",
+        "WP-10",
+        "WP-23"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-04",
+        "DEC-06"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CORE-06",
+        "FR-FIN-01",
+        "FR-FIN-02",
+        "FR-FIN-03",
+        "FR-FIN-04",
+        "BR-15",
+        "NFR-14"
+      ],
+      "acceptance_scenarios": [
+        "AT-12",
+        "AT-24",
+        "AT-25"
+      ],
+      "implementation_steps": [
+        "Match instruction/provider/journal/GL records by currency/business date and classify timing/fee/value gaps.",
+        "Implement versioned chart/mapping, exact fee/accrual posting jobs where enabled and linked correction approval.",
+        "Export balanced GL batches to the persistent simulator; persist acknowledgements and replay references.",
+        "Build reproducible finance/ops reports and liquidity positions with staleness/completeness, plus staff drill-down."
+      ],
+      "planned_artifacts": [
+        "crates/finance/",
+        "crates/core/src/accruals/",
+        "apps/provider-simulator/src/gl/",
+        "apps/staff-web/",
+        "tests/acceptance/finance/"
+      ],
+      "definition_of_done": [
+        "Duplicate file/event/export cannot double-book GL or financial fees/accruals.",
+        "Reports reconcile to snapshot totals and explain late/missing evidence.",
+        "Available/reserved/expected/settled liquidity is explicit and never fabricated from stale projections."
+      ],
+      "verification": [
+        "AT-12/24/25, business-calendar cut-off, repeated accrual job and GL timeout/replay cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": [
+        {
+          "timestamp": "2026-11-06T16:35:22.662285+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser",
+          "command": "make test-integration; make test-payments; make app-check; make test-unit; make test-customer; make test-staff; make test-ingress; python3 tests/integration/finance_publisher.py; make cloud-check; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-reconciliation.md"
+        },
+        {
+          "timestamp": "2026-11-08T04:05:02.293774+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser and actual packaged cloud images",
+          "command": "make migrate; make test-integration; make test-payments; make test-customer; make test-staff; make test-ingress; make test-unit; make app-check; make web-build; python3 tests/integration/finance_publisher.py; make cloud-check; python3 infra/cloud/shared/package.py cloud-20261107-01 --runtime podman; python3 tests/deployment/runtime.py cloud-20261107-01; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-credit-reconciliation.md"
+        },
+        {
+          "timestamp": "2026-11-09T00:55:35.089821+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser and actual packaged cloud images",
+          "command": "make migrate; make app-check; make test-integration; make test-payments; make test-customer; make test-staff; make test-ingress; make test-unit; make web-build; python3 tests/integration/finance_packing.py; python3 tests/integration/finance_publisher.py; make cloud-check; python3 infra/cloud/shared/package.py cloud-20261108-01 --runtime podman; python3 tests/deployment/runtime.py cloud-20261108-01; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-group-reconciliation.md"
+        },
+        {
+          "timestamp": "2026-11-10T23:47:17.884349+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser and actual packaged cloud images",
+          "command": "make migrate; make app-check; make test-unit; make test-integration; make test-payments; make test-customer; make test-staff; make test-ingress; make web-check; make web-build; focused periodic and forced stale-status browser regressions; python3 tests/integration/finance_publisher.py; python3 tests/integration/finance_packing.py; make cloud-check; python3 infra/cloud/shared/package.py cloud-20261108-02 --runtime podman; python3 tests/deployment/runtime.py cloud-20261108-02; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-periodic-policies.md"
+        },
+        {
+          "timestamp": "2026-11-11T00:22:00.889237+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser and actual packaged cloud images",
+          "command": "make migrate; make app-check; make test-unit; make test-integration; make test-payments; make test-customer; make test-staff; make test-ingress; make web-check; make web-build; focused financial correction receipt-recovery browser regression; make cloud-check; python3 infra/cloud/shared/package.py cloud-20261110-01 --runtime podman; python3 tests/deployment/runtime.py cloud-20261110-01; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-corrections.md"
+        }
+      ]
+    },
+    {
+      "id": "WP-25",
+      "stage": "S2",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement statements, secure retrieval, retention and legal holds",
+      "status": "planned",
+      "depends_on": [
+        "WP-07",
+        "WP-16",
+        "WP-17",
+        "WP-24"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-DOC-02",
+        "FR-DOC-03",
+        "FR-DOC-04"
+      ],
+      "acceptance_scenarios": [
+        "AT-05",
+        "AT-15",
+        "AT-16"
+      ],
+      "implementation_steps": [
+        "Generate consistent period statements with exact opening/movement/closing totals and immutable snapshot identity.",
+        "Implement idempotent generation, authorized bounded download, correction supersession and access audit.",
+        "Apply versioned fixture retention/hold policies to object/metadata/export and implement permitted disposal evidence.",
+        "Integrate document lists/retrieval in customer and staff clients."
+      ],
+      "planned_artifacts": [
+        "crates/documents/src/statements/",
+        "crates/documents/src/retention/",
+        "apps/customer-web/",
+        "apps/staff-web/",
+        "tests/acceptance/documents/"
+      ],
+      "definition_of_done": [
+        "Rerun/correction preserves prior versions and reproduces financial totals.",
+        "Cross-customer/expired retrieval is denied; active legal hold prevents disposal.",
+        "Missing finance/snapshot readiness cannot publish a misleading complete statement."
+      ],
+      "verification": [
+        "AT-15/16 plus object/metadata partial failure, correction and period-boundary cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-26",
+      "stage": "S2",
+      "release": "R1",
+      "size": "L",
+      "title": "Implement alerts, transaction monitoring and data-quality operations",
+      "status": "planned",
+      "depends_on": [
+        "WP-09",
+        "WP-13",
+        "WP-14",
+        "WP-17",
+        "WP-23",
+        "WP-24"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-10",
+        "DEC-11"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CTRL-04",
+        "FR-CTRL-05",
+        "FR-DATA-05",
+        "FR-OPS-02",
+        "NFR-08"
+      ],
+      "acceptance_scenarios": [
+        "AT-13",
+        "AT-20",
+        "AT-25",
+        "AT-30"
+      ],
+      "implementation_steps": [
+        "Build deduplicated safe notifications with synthetic delivery capture, purpose preferences and auditable retries.",
+        "Implement economic-operation-scoped retrospective fraud/AML patterns and owned alert/case disposition.",
+        "Monitor event gaps, projection freshness, orphan refs, provider backlog, reconciliation completeness and operational counters.",
+        "Integrate dashboards and document/payment notifications without sensitive attachments or tokens."
+      ],
+      "planned_artifacts": [
+        "crates/data/src/alerts/",
+        "crates/controls/src/monitoring/",
+        "apps/staff-web/",
+        "docs/runbooks/event-replay.md"
+      ],
+      "definition_of_done": [
+        "Replay cannot duplicate economic alerts or unintended customer communications.",
+        "Seeded data/control defects trigger owned alerts and operator next actions.",
+        "Projection/analytics repair cannot write financial balances."
+      ],
+      "verification": [
+        "AT-13/20/25/30 with duplicate events, late feeds, consent preferences and redacted notification capture."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-27",
+      "stage": "S2",
+      "release": "R1",
+      "size": "XL",
+      "title": "Deliver dedicated native mobile banking",
+      "status": "planned",
+      "depends_on": [
+        "WP-18",
+        "WP-20",
+        "WP-23",
+        "WP-25",
+        "WP-26"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CH-01",
+        "NFR-11"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-08",
+        "AT-14",
+        "AT-19",
+        "AT-26",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Build Expo/React Native customer journeys using generated API schemas and native OIDC/PKCE redirects.",
+        "Implement OS-protected credentials, sign-out/device removal, suspension/resume and safe network interruption.",
+        "Deliver onboarding/account/payment/document/profile/support parity for R1 with accessible native screens.",
+        "Record real platform build/runner limits and prepare local Android plus iOS qualification artifacts."
+      ],
+      "planned_artifacts": [
+        "apps/mobile/",
+        "tests/mobile/",
+        "docs/runbooks/mobile-development.md"
+      ],
+      "definition_of_done": [
+        "Customer sees the same application/account/payment identities as web and truthful status after resume.",
+        "Interrupted financial requests query the persisted operation rather than queueing a new payment.",
+        "Native builds/device cases pass on claimed platforms; unavailable iOS/device evidence stays explicitly pending."
+      ],
+      "verification": [
+        "Native/emulator lifecycle, redirect/secure storage, accessibility, payment timeout and document authorization tests."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-28",
+      "stage": "S3",
+      "release": "R1",
+      "size": "L",
+      "title": "Qualify security, privacy, account recovery and audit lifecycle",
+      "status": "planned",
+      "depends_on": [
+        "WP-04",
+        "WP-05",
+        "WP-07",
+        "WP-14",
+        "WP-25",
+        "WP-26",
+        "WP-27"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-IAM-06",
+        "SEC-02",
+        "SEC-03",
+        "SEC-07",
+        "SEC-10"
+      ],
+      "acceptance_scenarios": [
+        "AT-14",
+        "AT-16",
+        "AT-19",
+        "AT-27",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Complete factor/device recovery, risk review and safe customer notifications using real issuer flows.",
+        "Implement verified data access/correction/export/restriction/disposal requests with retention/hold conflicts.",
+        "Exercise key/credential rotation, network policies, synthetic test-data boundaries and incident/access-review procedures.",
+        "Resolve release-blocking findings and publish sanitized threat-model/control evidence."
+      ],
+      "planned_artifacts": [
+        "crates/identity/src/recovery/",
+        "crates/controls/src/privacy/",
+        "tests/acceptance/security/",
+        "docs/runbooks/security-incident.md"
+      ],
+      "definition_of_done": [
+        "Recovery cannot bypass identity ownership or action permissions; suspicious changes are reviewable.",
+        "Privacy requests honor retention and legal holds without exposing another subject's evidence.",
+        "Security findings have attributable disposition; redaction and protected key handling are demonstrated."
+      ],
+      "verification": [
+        "AT-14/16/19/27/29 including actual issuer revocation, credential rotation and sensitive-data inspection."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-29",
+      "stage": "S3",
+      "release": "R1",
+      "size": "L",
+      "title": "Package deployment, CI, observability and operations tooling",
+      "status": "planned",
+      "depends_on": [
+        "WP-01",
+        "WP-06",
+        "WP-09",
+        "WP-18",
+        "WP-19",
+        "WP-25",
+        "WP-26"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-05",
+        "DEC-10",
+        "DEC-12"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "SEC-04",
+        "SEC-09",
+        "NFR-10",
+        "NFR-12"
+      ],
+      "acceptance_scenarios": [
+        "AT-17",
+        "AT-20",
+        "AT-25",
+        "AT-28",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Build nonprivileged reproducible OCI images, health/readiness, protected runtime configuration and upgrade-compatible migrations.",
+        "Implement local CI-equivalent checks, application test aggregates, contract drift and sanitized evidence artifacts.",
+        "Provide queue/financial/latency metrics, correlation traces, alerts and on-call/runbook drills.",
+        "Document backup/restore, rail pause, rollback/forward recovery and secrets management interfaces; remote CI configured only for an actual chosen host."
+      ],
+      "planned_artifacts": [
+        "infra/containers/",
+        "infra/compose/",
+        "scripts/",
+        "docs/runbooks/",
+        "tests/integration/deployment/"
+      ],
+      "definition_of_done": [
+        "A clean local environment builds and runs the full profile from locked inputs.",
+        "Alerts/escalation and pause/recovery actions work without disabling existing-operation handling.",
+        "Pipeline definitions, local container checks and remote pipeline execution have separate recorded results."
+      ],
+      "verification": [
+        "Image/build/Compose, rolling compatibility, configuration failure, alert delivery and runbook smoke."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-30",
+      "stage": "S3",
+      "release": "R1",
+      "size": "XL",
+      "title": "Run local acceptance, capacity, fault and recovery qualification",
+      "status": "planned",
+      "depends_on": [
+        "WP-23",
+        "WP-24",
+        "WP-27",
+        "WP-28",
+        "WP-29"
+      ],
+      "execution_mode": "local",
+      "activation_decisions": [
+        "DEC-07",
+        "DEC-10"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-OPS-04",
+        "NFR-01",
+        "NFR-02",
+        "NFR-03",
+        "NFR-04",
+        "NFR-05"
+      ],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-02",
+        "AT-03",
+        "AT-04",
+        "AT-05",
+        "AT-06",
+        "AT-07",
+        "AT-08",
+        "AT-09",
+        "AT-10",
+        "AT-11",
+        "AT-12",
+        "AT-13",
+        "AT-14",
+        "AT-15",
+        "AT-16",
+        "AT-17",
+        "AT-18",
+        "AT-19",
+        "AT-20",
+        "AT-24",
+        "AT-25",
+        "AT-26",
+        "AT-27",
+        "AT-28",
+        "AT-29",
+        "AT-30"
+      ],
+      "implementation_steps": [
+        "Execute every R1-applicable AT scenario against the persistent local environment and publish branch-level results.",
+        "Run proposed NFR sustained/burst/latency and slow-dependency workloads with financial invariants enabled.",
+        "Inject financial-write crashes, broker/issuer/provider failures and fenced recovery/restore; reconcile uncertain outcomes before reopen.",
+        "Distinguish local process/container drills from true multi-zone/region production recovery and preserve unexecuted branches."
+      ],
+      "planned_artifacts": [
+        "tests/acceptance/manifest.json",
+        "tests/load/",
+        "tests/resilience/",
+        "docs/implementation/evidence/"
+      ],
+      "definition_of_done": [
+        "All claimed local R1 scenario branches have passing evidence or explicit blockers; no silent skips.",
+        "Measured workload, recovery limits and invariant results are reproducible.",
+        "Documentation states exactly which production, provider and native-platform objectives remain unverified."
+      ],
+      "verification": [
+        "Full local acceptance plus database concurrency, loss/replay and measured load/restore reports."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-31",
+      "stage": "S4",
+      "release": "R1",
+      "size": "XL",
+      "title": "Integrate chosen real providers and qualify production boundaries",
+      "status": "planned",
+      "depends_on": [
+        "WP-13",
+        "WP-21",
+        "WP-22",
+        "WP-23",
+        "WP-24",
+        "WP-25",
+        "WP-26",
+        "WP-29",
+        "WP-30"
+      ],
+      "execution_mode": "external_integration",
+      "activation_decisions": [
+        "DEC-01",
+        "DEC-03",
+        "DEC-04",
+        "DEC-05",
+        "DEC-06",
+        "DEC-07",
+        "DEC-10",
+        "DEC-11",
+        "DEC-12"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [
+        "DEC-01",
+        "DEC-03",
+        "DEC-04",
+        "DEC-05",
+        "DEC-06",
+        "DEC-07",
+        "DEC-10",
+        "DEC-11",
+        "DEC-12"
+      ],
+      "requirements": [
+        "NFR-06",
+        "NFR-07"
+      ],
+      "acceptance_scenarios": [
+        "AT-03",
+        "AT-08",
+        "AT-09",
+        "AT-10",
+        "AT-11",
+        "AT-12",
+        "AT-17",
+        "AT-20",
+        "AT-25",
+        "AT-29"
+      ],
+      "implementation_steps": [
+        "Collect actual market/policy/provider/configuration inputs; implement selected identity/screening, rail, GL, notification and object-store adapters.",
+        "Document/certify rail-specific direction, authority, calendar, limits, finality, inquiry, returns, cancellations and evidence handling.",
+        "Qualify production issuer/storage/encryption/retention/network/migration/backup configuration and genuine failure-domain recovery.",
+        "Run authenticated provider sandbox/certification and deployment checks; record exact environments and independent evidence."
+      ],
+      "planned_artifacts": [
+        "crates/adapters/src/providers/",
+        "contracts/providers/",
+        "infra/production/",
+        "docs/implementation/evidence/providers/"
+      ],
+      "definition_of_done": [
+        "Each selected real integration has authenticated contract evidence and required certification references.",
+        "No required synthetic adapter can activate in production; mandatory missing configuration fails startup.",
+        "Real storage/GL/identity/notification and actual zone/region behavior satisfy ratified policies or remain explicitly blocked."
+      ],
+      "verification": [
+        "Provider-specific contract/certification suites, real deployment recovery and production configuration validation."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-32",
+      "stage": "S4",
+      "release": "R1",
+      "size": "L",
+      "title": "Assemble controlled R1 readiness and launch evidence",
+      "status": "planned",
+      "depends_on": [
+        "WP-30",
+        "WP-31"
+      ],
+      "execution_mode": "launch",
+      "activation_decisions": [
+        "DEC-01",
+        "DEC-02",
+        "DEC-03",
+        "DEC-04",
+        "DEC-05",
+        "DEC-06",
+        "DEC-07",
+        "DEC-08",
+        "DEC-10",
+        "DEC-11",
+        "DEC-12"
+      ],
+      "activation_dependencies": [],
+      "required_external_inputs": [
+        "DEC-01",
+        "DEC-02",
+        "DEC-03",
+        "DEC-04",
+        "DEC-05",
+        "DEC-06",
+        "DEC-07",
+        "DEC-08",
+        "DEC-10",
+        "DEC-11",
+        "DEC-12"
+      ],
+      "requirements": [],
+      "acceptance_scenarios": [
+        "AT-01",
+        "AT-02",
+        "AT-03",
+        "AT-04",
+        "AT-05",
+        "AT-06",
+        "AT-07",
+        "AT-08",
+        "AT-09",
+        "AT-10",
+        "AT-11",
+        "AT-12",
+        "AT-13",
+        "AT-14",
+        "AT-15",
+        "AT-16",
+        "AT-17",
+        "AT-18",
+        "AT-19",
+        "AT-20",
+        "AT-24",
+        "AT-25",
+        "AT-26",
+        "AT-27",
+        "AT-28",
+        "AT-29",
+        "AT-30"
+      ],
+      "implementation_steps": [
+        "Reconcile all P0 R1 requirements to executed applicable acceptance/control/provider evidence.",
+        "Verify named accountable owners, actual terms/policies, staff coverage, support/escalation and pilot limits.",
+        "Produce a concrete deployment/pilot release record with remaining scoped limitations and the organization's launch decision reference.",
+        "Perform permitted canary/pilot actions only under the real operating context; record recovery/readiness evidence."
+      ],
+      "planned_artifacts": [
+        "docs/implementation/evidence/r1/",
+        "docs/runbooks/launch-and-recovery.md",
+        "tests/acceptance/release-manifest.json"
+      ],
+      "definition_of_done": [
+        "R1 is never labeled ready from local simulator results alone.",
+        "Required policies, provider certification and staffed operations are evidenced; unresolved launch blockers remain visible.",
+        "Accountable launch authority and actual pilot/deployment outcomes are recorded distinctly from software build results."
+      ],
+      "verification": [
+        "Complete R1 evidence/requirement audit, operational rehearsal and actual qualified deployment/pilot verification."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-33",
+      "stage": "S5",
+      "release": "R2",
+      "size": "XL",
+      "title": "Implement consented partner APIs and delegated account authority",
+      "status": "planned",
+      "depends_on": [
+        "WP-30"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-09",
+        "DEC-11"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-IAM-05",
+        "FR-ACC-08",
+        "FR-EXT-02"
+      ],
+      "acceptance_scenarios": [
+        "AT-14",
+        "AT-21",
+        "AT-27",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Implement registered clients, scoped grants/expiry/revocation, account delegation and partner quotas.",
+        "Expose documented customer-consented inquiry/payment operations with client/actor/customer evidence and callback controls.",
+        "Exercise revocation with in-flight operations and preserve financial lifecycle for already submitted instructions."
+      ],
+      "planned_artifacts": [
+        "crates/identity/src/consents/",
+        "crates/core/src/delegation/",
+        "apps/bank-api/src/routes/partners/",
+        "contracts/openapi/partners/"
+      ],
+      "definition_of_done": [
+        "Over-scoped/expired/revoked grants fail; staff authority cannot be obtained through partner tokens.",
+        "Delegation revocation blocks new actions but preserves historical actor evidence.",
+        "Production enablement requires R1 qualification and actual partner policy/contracts."
+      ],
+      "verification": [
+        "AT-21 plus scoped client, account delegation, quota and version-transition cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-34",
+      "stage": "S5",
+      "release": "R2",
+      "size": "L",
+      "title": "Implement branch, private banker and call center adapters",
+      "status": "planned",
+      "depends_on": [
+        "WP-19",
+        "WP-28",
+        "WP-30"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-06",
+        "DEC-09",
+        "DEC-10"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CH-03"
+      ],
+      "acceptance_scenarios": [
+        "AT-14",
+        "AT-22"
+      ],
+      "implementation_steps": [
+        "Implement assisted-channel contracts preserving staff actor, represented customer, authorization and channel.",
+        "Expose approved onboarding/servicing/payment flows through common domain rules and per-channel restrictions.",
+        "Build fixtures and real channel integration only for confirmed operations; record channel certification."
+      ],
+      "planned_artifacts": [
+        "crates/adapters/src/channels/assisted/",
+        "apps/staff-web/",
+        "contracts/providers/channels/"
+      ],
+      "definition_of_done": [
+        "Assistance cannot bypass account/control restrictions or identity assurance.",
+        "Audit identifies actor/customer/channel and recorded authority across handoff.",
+        "Only confirmed/certified operations are enabled in each actual channel."
+      ],
+      "verification": [
+        "AT-22 and assisted customer handoff, restrictions and staff-audience negative tests."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-35",
+      "stage": "S5",
+      "release": "R2",
+      "size": "XL",
+      "title": "Implement ATM integration and channel certification",
+      "status": "planned",
+      "depends_on": [
+        "WP-23",
+        "WP-30",
+        "WP-34"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-04",
+        "DEC-09"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-CH-04"
+      ],
+      "acceptance_scenarios": [
+        "AT-08",
+        "AT-10",
+        "AT-22",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Define confirmed ATM/network operations, authorization/cash/debit boundaries and failure reversals in a channel supplement.",
+        "Implement simulator and chosen network adapter using common account restrictions and financial keys.",
+        "Prove timeout/reversal/reconciliation and channel authentication without assuming cash logistics or full card issuing are in scope."
+      ],
+      "planned_artifacts": [
+        "crates/adapters/src/channels/atm/",
+        "contracts/providers/channels/atm/",
+        "tests/acceptance/atm/"
+      ],
+      "definition_of_done": [
+        "Unsupported ATM operations fail explicitly and cannot bypass enabled account/rail policy.",
+        "Duplicate authorization/execution/reversal evidence has bounded unique financial effects.",
+        "Actual network certification remains required before enablement."
+      ],
+      "verification": [
+        "AT-22/28 plus ATM-specific lost response, duplicate, reversal and network certification cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-36",
+      "stage": "S5",
+      "release": "R2",
+      "size": "XL",
+      "title": "Implement additional payment rails with individual supplements",
+      "status": "planned",
+      "depends_on": [
+        "WP-21",
+        "WP-22",
+        "WP-23",
+        "WP-24",
+        "WP-30"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-04",
+        "DEC-06",
+        "DEC-09",
+        "DEC-11"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-PAY-10"
+      ],
+      "acceptance_scenarios": [
+        "AT-08",
+        "AT-09",
+        "AT-10",
+        "AT-11",
+        "AT-12",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Create separate contract/state/format/calendar/finality supplements for ACH, checks, debit, bill pay, wire, lockbox, SWIFT and P2P as selected.",
+        "Implement each required adapter plus simulator/fault fixtures and routing/limit enablement.",
+        "Certify inbound/outbound authority, settlement evidence, fees, cancellation/return/dispute and reconciliation for each actual enabled rail.",
+        "Keep SWIFT messaging distinct from settlement and debit scope distinct from an assumed issuing program."
+      ],
+      "planned_artifacts": [
+        "crates/adapters/src/payments/",
+        "contracts/providers/rails/",
+        "tests/acceptance/rails/"
+      ],
+      "definition_of_done": [
+        "No rail becomes enabled through a generic placeholder or shared success response.",
+        "Each enabled direction has its own verified finality/recovery/financial mapping.",
+        "All source rail options remain allocated even when commercial selection delays a particular adapter."
+      ],
+      "verification": [
+        "Per-rail AT-08/09/10/11/12/28 branches and certification evidence."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-37",
+      "stage": "S5",
+      "release": "R2",
+      "size": "XL",
+      "title": "Implement governed warehouse, mastered assets and big-data ingestion",
+      "status": "planned",
+      "depends_on": [
+        "WP-09",
+        "WP-17",
+        "WP-24",
+        "WP-28",
+        "WP-30"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-05",
+        "DEC-06",
+        "DEC-08"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-DATA-03"
+      ],
+      "acceptance_scenarios": [
+        "AT-13",
+        "AT-23",
+        "AT-25",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Implement versioned governed ingestion, canonical-link lineage and reproducible warehouse transforms.",
+        "Add selected analytical storage/processing adapters, purpose tags, quality watermarks and source-to-report control totals.",
+        "Exercise backfill, correction, schema upgrade and master-reference conflicts without rewriting financial history."
+      ],
+      "planned_artifacts": [
+        "crates/data/src/analytics/",
+        "contracts/events/analytics/",
+        "infra/analytics/",
+        "tests/acceptance/analytics/"
+      ],
+      "definition_of_done": [
+        "Historical aggregates trace to source/schema/transform versions and authorized purpose.",
+        "Backfill/replay preserves economic deduplication and shows missing/stale sources.",
+        "Analytical principals cannot post or mutate Core balances."
+      ],
+      "verification": [
+        "AT-13/23/25/28 lineage, backfill, purpose denial and schema compatibility cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-38",
+      "stage": "S5",
+      "release": "R2",
+      "size": "L",
+      "title": "Implement audiences, insights and journey partner orchestration",
+      "status": "planned",
+      "depends_on": [
+        "WP-26",
+        "WP-33",
+        "WP-37"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-05",
+        "DEC-06",
+        "DEC-09"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-ACQ-04",
+        "FR-DATA-04",
+        "FR-EXT-04"
+      ],
+      "acceptance_scenarios": [
+        "AT-23",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Build permissioned segmentation and advisory insights with versioned provenance and withdrawal handling.",
+        "Integrate selected journey partners using minimized consented signals and safe recommendation APIs.",
+        "Report campaign/journey outcomes with explicit denominators, watermarks and purpose restrictions."
+      ],
+      "planned_artifacts": [
+        "crates/data/src/audience/",
+        "crates/data/src/insights/",
+        "crates/adapters/src/journeys/",
+        "tests/acceptance/journeys/"
+      ],
+      "definition_of_done": [
+        "Marketing withdrawal prevents optional targeting/exports without destroying required evidence.",
+        "Partner recommendations cannot approve customers, alter entitlements or post money.",
+        "Outcome reports retain lineage and disclose missing/late data."
+      ],
+      "verification": [
+        "AT-23/28 plus purpose-revocation, export restriction and advisory-boundary cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-39",
+      "stage": "S6",
+      "release": "R3",
+      "size": "XL",
+      "title": "Implement advanced routing and approval optimization",
+      "status": "planned",
+      "depends_on": [
+        "WP-23",
+        "WP-30",
+        "WP-33",
+        "WP-36"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-04",
+        "DEC-07",
+        "DEC-11"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [],
+      "acceptance_scenarios": [
+        "AT-08",
+        "AT-14",
+        "AT-24",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Add versioned policy-driven route/approval strategies using measured provider health and permitted limits.",
+        "Implement safe fallback only when original instruction non-execution is proven; preserve same economic identity.",
+        "Shadow-evaluate strategies before bounded enablement and compare outcomes/fees/latency."
+      ],
+      "planned_artifacts": [
+        "crates/payments/src/routing/",
+        "crates/payments/src/approvals/",
+        "tests/acceptance/routing/"
+      ],
+      "definition_of_done": [
+        "Optimization cannot bypass required controls or duplicate a payment across providers.",
+        "Policy versions and route reasons are attributable and can be rolled forward/back compatibly.",
+        "Benefit is measured against a real baseline; unavailable production evidence stays pending."
+      ],
+      "verification": [
+        "Cross-provider unknown-outcome, approval independence and shadow/rollback invariant cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-40",
+      "stage": "S6",
+      "release": "R3",
+      "size": "XL",
+      "title": "Implement liquidity forecasting and controlled finance automation",
+      "status": "planned",
+      "depends_on": [
+        "WP-24",
+        "WP-30",
+        "WP-37"
+      ],
+      "execution_mode": "local_then_external",
+      "activation_decisions": [
+        "DEC-03",
+        "DEC-06",
+        "DEC-07",
+        "DEC-12"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [],
+      "requirements": [
+        "FR-FIN-05"
+      ],
+      "acceptance_scenarios": [
+        "AT-24",
+        "AT-25"
+      ],
+      "implementation_steps": [
+        "Build reproducible forecast inputs/models with data quality, as-of uncertainty and versioned policy limits.",
+        "Implement independently approved automated finance actions through existing unique financial commands.",
+        "Simulate breaches/stale sources and compare forecast/operating outcomes against actual baselines."
+      ],
+      "planned_artifacts": [
+        "crates/finance/src/forecasting/",
+        "crates/finance/src/automation/",
+        "tests/acceptance/liquidity/"
+      ],
+      "definition_of_done": [
+        "Missing/stale evidence cannot appear as confirmed funds or justify unsafe automated action.",
+        "A policy breach stops restricted actions and creates owned escalation.",
+        "Automated actions remain balanced, unique, approved and traceable."
+      ],
+      "verification": [
+        "AT-24/25 plus forecast reproducibility, stale input and limit-breach automation cases."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    },
+    {
+      "id": "WP-41",
+      "stage": "S6",
+      "release": "R3",
+      "size": "L",
+      "title": "Measure product outcomes and optimize capacity/cost",
+      "status": "planned",
+      "depends_on": [
+        "WP-38",
+        "WP-39",
+        "WP-40"
+      ],
+      "execution_mode": "production_measurement",
+      "activation_decisions": [
+        "DEC-07",
+        "DEC-12"
+      ],
+      "activation_dependencies": [
+        "WP-32"
+      ],
+      "required_external_inputs": [
+        "DEC-07",
+        "DEC-12"
+      ],
+      "requirements": [
+        "KPI-01",
+        "KPI-02",
+        "KPI-03",
+        "KPI-04",
+        "KPI-05",
+        "KPI-06",
+        "KPI-07",
+        "KPI-08"
+      ],
+      "acceptance_scenarios": [
+        "AT-17",
+        "AT-18",
+        "AT-19",
+        "AT-24",
+        "AT-25",
+        "AT-28"
+      ],
+      "implementation_steps": [
+        "Publish validated KPI denominators/cohorts and compare actual onboarding/payment/support outcomes.",
+        "Profile measured application/database/broker/client bottlenecks and optimize only supported changes.",
+        "Evaluate service extraction, storage scale and cost with evidence; update ADRs, deployment models and recovery tests."
+      ],
+      "planned_artifacts": [
+        "docs/implementation/evidence/outcomes/",
+        "tests/load/",
+        "docs/decisions/",
+        "infra/production/"
+      ],
+      "definition_of_done": [
+        "Claimed improvements use measured data, documented exclusions and reproducible checks.",
+        "Financial, authorization, recovery and accessibility invariants still pass after optimization.",
+        "Changed physical boundaries retain domain ownership, contracts and operational evidence."
+      ],
+      "verification": [
+        "Before/after load/outcome/cost report plus affected full financial/security/recovery regression."
+      ],
+      "completion_notes": "",
+      "blocker": "",
+      "evidence": []
+    }
+  ]
+}

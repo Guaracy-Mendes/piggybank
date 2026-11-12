@@ -1,0 +1,41 @@
+{
+  "policy": {
+    "id": "67e964c2-ebfc-4e12-9f31-c644e981bfb4",
+    "code": "MONTHLY_MAINTENANCE_PREVIEW",
+    "version": 1,
+    "label": "SYNTHETIC",
+    "activation": "PREVIEW_ONLY",
+    "productVersionId": "4f1a780b-3e31-48ef-a294-000000000001",
+    "effectiveFrom": "2026-11-01",
+    "effectiveUntil": "2026-12-01",
+    "calendar": {
+      "id": "556fa94a-7628-417c-982e-3fd121ffbe26",
+      "code": "SYNTHETIC_UTC",
+      "version": 1,
+      "timezone": "UTC",
+      "coverageFrom": "2026-11-01",
+      "coverageUntil": "2026-12-16",
+      "businessWeekdays": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "holidays": [],
+      "cutoff": "17:00:00",
+      "rollConvention": "FOLLOWING_14_DAYS"
+    },
+    "calculation": {
+      "kind": "MONTHLY_FIXED_FEE",
+      "amount": {
+        "minorUnits": "250",
+        "currency": {
+          "code": "TST",
+          "scale": 2
+        }
+      }
+    }
+  },
+  "reason": "Evaluate the explicit synthetic calendar and exact calculation; keep customer posting disabled"
+}

@@ -1,0 +1,18 @@
+' Shared presentation only. Business semantics are in each diagram.
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam ArrowColor #385A75
+skinparam sequenceMessageAlign center
+skinparam sequenceParticipant underline
+skinparam activityBackgroundColor #EAF2F8
+skinparam activityBorderColor #385A75
+skinparam stateBackgroundColor #EAF2F8
+skinparam stateBorderColor #385A75
+skinparam classBackgroundColor #F4F8FB
+skinparam classBorderColor #385A75
+skinparam noteBackgroundColor #FFF8DC
+skinparam noteBorderColor #A58A3B
+hide footbox

@@ -1,0 +1,48 @@
+@startuml
+title UML - frozen outgoing payment reconciliation and ownership recovery
+actor "Current Finance maker" as maker
+participant "Workforce BFF / Finance API" as api
+participant "Immutable parent report" as report
+participant "Independent clearing provider" as file
+participant "Core read-only accounting port" as core
+participant "Payments read-only lineage port" as payments
+database "Finance observations" as store
+participant "Bounded recovery worker" as worker
+participant "Controls cases" as cases
+maker -> api : capture(reportId, fileId, actor/client/key)
+api -> api : authenticate + current Finance role/queue
+api -> store : exact accepted request replay lookup
+alt existing accepted key
+ store --> api : original artifact, never refresh evidence
+else new request
+ api -> report : verify original report / GL archive membership
+ report --> api : frozen journal + GL proof, original as-of / digest
+ api -> file : fresh signed kind / file ID / nonce inquiry
+ file --> api : signed exact request + immutable independent file
+ api -> api : verify scope, signature and bounded raw row claims
+ api -> core : bounded repeatable-read accounting facts
+ core --> api : native receipt / finality / journal links + source clock
+ api -> payments : bounded repeatable-read original quote / transport / receipts
+ payments --> api : source lineage + separate source clock
+ api -> core : confirm native receipts after Payments capture
+ core --> api : committed facts including explicit file / workflow identities
+ api -> api : union original identities; exact principal / bank fee / provider fee
+ api -> api : currency partitions / accounts / dates / duplicates / timing / GL
+ api -> store : lock actor/client/key; recheck current authority
+ api -> store : commit immutable summary / sources / rows / issues + audit
+end
+api --> maker : saved run ID / digest / explicit completeness
+worker -> store : next 50 unassigned issues, wrapping cursor
+loop each issue; advance past scope/dependency failure
+ worker -> cases : ensure Finance case with stable issue origin
+ cases --> worker : original case ID, including after lost ACK
+ worker -> store : link case ID once
+end
+maker -> api : reopen original run / stable ordinal pages
+api -> api : verify hashes + archived file integrity
+api --> maker : retained observations / safe lineage / current ownership wrapper
+note over api,core
+No financial command, hold release, new rail submission or GL replay.
+A later file or new financial fact requires a new report/run.
+end note
+@enduml

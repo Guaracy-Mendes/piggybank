@@ -1,0 +1,36 @@
+@startuml
+!include ../theme.puml
+title UML state — Account lifecycle and operational restrictions (proposed)
+hide empty description
+[*] --> PENDING_ACTIVATION : Idempotent core creation
+PENDING_ACTIVATION --> ACTIVE : Eligibility + controls + accepted terms current
+PENDING_ACTIVATION --> OPENING_FAILED : Definitive activation failure / no funded obligations
+PENDING_ACTIVATION --> PENDING_ACTIVATION : Recover same opening operation
+ACTIVE --> RESTRICTED : Authorized policy/risk/customer restriction
+RESTRICTED --> ACTIVE : Authorized clearance / controls current
+ACTIVE --> CLOSURE_PENDING : Authorized closure request
+RESTRICTED --> CLOSURE_PENDING : Policy permits closure assessment
+CLOSURE_PENDING --> ACTIVE : Closure withdrawn / original active policy restored
+CLOSURE_PENDING --> RESTRICTED : Closure withdrawn / original restrictions remain
+CLOSURE_PENDING --> CLOSED : Zero balance + no holds/obligations + required checks
+CLOSED --> [*]
+OPENING_FAILED --> [*]
+note right of RESTRICTED
+  Restriction set defines debit, credit, access
+  and channel permissions independently.
+  No assumption that all credits are allowed.
+  Changes are versioned and attributable.
+end note
+note right of CLOSURE_PENDING
+  Pending payments, holds, fees and disputes
+  must be resolved under approved policy.
+  Closure cannot discard residual money.
+end note
+note bottom of CLOSED
+  Identity, journal, statements and evidence
+  remain subject to retention/legal holds.
+  Late inbound/return evidence enters an owned
+  exception; it cannot silently reopen spending.
+end note
+footer FR-ACC-01/06; BR-03/11/12. No inactivity/dormancy regime is inferred from the source.
+@enduml

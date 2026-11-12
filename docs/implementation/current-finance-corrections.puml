@@ -1,0 +1,46 @@
+@startuml
+title UML sequence - exact approved synthetic funding correction
+actor "Original Finance maker" as maker
+actor "Independent canonical checker" as checker
+participant "Staff portal / BFF" as web
+participant "Finance corrections" as finance
+database "Finance schema" as fs
+participant "Controls" as controls
+participant "Core CorrectionCommands" as core
+database "Core ledger" as ledger
+participant "Existing GL export pipeline" as gl
+maker -> web : Original funding journal UUID + exact reason
+web -> finance : Current workforce / Origin / CSRF / stable actor-client-key
+finance -> core : Read immutable SYNTHETIC_FUNDING source
+core --> finance : Original source / native fingerprint / exact two legs
+finance -> fs : Commit frozen source, reversing legs, reason,\nexecution UUID, digest, expiry and audit intent
+finance --> web : Durable original request reference
+loop Wrapping 50-request worker cursor
+ finance -> controls : Register same FINANCE_CORRECTION proposal and digest
+ controls --> finance : Original registration (recover lost acknowledgment)
+end
+checker -> web : Review frozen source, exact debit/credit, reason and digest
+web -> finance : Approve exact digest
+finance -> controls : Current APPROVE role/queue; distinct canonical person; expiry
+controls --> finance : APPROVED
+maker -> web : Explicitly execute this approved correction
+web -> finance : Original request + exact digest
+finance -> fs : Commit execution-request observation before Core boundary
+finance -> core : Same execution UUID / details / approved purpose
+core -> ledger : Lock original source, then accounts in ascending UUID order
+core -> controls : Native recheck after all locks:\nexact digest/scope/people, live grants/queues/approval expiry
+core -> ledger : Check original funding legs and existing correction,\nactive restrictions / funds after holds / current UTC date
+core -> ledger : Atomic linked CORRECTION journal + original Core receipt + outbox
+ledger --> core : Immutable native financial receipt
+core -x finance : Response lost after native commit
+web -> finance : Read saved original request
+finance -> core : Inquiry by original execution and exact scope
+core --> finance : Same original native journal and receipt
+finance --> web : EXECUTED; immutable source and reversing journal
+finance -> gl : Existing discovery exports new linked journal
+note over finance,ledger
+One correction per original journal, including competing approvals.
+Pending registration/approval and missing transport responses do not
+establish financial completion or release held funds.
+end note
+@enduml

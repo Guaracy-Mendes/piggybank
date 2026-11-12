@@ -1,0 +1,10 @@
+region            = "us-east-1"
+availability_zone = "us-east-1a"
+name              = "piggybank-eval"
+instance_type     = "m7i.xlarge"
+data_disk_gb      = 100
+artifact_bucket   = "your-unique-piggybank-artifacts"
+release_object    = "releases/cloud-20261111-01.tgz"
+release_sha256    = "REPLACE_WITH_64_CHARACTER_SHA256_FROM_PACKAGE"
+# ami_id = "ami-your-qualified-ubuntu-2404-amd64-image"
+protect_vm = true

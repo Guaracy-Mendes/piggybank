@@ -1,0 +1,30 @@
+[package]
+name = "bank-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+bank-rails.workspace = true
+anyhow.workspace = true
+axum.workspace = true
+bank-platform.workspace = true
+bank-identity.workspace = true
+bank-controls.workspace = true
+bank-journeys.workspace = true
+bank-core.workspace = true
+bank-payments.workspace = true
+bank-finance.workspace = true
+bank-documents.workspace = true
+chrono.workspace = true
+bank-adapters.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

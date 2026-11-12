@@ -1,0 +1,75 @@
+@startuml
+title UML - Implemented original-identity recovery and cancellation (WP-23)
+autonumber
+actor "Owned customer / current payment operator" as User
+boundary "BFF / recovery API" as API
+control "Payments" as Pay
+database "Payments store" as Store
+control "Platform leased job" as Job
+control "Core" as Core
+participant "Synthetic rail" as Rail
+control "Controls cases / audit" as Controls
+
+User -> API : Cancellation, or operator inquiry with exact reason + request key
+API -> Pay : Current ownership / operator role / queue; origin + CSRF
+Pay -> Store : Lock original intent; seal command identity and digest
+Pay -> Store : Commit acceptance before scheduling
+Pay -> Job : Accept same command ID; bounded original recovery job
+API --> User : 202 accepted, financial outcome unconfirmed
+
+Job -> Pay : Original request ID and original payment
+Pay -> Core : Recover committed booking / finality receipt first
+alt Existing finality or booking receipt
+ Core --> Pay : Original immutable financial result
+ Pay -> Store : Repair workflow and command from original receipt
+else Cancellation before possible submission
+ Pay -> Store : Same intent lock as execution; cancellation already durable
+ Pay -> Core : Release exact bound unsubmitted reservation if present
+ Pay -> Store : CANCELLED; no provider send
+else Submitted inquiry or cancellation
+ Pay -> Store : Read exact original work; claim short fenced lease
+ Pay -> Store : Commit before transport; defer if existing lease is active
+ Pay -> Rail : Signed original identity + full original scope
+ alt Timeout / pending / NOT_FOUND
+  Rail --> Pay : Unknown or nonfinal result
+  Pay -> Store : Retain original submitted commitment
+  Pay -> Job : Bounded retry; exhaustion requires owned review
+  Pay -> Controls : Owned payment case; no expiry release
+ else Matching final evidence
+  Rail --> Pay : Original SETTLED / REJECTED / CANCELLED packet
+  Pay -> Store : Recheck lease / fence after locks; immutable receipt
+  Pay -> Core : Independently verify evidence; same financial business key
+  alt Settlement already committed
+   Core --> Pay : Same settlement journal; cancellation too late
+  else Definitive nonexecution
+   Core -> Core : Release submitted hold and daily budget atomically
+   Core --> Pay : Immutable release / finality receipt
+  end
+  Pay -> Store : Canonical financial status + immutable command history
+ end
+end
+
+group Periodic bounded reconciliation
+ Pay -> Store : Claim persistent cursor page (50); commit cursor before service work
+ Pay -> Core : Read authoritative reservation / hold / booking / daily-use positions
+ Core --> Pay : Financial snapshot, including computed aggregate held amount
+ Pay -> Store : Compare owning intent, scope, provider work, finality and age
+ alt Orphan / mismatch / submitted age >= synthetic 5 minute threshold
+  Pay -> Store : Stable break ID; append changed observation; durable audit
+  Pay -> Controls : Idempotent owned case with original financial identity
+ else Previously observed break now matches
+  Pay -> Store : MATCHED observation + retained history
+  note right of Controls
+  Matching preserves the investigation.
+  No financial override or automatic case closure.
+  end note
+ end
+end
+User -> API : Scoped inquiry and recovery history
+API --> User : Financial result, pending cancellation or owned reconciliation evidence
+note over Pay,Core
+Recovery never mints another economic payment.
+Unknown submitted funds cannot expire into release.
+Late cancellation preserves the original settlement.
+end note
+@enduml

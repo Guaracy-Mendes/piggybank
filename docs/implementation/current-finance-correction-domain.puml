@@ -1,0 +1,63 @@
+@startuml
+title UML - independently approved synthetic funding correction
+hide methods
+class CorrectionRequest <<Finance immutable intent>> {
+ id / executionId : original UUID
+ originalBatchId : exact source
+ actor / client / key : durable scope
+ frozenSource / detailsDigest : immutable
+ reason : 4..240 characters
+ makerPerson : canonical UUID
+ expiresAt : UTC + 24 hours
+ registeredAt : one-time UTC?
+}
+class CorrectionDetails <<purpose bound>> {
+ kind : FULL_SYNTHETIC_FUNDING_REVERSAL_V1
+ sourceDigest / sourceFingerprint : original hashes
+ sourceOperationId / sourceBusinessDate : native source
+ currency : TST scale 2
+ original / reversing legs : exact signed-i64 strings
+ executionId / reason : immutable command
+}
+class Approval <<Controls FINANCE_CORRECTION>> {
+ resource : original journal UUID
+ digest : whole CorrectionDetails
+ maker / checker : distinct canonical people
+ current grants / queues / expiry : checked after locks
+}
+class JournalBatch <<Core immutable>> {
+ id / operationId : native UUID
+ postingKind : native type
+ originalBatchId : linked source?
+ entries : balanced exact legs
+}
+class CorrectionReceipt <<Core immutable proof>> {
+ executionId / approvalId : unique
+ originalBatchId : unique across corrections
+ batchId : unique linked CORRECTION journal
+ detailsDigest / people : exact accepted scope
+ recordedAt : native UTC wall clock
+}
+class ExecutionObservation <<Finance immutable>> {
+ requestId / actor : original scope
+ reason : requested / receipt observed / not observed / inquiry unavailable
+ createdAt : UTC
+}
+class CorrectionCommands <<narrow Core capability>>
+class GLExport <<existing independent delivery>>
+CorrectionRequest "1" *-- "1" CorrectionDetails
+CorrectionRequest "1" --> "1" JournalBatch : frozen SYNTHETIC_FUNDING source
+CorrectionRequest "1" --> "0..1" Approval
+CorrectionRequest "1" --> "0..1" CorrectionReceipt : original execution receipt inquiry
+CorrectionRequest "1" -- "0..*" ExecutionObservation
+CorrectionReceipt --> JournalBatch : new CORRECTION with originalBatchId
+CorrectionCommands --> CorrectionReceipt : atomic guarded financial posting
+JournalBatch --> GLExport : existing sealed export / original lineage
+note bottom of CorrectionCommands
+Eligible source: one positive CUSTOMER leg and
+one negative SETTLEMENT leg from SYNTHETIC_FUNDING.
+Source + ordered account locks precede live authority checks.
+Held funds and account restrictions remain enforced.
+No payment, incoming/return, periodic fee or accrual reversal.
+end note
+@enduml

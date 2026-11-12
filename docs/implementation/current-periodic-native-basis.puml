@@ -1,0 +1,40 @@
+@startuml
+title UML - native periodic basis capture, replay and audit recovery
+actor "Finance maker" as Maker
+boundary "Workforce API / policy screen" as API
+control "Finance basis orchestration" as Finance
+control "Core BasisRecords" as Core
+database "PostgreSQL guarded native capture" as DB
+control "Bank worker audit recovery" as Worker
+participant "Controls audit" as Audit
+Maker -> API : Account + exact published policy + period start\nOriginal actor/client/key; no supplied balance/clock
+API -> Finance : Authenticate workforce + Origin / CSRF
+Finance -> Core : Current maker / REVIEW; capture original scope
+Core -> DB : Acquire actor-key lock
+DB -> DB : Recheck live canonical person / grants / queue after wait
+alt Exact key already captured
+ DB --> Core : Original artifact / clock / native source membership
+else New observation
+ DB -> DB : Exact policy product binding and finite UTC calendar
+ DB -> DB : One statement MVCC snapshot of account metadata\nand committed native business-date journal prefix
+ DB -> DB : Limit 1001 candidates; reject above 1000\nExact i128 opening + change = closing
+ DB -> DB : Atomic immutable native artifact + source digests
+ DB --> Core : Original native capture UUID
+end
+Core -> DB : Read saved artifact + exact saved native journal facts
+Core -> Core : Verify raw/typed hashes, metadata, scope and totals\nCross-check native IDs / fingerprints / deltas
+Core -> Core : Preview using saved native clock and basis\nSuppress ineligible basis; no financial command
+Core --> Finance : Verified native detail / sources
+Finance -> DB : Stable audit_pending ID = basis UUID\nOriginal canonical person / capture time
+Finance --> API : Immutable observation + optional calculation
+API --> Maker : Saved URL; separate current vs historical position\nOpen provisional / closed observation; paged native sources
+Worker -> Core : Next 50 basis UUIDs after persisted cursor
+Core --> Worker : Verify original saved artifacts
+Worker -> DB : Idempotently repair missing original audit\nAdvance past failures; wrap for retry
+Worker -> Audit : Existing audit relay
+note over Maker,DB
+No enrollment, financial posting, hold mutation or amount owed.
+Closed period is not a global book close; late facts need a fresh key.
+Replay never refreshes a saved observation.
+end note
+@enduml

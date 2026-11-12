@@ -1,0 +1,55 @@
+@startuml
+title UML sequence - Implemented simulated outgoing submission (WP-21)
+actor Customer
+actor Operator
+actor Checker
+participant "Browser / BFF" as API
+participant "Payments worker" as Pay
+participant "Current controls / Identity" as Gates
+participant "Core" as Core
+database "Payments store" as Store
+participant "Synthetic rail provider" as Rail
+database "Simulator store" as ProviderDB
+Customer -> API : Verified SIMULATED recipient; exact quote; action reauthentication; confirmation
+API -> Store : Save original accepted intent before scheduling
+Pay -> Store : Lock original intent, recipient and current rail policy
+Pay -> Gates : Current ownership, restrictions, proof and signed checks
+alt Paused / denied / expired before possible submission
+ Pay -> Core : Release only a bound, unsubmitted reservation if present
+ Pay -> Store : Record paused or nonexecution outcome
+else Current gates allow
+ Pay -> Core : Reserve exact principal + fee and gross daily budget
+ Core -> Core : Payer lock; expiry / product / pricing / funds / budget checks
+ Core --> Pay : Immutable reservation authority and active hold
+ Pay -> Store : Stage stable provider instruction
+ Pay -> Core : Mark bound hold submitted before any possible HTTP effect
+ Pay -> Store : Persist attempt marker + fenced, short lease
+ Pay -> Store : Commit before network call
+ Pay -> Rail : Signed original instruction (bounded HTTP)
+ Rail -> ProviderDB : Deduplicate identity + digest; persist acceptance + immutable evidence
+ alt Accepted but response lost
+  Rail --x Pay : Timeout after provider commit
+  Pay -> Store : OUTCOME_UNKNOWN; retain submitted Core hold
+ else Authenticated acknowledgement
+  Rail --> Pay : Signed ACCEPTED / PENDING evidence
+  Pay -> Store : Receipt + SUBMITTED (pending); no booked payment
+ end
+end
+Operator -> API : Pause new submissions
+API -> Store : Current role; serialize policy revision; pause immediately
+Pay -> Store : Recover original durable work / expired lease
+Pay -> Rail : Signed inquiry of original identity, also while paused
+Rail -> ProviderDB : Retrieve original instruction and immutable current evidence
+Rail --> Pay : Signed matching evidence / NOT_FOUND observation
+Pay -> Store : Recheck fence after locks; save current pending / reconciliation status
+note over Pay,Core
+Unknown outcome and NOT_FOUND never release submitted funds.
+Provider acknowledgement does not establish settlement.
+Final evidence proceeds through the independent Core booking/release path.
+end note
+Operator -> API : Propose resume bound to exact policy and revision
+Checker -> Gates : Independent canonical person approves exact proposal
+Operator -> API : Apply approved resume
+API -> Gates : Current maker and checker authority; exact approval digest
+API -> Store : Recheck current revision; resume only new submissions
+@enduml

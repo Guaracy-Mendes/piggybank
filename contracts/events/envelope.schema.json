@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:piggybank:event-envelope:v1",
+  "title": "Bank event envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "schemaVersion", "producer", "aggregateId", "aggregateVersion", "occurredAt", "correlationId", "causationId", "data"],
+  "properties": {
+    "eventId": {"type": "string", "format": "uuid"},
+    "eventType": {"type": "string", "minLength": 1},
+    "schemaVersion": {"type": "integer", "minimum": 1},
+    "producer": {"type": "string", "minLength": 1},
+    "aggregateId": {"type": "string", "format": "uuid"},
+    "aggregateVersion": {"type": "integer", "minimum": 1},
+    "occurredAt": {"type": "string", "format": "date-time"},
+    "correlationId": {"type": "string", "format": "uuid"},
+    "causationId": {"type": "string", "minLength": 1},
+    "data": {"type": "object", "description": "Producer-versioned payload with minimized opaque references. Raw identity evidence and credentials are forbidden."}
+  }
+}

@@ -1,0 +1,70 @@
+@startuml
+!include ../theme.puml
+left to right direction
+title UML components — Reliable events, projections and governed analytics (proposed)
+package "Authoritative producer — Core / Payments / Journey / Controls" {
+  component "Domain command handler" as Handler
+  database "Owned domain state" as State
+  database "Owned outbox" as Outbox
+  component "Outbox relay" as Relay
+  Handler --> State : same local transaction
+  Handler --> Outbox : same local transaction
+  Relay --> Outbox : poll / mark delivery progress
+}
+queue "Event Bus\nAt-least-once delivery\nAggregate partition ordering" as Bus
+Relay --> Bus : stable eventId + aggregateVersion
+package "Data & engagement services" {
+  component "Schema / purpose validator" as Validator
+  component "Consumer / projector" as Projector
+  database "Inbox + projection state" as Projection
+  component "Customer / Account / Transaction query APIs" as Query
+  component "Alerts / Notifications" as Alerts
+  component "Audience / Insight / journey adapter" as Audience
+  Projector --> Projection : atomic receipt + local projection
+  Query --> Projection : query with as-of watermark
+  Projector --> Alerts : durable deduplicated delivery work
+  Audience --> Projection : purpose-authorized derived reads
+}
+package "Enterprise data processing" {
+  component "Governed ingestion / lineage" as Ingest
+  database "Mastered Data" as Master
+  database "Data Warehouse" as Warehouse
+  database "Big Data assets" as Lake
+  Ingest --> Master : canonical links / provenance
+  Ingest --> Warehouse : reproducible reporting transforms
+  Ingest --> Lake : minimized versioned datasets
+}
+component "Finance consumer" as Finance
+component "Documentation consumer" as Docs
+component "Retrospective fraud / AML consumer" as AML
+queue "Owned retry / dead-letter queues" as DLQ
+component "Controlled replay operator" as Replay
+cloud "Journey analytics partners" as Partner
+
+Bus --> Validator : versioned envelope / payload
+Validator --> Projector : valid compatible event
+Validator --> DLQ : incompatible / unauthorized schema
+Bus --> Ingest : approved governed streams
+Bus --> Finance : journal / settlement / control facts
+Bus --> Docs : record readiness facts
+Bus --> AML : permitted financial event stream
+Projector --> DLQ : bounded retries exhausted
+Replay --> DLQ : investigate / authorize recovery
+Replay --> Validator : replay original IDs with audit
+Audience --> Partner : minimized consented signal
+Partner --> Audience : advisory recommendation
+note bottom of State
+  Projection/analytics consumers cannot write balances.
+  External effects use durable work + idempotent ports.
+end note
+note bottom of Projection
+  Receipt and local update commit together.
+  Duplicate event produces no repeated economic effect.
+  Cross-aggregate global order is not assumed.
+end note
+note bottom of DLQ
+  Named owner, age, escalation and schema resolution.
+  Replay is not financial provider resubmission.
+end note
+footer FR-CORE-05; FR-DATA-01–05; FR-OPS-03; AT-13/23/28/30.
+@enduml

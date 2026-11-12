@@ -1,0 +1,47 @@
+@startuml
+title UML - Immutable Finance observation and independent liquidity
+actor "Finance adjuster" as user
+participant "Workforce / BFF" as api
+participant "Finance reports" as finance
+participant "Core FinanceRecords" as core
+database "Core store" as cs
+database "Finance store" as fs
+participant "Synthetic liquidity" as provider
+participant "Controls / worker" as controls
+user -> api : save UTC period + stable request UUID
+api -> finance : verified workforce, Origin and CSRF
+finance -> controls : current Finance role / queue
+finance -> fs : lookup actor/client/key
+alt same request already saved
+ fs --> finance : original immutable artifact
+ finance --> api : original ID / controls / frozen membership
+else new observation
+ finance -> core : bounded period snapshot (read-only port)
+ core -> cs : REPEATABLE READ, READ ONLY
+ cs --> core : one snapshot: account stocks, commitments, journals and legs
+ core --> finance : immutable sources + Core as-of
+ finance -> fs : separate consistent GL / chart / receipt snapshot
+ fs --> finance : original export documents / proofs + Finance as-of
+note over finance,fs
+Both database read transactions close before HTTP.
+The source clocks remain explicit; no global atomicity is claimed.
+end note
+ finance -> provider : independently signed currency/scope + request nonce
+ provider --> finance : signed original cash evidence or missing / invalid / stale
+ finance -> finance : exact controls and source / date / mapping / receipt checks
+ finance -> finance : cash unavailable unless fresh; expected funds remain separate
+ finance -> fs : under request lock: immutable summary / members / proofs / issues / audit
+ finance -> controls : stable owned observation cases
+ controls -> fs : recover lost case assignment acknowledgments in bounded pages
+ finance --> api : snapshot URL / controls / digests / safe evidence
+end
+user -> api : reopen snapshot; page frozen source lineage
+api -> finance : current authority
+finance -> fs : original artifact, membership, captured proof archives
+finance -> finance : reconstruct digests; verify archived integrity\nderive current freshness without rewriting artifact
+finance --> user : original captured report + separate current evidence status
+note over finance,core
+Reporting has no reserve, release or booking command.
+Later observations never rewrite earlier reports.
+end note
+@enduml

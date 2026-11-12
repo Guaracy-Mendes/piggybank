@@ -1,0 +1,19 @@
+.cache/
+__pycache__/
+*.pyc
+/target/
+/node_modules/
+**/node_modules/
+**/dist/
+**/.expo/
+.env
+.local/
+playwright-report/
+test-results/
+# Cloud state and environment-specific deployment inputs
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+infra/cloud/*/backend.hcl
+infra/cloud/*/terraform.tfvars

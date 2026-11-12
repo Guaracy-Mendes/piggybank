@@ -1,0 +1,8 @@
+{
+  "realm": "customers",
+  "enabled": true,
+  "displayName": "Piggybank — synthetic customers",
+  "registrationAllowed": false,
+  "sslRequired": "none",
+  "accessTokenLifespan": 60
+}

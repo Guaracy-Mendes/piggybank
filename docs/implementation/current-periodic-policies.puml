@@ -1,0 +1,45 @@
+@startuml
+title UML sequence - approved periodic preview policies (no financial posting)
+autonumber
+actor "Finance maker" as maker
+actor "Independent canonical checker" as checker
+participant "Workforce portal / BFF" as web
+participant "Finance policy workflow" as finance
+database "Finance schema" as fdb
+participant "Controls" as controls
+participant "Core PolicyRegistry" as core
+database "Core schema" as cdb
+maker -> web : Submit synthetic policy, complete calendar, reason
+web -> finance : POST periodic-policies + stable actor/client/key
+finance -> controls : Current Finance maker role + REVIEW queue
+finance -> core : Validate exact immutable product and policy range
+finance -> fdb : Commit immutable intent, policy digest, expiry and audit
+finance --> web : Durable request ID (STAGED)
+loop Worker recovers at most 50 requests, wrapping past failures
+ finance -> controls : Register original proposal ID + exact policy digest
+ controls --> finance : Idempotent registration / unavailable / revoked
+ finance -> fdb : One-time registeredAt / safe reason / attempt
+end
+checker -> web : Review material policy, calendar, digest and expiry
+web -> finance : Approve exact digest
+finance -> controls : Current checker role + APPROVE queue,\nindependent canonical person, unexpired purpose
+controls --> finance : APPROVED
+maker -> web : Publish approved preview policy
+web -> finance : Publish original request and digest
+finance -> core : Narrow configuration publication
+core -> controls : Current maker/checker and details-bound proof
+core -> cdb : Guarded function: lock product/rule;\nverify canonical hash, approval, roles/queues,\nlive expiry after lock wait,\nproduct validity, sequential disjoint version
+cdb --> core : Immutable policy + original publication receipt
+note over finance,cdb
+A lost publication response is recovered from Core's immutable receipt.
+No money command or account enrollment is exposed by this capability.
+end note
+web -> finance : Read saved request after lost acknowledgment
+finance -> core : Read original policy ID and approval identity
+finance --> web : PUBLISHED + immutable receipt
+maker -> web : Supply period, evaluation clock and preview basis
+web -> finance : Calculate published policy preview (CSRF required)
+finance -> core : Read original policy and validate digest
+core --> finance : Exact fraction / rounded amount / rolled UTC cutoff
+finance --> web : PREVIEW_ONLY; operator-supplied basis; no journal
+@enduml

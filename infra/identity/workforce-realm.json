@@ -1,0 +1,8 @@
+{
+  "realm": "workforce",
+  "enabled": true,
+  "displayName": "Piggybank — synthetic workforce",
+  "registrationAllowed": false,
+  "sslRequired": "none",
+  "accessTokenLifespan": 60
+}

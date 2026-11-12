@@ -1,0 +1,6 @@
+[Unit]
+Description=Read-only Piggybank health and channel checks
+After=piggybank.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/piggybank status

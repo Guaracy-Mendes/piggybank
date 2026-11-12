@@ -1,0 +1,40 @@
+@startuml
+!include ../theme.puml
+title UML state — Application lifecycle, review and expiry (proposed)
+hide empty description
+[*] --> DRAFT : Stable application created
+DRAFT --> DRAFT : Save permitted fields / version check
+DRAFT --> SUBMITTED : Required data + consent complete
+SUBMITTED --> CHECKS_PENDING : Durable check requests created
+CHECKS_PENDING --> CHECKS_PENDING : Provider unavailable / bounded retry and aging
+CHECKS_PENDING --> INFORMATION_REQUIRED : More evidence needed
+CHECKS_PENDING --> REVIEW_REQUIRED : Potential match / unresolved risk
+INFORMATION_REQUIRED --> CHECKS_PENDING : Applicant supplies valid new evidence
+REVIEW_REQUIRED --> INFORMATION_REQUIRED : Authorized information request
+REVIEW_REQUIRED --> CHECKS_PENDING : Attributable disposition / rerun affected checks
+CHECKS_PENDING --> APPROVED : All distinct current checks cleared / party linked once
+CHECKS_PENDING --> DECLINED : Definitive policy decision with evidence
+REVIEW_REQUIRED --> DECLINED : Authorized adverse disposition
+DRAFT --> WITHDRAWN : Applicant withdraws
+INFORMATION_REQUIRED --> WITHDRAWN : Applicant withdraws
+CHECKS_PENDING --> WITHDRAWN : Permitted withdrawal / retain required evidence
+REVIEW_REQUIRED --> WITHDRAWN : Permitted withdrawal / control case retained
+DRAFT --> EXPIRED : Approved inactivity policy
+INFORMATION_REQUIRED --> EXPIRED : Approved evidence deadline
+APPROVED --> CHECKS_PENDING : Evidence expires/changes before downstream use
+DECLINED --> [*]
+WITHDRAWN --> [*]
+EXPIRED --> [*]
+note right of APPROVED
+  Approval is an application decision.
+  Account opening is a separate workflow.
+  Existing activated account history is not
+  rewritten when evidence later expires.
+end note
+note bottom of REVIEW_REQUIRED
+  Separate check outcomes are preserved.
+  Customer messages follow disclosure policy.
+  State transitions never erase investigation evidence.
+end note
+footer FR-ACQ-03; FR-ONB-01–06; AT-02–05. Timeouts/expiry intervals require approved DEC-06/11 policy.
+@enduml

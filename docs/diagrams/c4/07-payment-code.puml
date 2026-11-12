@@ -1,0 +1,108 @@
+@startuml
+!include ../theme.puml
+title C4 L4 — Proposed classes inside Payment lifecycle component (design only)
+hide empty members
+
+package "Payments engine / Payment lifecycle component" {
+  class PaymentApplicationService {
+    +create(command, actor): PaymentResult
+    +applyEvidence(paymentId, evidence): PaymentResult
+    +requestCancellation(paymentId, actor): PaymentResult
+    +recover(paymentId): PaymentResult
+  }
+  class PaymentInstruction <<aggregate root>> {
+    +id: PaymentId
+    +operationId: OperationId
+    +version: Integer
+    +state: PaymentState
+    +amount: Money
+    +providerInstructionRef: String [0..1]
+    +holdRef: HoldId [0..1]
+    +validateTransition(evidence): Transition
+    +recordBooking(bookingRef)
+  }
+  class Money <<value object>> {
+    +minorUnits: Integer
+    +currency: CurrencyCode
+    +validateScaleAndBounds()
+  }
+  class IdempotencyRecord {
+    +actorScope: String
+    +operationType: String
+    +key: String
+    +requestFingerprint: Digest
+    +operationId: OperationId
+    +assertEquivalent(command)
+  }
+  class Evidence <<immutable value>> {
+    +evidenceId: String
+    +providerRef: String
+    +kind: EvidenceKind
+    +amount: Money
+    +receivedAt: Instant
+    +verified: Boolean
+  }
+  enum PaymentState {
+    DRAFT
+    PENDING_APPROVAL
+    VALIDATING
+    REVIEW_REQUIRED
+    REJECTED
+    FUNDS_RESERVED
+    SUBMITTING
+    SUBMITTED
+    RECONCILING
+    SETTLED
+    FAILED
+    CANCELLED
+    RETURN_PENDING
+    RETURNED
+  }
+  interface PaymentRepository {
+    +load(id): PaymentInstruction
+    +commitVersionAndOutbox(expectedVersion, changes, events)
+    +findByOperation(operationId): PaymentInstruction
+  }
+  interface CoreFinancialPort {
+    +reserve(operationId, account, amount): HoldResult
+    +postOnce(operationId, postingKind, evidence): BookingResult
+    +releaseOnce(operationId, holdRef): HoldResult
+    +queryBusinessResult(operationId, postingKind): BookingResult
+  }
+  interface ControlDecisionPort {
+    +evaluate(actor, intentDigest): DecisionSet
+    +validateCurrent(decisionRefs): DecisionSet
+  }
+  interface SubmissionWorkPort {
+    +scheduleDurably(paymentId, providerKey)
+    +scheduleInquiry(paymentId, providerRef)
+  }
+  class PaymentResult {
+    +operationId: OperationId
+    +state: PaymentState
+    +statusReference: String
+  }
+}
+PaymentApplicationService --> PaymentRepository : load / commit optimistic version
+PaymentApplicationService --> ControlDecisionPort : validate required gates
+PaymentApplicationService --> CoreFinancialPort : idempotent financial command
+PaymentApplicationService --> SubmissionWorkPort : durable external-work intent
+PaymentApplicationService --> IdempotencyRecord : check key and fingerprint
+PaymentApplicationService --> PaymentInstruction : coordinate transition
+PaymentApplicationService --> PaymentResult : return durable status
+PaymentInstruction *-- Money
+PaymentInstruction --> PaymentState
+PaymentInstruction --> Evidence : accepts validated evidence
+note bottom of PaymentInstruction
+  SETTLED requires certified settlement evidence
+  AND successful core booking by unique business key.
+  Unknown outcomes retain financial restrictions.
+  Return creates a linked movement; no journal rewrite.
+end note
+note bottom of PaymentRepository
+  Local state and outgoing facts commit atomically.
+  Core/provider calls are separate side effects recovered
+  by stable operation identities, never a distributed commit.
+end note
+footer Proposed design-level L4; not existing source code. Parent: c4/05-payments-components.puml / Payment lifecycle.
+@enduml

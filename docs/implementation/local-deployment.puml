@@ -1,0 +1,24 @@
+@startuml
+title Implemented local runtime — foundation, synthetic environment
+node "Developer host / loopback" {
+  component "bank-api :4180\nAxum HTTP boundary" as api
+  component "bank-worker :4181\nBackground runtime" as worker
+  node "piggybank Compose project" {
+    database "PostgreSQL :15432\nPersistent project volume" as db
+    component "Keycloak :18280\nCustomer / workforce realms" as iam
+    queue "JetStream :14222\nPersistent project volume" as bus
+  }
+}
+api --> db : bounded readiness / owned domain stores
+worker --> db : bounded readiness / owned workflow stores
+api --> iam : discovery / future issuer integration
+worker --> iam : discovery
+api --> bus : bounded readiness
+worker --> bus : bounded readiness / future event work
+iam --> db : separate IAM database
+note bottom of worker
+Only runtime foundation exists at WP-01.
+Domain modules are implemented in later packages.
+Logical target C4 views are preserved separately.
+end note
+@enduml

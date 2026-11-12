@@ -1,0 +1,88 @@
+@startuml
+!include <C4/C4_Deployment>
+!include ../theme.puml
+LAYOUT_TOP_DOWN()
+title C4 deployment — Proposed provider-neutral production and recovery topology
+Deployment_Node(device, "Customer / staff devices", "Client execution environments") {
+  Container(mobile, "Mobile Banking", "Mobile client", "Customer channel")
+  Container(web, "Desktop Banking", "Browser client", "Customer channel")
+  Container(staff, "Staff workbench", "Restricted browser client", "Operational actions")
+}
+System_Ext(provider, "Payment / verification / journey providers", "External trust boundary")
+System_Ext(partner, "Partner applications / assisted networks", "Conditional R2 integrations")
+Deployment_Node(primary, "Primary region", "Residency / cloud TBD") {
+  Deployment_Node(edge, "Edge / DMZ", "Replicated ingress tier") {
+    Container(gateway, "API Gateway", "Gateway instances", "Routing, quotas and ingress identity")
+  }
+  Deployment_Node(app, "Application zone — failure zones A and B", "Each named application replicated where state allows") {
+    Container(experience, "Experience APIs", "Application instances", "Channel adaptation")
+    Container(openapi, "Open APIs", "Application instances; R2", "Partner boundary")
+    Container(iam, "IAM", "Application instances", "Identity / session / grants")
+    Container(journey, "Journey processes", "Application / worker instances", "Durable workflows")
+    Container(core, "Core banking", "Application instances", "Single fenced financial write authority")
+    Container(payments, "Payments engine", "Application / worker instances", "Submission, inquiry and evidence")
+    Container(controls, "Controls", "Application / worker instances", "Policy, cases and evidence")
+    Container(data, "Data & engagement", "Application / worker instances", "Queries and alerts")
+    Container(finance, "Finance", "Application / worker instances", "GL and reconciliation")
+    Container(documents, "Documentation", "Application / worker instances", "Records and retrieval")
+    Container(assisted, "Assisted adapters", "Integration instances; R2", "Branch, private banker, ATM and call center")
+  }
+  Deployment_Node(restricted, "Restricted data zone", "Multi-zone protection; exact products TBD") {
+    ContainerDb(financialStores, "Core / Payment / Journey stores", "Logically separate owned stores", "Synchronous acknowledged financial protection required for zone RPO 0")
+    ContainerDb(controlStores, "Control / IAM / Finance / Document metadata", "Logically separate owned stores", "Policy, audit, financial export and records metadata")
+    ContainerDb(projectionDb, "Operational projections", "Query store", "Rebuildable views; bounded staleness")
+    ContainerDb(objects, "Evidence / Document objects", "Separate encrypted namespaces", "Restricted versioned objects and retention policy")
+    ContainerQueue(bus, "Event Bus", "Replicated durable broker", "Ordered partitions and replay policy")
+  }
+  Deployment_Node(analyticZone, "Analytical data zone", "Separate purpose / access boundary") {
+    Container(analytics, "Enterprise data processing", "Processing instances", "Governed ingestion and lineage")
+    ContainerDb(assets, "Mastered Data / Warehouse / Big Data assets", "Distinct governed logical stores", "Purpose-tagged historical data; no spend authorization")
+  }
+  Deployment_Node(ops, "Platform operations zone", "Proposed supporting infrastructure") {
+    Deployment_Node(keys, "Key / secrets management", "Managed or self-hosted; TBD", "Workload identities, rotation and access audit")
+    Deployment_Node(observability, "Observability / alerting", "Telemetry platform; TBD", "Redacted traces, invariants, queue aging and on-call alerts")
+    Deployment_Node(backups, "Backup / restore control", "Encrypted immutable backups", "Restore evidence, retention and writer fencing")
+  }
+}
+Deployment_Node(recovery, "Recovery region", "Residency and isolation TBD") {
+  Deployment_Node(replica, "Asynchronous recovery replicas / backups", "Financial and critical control data", "Proposed regional RPO <= 5 min; reconcile acknowledged gaps before writes")
+  Deployment_Node(recoveryApps, "Recoverable application tier", "Infrastructure definitions / artifacts", "Proposed RTO <= 4 h after restore, fencing and reconciliation")
+}
+Rel(mobile, gateway, "Calls", "HTTPS")
+Rel(web, gateway, "Calls", "HTTPS")
+Rel(staff, gateway, "Calls with distinct staff audience", "HTTPS")
+Rel(partner, gateway, "Calls scoped integration routes")
+Rel(gateway, experience, "Routes channel traffic")
+Rel(gateway, openapi, "Routes partner traffic")
+Rel(gateway, iam, "Validates identity context")
+Rel(experience, journey, "Starts / queries workflows")
+Rel(experience, data, "Queries authorized data")
+Rel(openapi, journey, "Starts consented workflows")
+Rel(journey, core, "Requests authoritative changes")
+Rel(journey, controls, "Requests mandatory checks")
+Rel(journey, payments, "Creates instruction")
+Rel(payments, core, "Executes unique financial commands")
+Rel(payments, provider, "Uses allowlisted authenticated provider egress")
+Rel(controls, provider, "Uses allowlisted verification integrations")
+Rel(core, financialStores, "Commits authoritative financial data")
+Rel(payments, financialStores, "Commits owned payment state")
+Rel(journey, financialStores, "Commits owned workflow state")
+Rel(controls, controlStores, "Commits owned decisions / audit")
+Rel(iam, controlStores, "Commits owned identity / grant data")
+Rel(finance, controlStores, "Commits owned finance state")
+Rel(documents, controlStores, "Commits owned record metadata")
+Rel(documents, objects, "Writes versioned documents")
+Rel(controls, objects, "Writes restricted evidence")
+Rel(data, projectionDb, "Maintains projections")
+Rel(core, bus, "Publishes through outbox")
+Rel(payments, bus, "Publishes through outbox")
+Rel(bus, analytics, "Delivers governed events")
+Rel(analytics, assets, "Builds governed assets")
+Rel(financialStores, replica, "Replicates asynchronously across regions")
+Rel(controlStores, replica, "Replicates / backs up per policy")
+Rel(objects, backups, "Backs up versioned evidence / records")
+Rel(backups, replica, "Copies recovery artifacts")
+Rel(recoveryApps, replica, "Restores under fenced recovery runbook")
+SHOW_LEGEND()
+footer Store groups show deployment placement, not shared ownership/transactions. Per-container stores are enumerated in ARCHITECTURE.md.
+@enduml

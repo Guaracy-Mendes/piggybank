@@ -1,0 +1,63 @@
+@startuml
+!include ../theme.puml
+autonumber
+title UML sequence — Consistent statements, terms evidence and authorized retrieval (proposed)
+actor Customer
+boundary "Gateway / Experience APIs" as API
+participant Journey
+control Documentation
+participant Core
+participant Finance
+database "Document metadata / acceptance" as Metadata
+database "Versioned document objects" as Objects
+queue "Event Bus" as Bus
+control "Data / alerts" as Alerts
+
+group Exact terms acceptance during opening
+  Customer -> API : Accept published terms version for selected offer
+  API -> Journey : Authenticated actor, product and document version
+  Journey -> Documentation : Record acceptance once with actor/channel/time
+  Documentation -> Objects : Resolve immutable terms version and digest
+  Objects --> Documentation : Exact text / integrity reference
+  Documentation -> Metadata : Commit acceptance linked to party/application/account context
+  Documentation --> Journey : Durable acceptance ID and terms version
+end
+group Period statement production
+  Finance -> Documentation : Period readiness / completeness context
+  Documentation -> Core : Request consistent account/period snapshot
+  Core --> Documentation : Opening balance, period postings, closing balance, watermark
+  Documentation -> Documentation : Validate totals and snapshot/version identity
+  Documentation -> Objects : Write immutable versioned statement object + digest
+  Objects --> Documentation : Durable object reference
+  Documentation -> Metadata : Commit unique period/snapshot/version + outbox
+  Documentation -> Bus : statement.published via outbox
+  Bus -> Alerts : Deduplicated safe availability notification
+  Alerts --> Customer : New statement available; no sensitive attachment
+end
+Customer -> API : Request documentId
+API -> Documentation : Authenticated customer/resource context
+Documentation -> Metadata : Authorize relationship, document and retention access
+alt Authorized
+  Documentation -> Metadata : Record retrieval audit
+  Documentation --> API : Short-lived access reference / mediated download
+  API --> Customer : Authorized document retrieval
+  Customer -> Objects : Redeem bounded reference if direct download is enabled
+  Objects --> Customer : Exact version; reject expired reference
+else Unauthorized / expired
+  Documentation --> API : Non-disclosing denial
+  API --> Customer : No document content
+end
+opt Correction after publication
+  Documentation -> Core : Obtain corrected consistent snapshot
+  Documentation -> Objects : Write new version; preserve original
+  Documentation -> Metadata : Supersedes link + reason + new snapshot + outbox
+  Documentation -> Bus : document.superseded / statement.published
+end
+note over Metadata, Objects
+  Retention class and legal holds apply to both metadata and objects.
+  Object write preceding metadata commit may leave an unreferenced
+  object; recovery reconciles it without publishing incomplete records.
+  Repeated generation of the same snapshot is idempotent.
+end note
+footer FR-DOC-01–04; FR-FIN-04; AT-05/15/16. Access links cannot grant another customer's document rights.
+@enduml

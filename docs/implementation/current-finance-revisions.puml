@@ -1,0 +1,41 @@
+@startuml
+title UML - Exact-scope independent report revision and publication recovery
+actor "Finance maker" as maker
+actor "Independent Finance checker" as checker
+participant "Workforce / BFF" as api
+participant "Finance revisions" as finance
+database "Finance store" as fs
+participant "Controls" as controls
+participant "Finance recovery worker" as worker
+maker -> api : choose original + later report, exact reason, request UUID
+api -> finance : verified workforce / Origin / CSRF
+finance -> controls : current Finance maker role and REVIEW queue
+finance -> fs : verify both immutable artifacts, digests and retained source membership
+finance -> fs : commit sealed revision request / maker / expiry / audit intent
+finance --> maker : 202 accepted original request ID
+worker -> fs : bounded cursor page (advance past blocked makers)
+worker -> controls : same request ID; FINANCE_REPORT purpose\noriginal resource / exact digest / maker / expiry
+controls -x worker : registration acknowledgment lost after commit
+worker -> controls : repeat exact original registration
+controls --> worker : same proposal; no duplicate audit event
+worker -> fs : registration acknowledgment linked
+checker -> api : review both artifacts and confirm exact revision digest
+api -> finance : approval of original request
+finance -> controls : current approver / APPROVE queue; distinct canonical person
+controls -> controls : lock proposal and recheck authority / independence / expiry
+controls --> finance : exact original proposal approved
+maker -> api : publish same approved revision digest
+api -> finance : original canonical maker
+finance -> fs : lock original report / sealed request
+finance -> controls : exact approved purpose / resource / digest\ncurrent independent checker and queue
+finance -> fs : unique predecessor/successor receipt + audit atomically
+note over finance,fs
+Artifact/source times prevent cycles.
+Both original report documents and digests remain immutable.
+No Core money command is available to publication.
+end note
+finance -x maker : publication acknowledgment lost after commit
+maker -> finance : replay same request and digest with current authority
+finance -> fs : recover immutable original publication receipt
+finance --> maker : same reports / people / publication time
+@enduml

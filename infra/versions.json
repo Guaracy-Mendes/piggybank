@@ -1,0 +1,13 @@
+{
+  "profile": "synthetic-local",
+  "rust": "1.97.0",
+  "node": "24.15.0",
+  "npm": "11.12.1",
+  "images": {
+    "postgres": "docker.io/library/postgres:18.4-bookworm@sha256:c7d36c2369348f77fe9558f1970f7a0ea80ed55dfdf9500eb734159bd4df684d",
+    "keycloak": "quay.io/keycloak/keycloak:26.5.0@sha256:24896bcb632fa37445c8ca979886f5b2370651335b92ed72724369f8e5f56b4f",
+    "nats": "docker.io/library/nats:2.12.0-alpine@sha256:72100bb9c3af46712a7ef13ab91a2245898de9c9b3269c515331bf61fe0aa516"
+  },
+  "dependency_locks": ["Cargo.lock", "package-lock.json"],
+  "note": "Pinned local development inputs; production qualification is a separate work package."
+}

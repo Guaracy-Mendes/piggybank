@@ -1,0 +1,68 @@
+@startuml
+!include ../theme.puml
+autonumber
+title UML sequence — Onboarding, pending checks and independent review (proposed)
+actor Applicant
+boundary "Gateway / Experience APIs" as API
+control "Journey / Onboarding" as Journey
+database "Journey store + outbox" as DB
+control Controls
+participant "Identity / screening providers" as Provider
+queue "Event Bus" as Bus
+actor "Authorized reviewer" as Reviewer
+participant Core
+
+Applicant -> API : Submit application + evidence refs + idempotency key
+API -> Journey : Authenticated actor / application ownership context
+Journey -> Journey : Validate required data, consent and offer version
+Journey -> DB : Commit submission + pending-check work + outbox
+DB --> Journey : Durable application / operation ID
+Journey --> API : Accepted with current state and status reference
+API --> Applicant : 202 + stable application / operation IDs
+Journey -> Controls : Request distinct identity, screening and risk checks
+Controls -> Provider : Stable provider request IDs + minimized required data
+alt Provider unavailable or response uncertain
+  Provider --> Controls : Timeout / pending
+  Controls -> Controls : Persist pending decision + owned retry/escalation
+  note over Controls, Journey : No approval on timeout; application remains CHECKS_PENDING.
+else Authenticated result received
+  Provider --> Controls : Evidence + provider request/result IDs
+  Controls -> Controls : Verify, deduplicate, validate expiry/policy; persist
+end
+opt Later authenticated provider callback
+  Provider -> Controls : Delayed/repeated evidence
+  Controls -> Controls : Persist receipt; reject stale/conflicting result
+  Controls --> Provider : Acknowledge durable receipt
+end
+alt Blocking hit, uncertainty or information needed
+  Controls -> Controls : Create restricted case + audit
+  Controls -> Bus : Publish review-required / information-needed fact
+  Bus -> Journey : Deduplicated state continuation
+  Reviewer -> Controls : Review evidence / request information / propose decision
+  Controls -> Controls : Verify reviewer, maker/checker and reason
+  opt More applicant information required
+    Journey --> Applicant : Safe next-action message via channel
+    Applicant -> API : Supply requested evidence
+    API -> Journey : Versioned application update
+    Journey -> Controls : Reevaluate affected checks
+  end
+  Reviewer -> Controls : Authorized attributable disposition
+else All distinct checks cleared
+  Controls -> Controls : Record current check/policy evidence
+end
+Controls -> Bus : application check decision facts via outbox
+Bus -> Journey : Deliver approved / declined outcome
+Journey -> Journey : Revalidate all gates; compare aggregate version
+alt Approved with current evidence
+  Journey -> Core : Create/link party once using application business key
+  Core --> Journey : Stable authoritative party ID
+  Journey -> DB : Commit APPROVED + party link + outbox
+else Declined or still blocked
+  Journey -> DB : Commit DECLINED or keep blocking state + reason refs
+end
+Applicant -> API : Read application status
+API -> Journey : Authorized query
+Journey --> Applicant : Actual state + permitted explanation / next action via API
+note over Journey, Core : Application approval is not account activation. No automatic merge by email/name.
+footer FR-ONB-01–06, FR-CTRL-01–03; AT-02–05.
+@enduml

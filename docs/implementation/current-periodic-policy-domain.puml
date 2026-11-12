@@ -1,0 +1,86 @@
+@startuml
+title UML - immutable periodic preview policy and exact calculation domain
+hide methods
+skinparam classAttributeIconSize 0
+class PolicyRequest <<Finance immutable intent>> {
+ id : UUID
+ actor / client / requestKey : scope
+ policyDigest : SHA256
+ reason : 4..240 characters
+ makerPerson : canonical UUID
+ expiresAt : UTC (24 hours)
+ registeredAt : one-time UTC?
+}
+class ControlsApproval <<PERIODIC_POLICY>> {
+ resourceId : exact policy UUID
+ digest : whole policy + calendar
+ makerPerson / checkerPerson : independent
+ state : PENDING / APPROVED
+ expiry : UTC
+}
+class PeriodicPolicy <<Core immutable configuration>> {
+ id / productVersionId : UUID
+ code / version : rule identity
+ label : SYNTHETIC
+ activation : PREVIEW_ONLY
+ effectiveFrom / effectiveUntil : [date,date)
+ horizon : 1..366 days
+}
+class CalendarSnapshot <<policy scoped>> {
+ id / code / version : snapshot labels
+ timezone : UTC
+ coverageFrom / coverageUntil : finite [date,date)
+ businessWeekdays : sorted unique ISO 1..7
+ holidays : sorted unique covered dates
+ cutoff : exact HH:MM:SS
+ roll : FOLLOWING_14_DAYS
+}
+abstract class Calculation
+class MonthlyFixedFee {
+ amount : positive signed-i64 Money string
+ cadence : complete calendar month
+ proration : none
+}
+class DailyCreditAccrual {
+ annualBasisPoints : 1..10000
+ dayCount : ACT_365_FIXED
+ basis : NONNEGATIVE_CLOSING_BOOKED
+ rounding : HALF_UP_EACH_DAY
+}
+class PublishedPolicy <<Core receipt>> {
+ policyDigest / proposalId : original scope
+ makerPerson / checkerPerson : canonical UUID
+ publishedAt : UTC
+}
+class PreviewInput {
+ periodStart : business date
+ closingBooked : operator Money? (string)
+ evaluatedAt : supplied UTC instant
+}
+class PreviewResult <<computed, not persisted>> {
+ periodStart / periodEnd : [date,date)
+ exactNumerator / exactDenominator : i128 strings
+ amount : signed-i64 Money string
+ dueAt : rolled UTC cutoff
+ isDue : evaluatedAt >= dueAt
+ basisSource : OPERATOR_SUPPLIED_PREVIEW_ONLY
+ policyDigest : original SHA256
+}
+class ProductVersion <<existing immutable V1>>
+PolicyRequest "1" *-- "1" PeriodicPolicy
+PolicyRequest "1" -- "0..1" ControlsApproval : original proposal ID
+PeriodicPolicy "*" --> "1" ProductVersion : bounded validity
+PeriodicPolicy "1" *-- "1" CalendarSnapshot
+PeriodicPolicy "1" *-- "1" Calculation
+Calculation <|-- MonthlyFixedFee
+Calculation <|-- DailyCreditAccrual
+PublishedPolicy "1" --> "1" PeriodicPolicy
+PreviewInput --> PreviewResult
+PeriodicPolicy --> PreviewResult : exact original rule
+note bottom of PeriodicPolicy
+Disjoint rule intervals within each product version.
+Version 1 first; later versions increment by one and start
+on/after the prior end and the current UTC date.
+No customer enrollment or financial posting command.
+end note
+@enduml

@@ -1,0 +1,30 @@
+[package]
+name = "bank-worker"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+bank-platform.workspace = true
+bank-controls.workspace = true
+bank-journeys.workspace = true
+bank-core.workspace = true
+bank-payments.workspace = true
+bank-finance.workspace = true
+bank-documents.workspace = true
+bank-data.workspace = true
+serde.workspace = true
+chrono.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+async-nats.workspace = true
+futures-util.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,31 @@
+#!/bin/bash
+export BANK_DATA_DEVICE=/dev/disk/by-id/google-piggybank-data
+${bootstrap}
+if [[ -f /srv/piggybank/state/deployed-release-sha256 ]]; then
+  # A replacement boot disk has an empty Docker store; recover the sealed images.
+  python3 - <<'RECOVER'
+import hashlib, json
+from pathlib import Path
+root=Path('/srv/piggybank/current')
+manifest=json.loads((root/'manifest.json').read_text())
+assert hashlib.file_digest((root/'images.tar').open('rb'),'sha256').hexdigest()==manifest['imagesSha256']
+RECOVER
+  docker load --input /srv/piggybank/current/images.tar > /dev/null
+  bash /srv/piggybank/current/deployment/activate-host.sh
+  systemctl start piggybank
+  exit 0
+fi
+# Metadata credentials stay inside this process; the VM can only read artifacts.
+python3 - '${bucket}' '${object}' <<'PY'
+import json, pathlib, shutil, sys, urllib.parse, urllib.request
+request=urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',headers={'Metadata-Flavor':'Google'})
+with urllib.request.urlopen(request,timeout=10) as response: token=json.load(response)['access_token']
+bucket,key=sys.argv[1:]
+url='https://storage.googleapis.com/storage/v1/b/'+urllib.parse.quote(bucket,safe='')+'/o/'+urllib.parse.quote(key,safe='')+'?alt=media'
+request=urllib.request.Request(url,headers={'Authorization':'Bearer '+token})
+with urllib.request.urlopen(request,timeout=600) as response, open('/opt/piggybank-bootstrap/release.tgz','wb') as target: shutil.copyfileobj(response,target)
+PY
+# The digest is trusted deployment input; never execute an unchecked artifact.
+echo '${release_sha256}  /opt/piggybank-bootstrap/release.tgz' | sha256sum --check --status
+tar -xzf /opt/piggybank-bootstrap/release.tgz -C /opt/piggybank-bootstrap deployment/install-release.sh
+bash /opt/piggybank-bootstrap/deployment/install-release.sh /opt/piggybank-bootstrap/release.tgz '${release_sha256}'

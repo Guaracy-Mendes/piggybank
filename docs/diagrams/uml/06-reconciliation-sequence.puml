@@ -1,0 +1,64 @@
+@startuml
+!include ../theme.puml
+autonumber
+title UML sequence — Unknown outcome recovery, settlement matching and GL (proposed)
+control "Payment reconciliation worker" as Worker
+database "Payment store / evidence inbox" as DB
+participant "Payment provider" as Provider
+participant Core
+control Finance
+database "Finance store / GL references" as FDB
+participant "General Ledger integration" as GL
+control "Controls / cases" as Cases
+actor "Operator / independent checker" as Operator
+
+Worker -> DB : Claim RECONCILING instruction / aged pending item
+DB --> Worker : Original operation, hold and provider reference/key
+Worker -> Provider : Inquire original instruction and settlement evidence
+alt Provider remains unavailable or nonfinal
+  Provider --> Worker : Unknown / pending
+  Worker -> DB : Keep restriction; schedule bounded inquiry and escalation
+  Worker -> Cases : Create/update owned aged exception
+else Provider proves non-execution / definitive failure
+  Provider --> Worker : Authenticated non-execution evidence
+  Worker -> DB : Persist verified evidence with receipt identity
+  Worker -> Core : Release original hold once by operation key
+  Core --> Worker : Committed/prior release result
+  Worker -> DB : FAILED or confirmed CANCELLED + outbox
+else Provider confirms final settlement
+  Provider --> Worker : Evidence(ref, amount, currency, business date, finality)
+  Worker -> DB : Persist/deduplicate immutable evidence
+  Worker -> Worker : Validate reference, amount, currency and rail policy
+  alt Evidence matches instruction
+    Worker -> Core : Query/post once(original operation, OUTGOING_SETTLEMENT)
+    Core -> Core : Commit balanced entries + consume hold atomically if absent
+    Core --> Worker : Same unique journal batch
+    Worker -> DB : Recover SETTLED + evidence/booking refs + outbox
+    Worker -> Finance : Reconciliation inputs with stable journal/evidence refs
+    Finance -> Core : Read authoritative journal control totals
+    Core --> Finance : Snapshot totals by currency/business date
+    Finance -> FDB : Match instruction / settlement / journal; persist mapping version
+    Finance -> GL : Export balanced batch with unique source references
+    GL --> Finance : Acknowledgement / prior equivalent result
+    Finance -> FDB : Persist GL acknowledgement and completeness result
+  else Missing/duplicate/amount/currency/fee/timing mismatch
+    Worker -> Cases : Create classified break with immutable evidence refs
+    Cases -> Operator : Assign severity, age, next action and authority
+    Operator -> Cases : Investigate; propose policy-bound resolution
+    Cases -> Cases : Verify independent checker for controlled adjustment
+    opt Approved financial correction required
+      Cases -> Core : New unique correction operation linked to original batch
+      Core -> Core : Commit new balanced batch; preserve original
+      Core --> Cases : Correction journal reference
+    end
+    Cases --> Worker : Evidence-backed disposition; retry match or keep open
+  end
+end
+note over Worker, Core
+  Lost core acknowledgement: query the same business key.
+  Unknown provider status: no new payment or unsafe hold release.
+  A later return uses a linked movement and its own unique posting.
+end note
+note over Finance, GL : Duplicate file/export ingestion must not double-book. Late evidence versions stay attributable.
+footer FR-PAY-06/07; FR-FIN-01–04; FR-EXT-03; AT-08/10/12/24.
+@enduml

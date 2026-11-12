@@ -1,0 +1,25 @@
+[package]
+name = "bank-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+futures-util.workspace = true
+bank-platform.workspace = true
+bank-rails.workspace = true
+bank-controls.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+bank-platform = { workspace = true, features = ["test-support"] }
+tokio.workspace = true
+
+[lints]
+workspace = true

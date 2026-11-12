@@ -1,0 +1,40 @@
+{
+  "policy": {
+    "id": "520d978f-c78d-4d2e-83b8-fb721ca1cb3d",
+    "code": "DAILY_INTEREST_PREVIEW",
+    "version": 1,
+    "label": "SYNTHETIC",
+    "activation": "PREVIEW_ONLY",
+    "productVersionId": "4f1a780b-3e31-48ef-a294-000000000001",
+    "effectiveFrom": "2028-02-01",
+    "effectiveUntil": "2028-03-01",
+    "calendar": {
+      "id": "4bb77cf0-8244-4cee-a53b-e036f6a5bb8c",
+      "code": "SYNTHETIC_UTC",
+      "version": 1,
+      "timezone": "UTC",
+      "coverageFrom": "2028-02-01",
+      "coverageUntil": "2028-03-16",
+      "businessWeekdays": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "holidays": [
+        "2028-03-01"
+      ],
+      "cutoff": "17:00:00",
+      "rollConvention": "FOLLOWING_14_DAYS"
+    },
+    "calculation": {
+      "kind": "DAILY_CREDIT_ACCRUAL",
+      "annualBasisPoints": 365,
+      "dayCount": "ACT_365_FIXED",
+      "basis": "NONNEGATIVE_CLOSING_BOOKED",
+      "rounding": "HALF_UP_EACH_DAY"
+    }
+  },
+  "reason": "Evaluate the explicit synthetic calendar and exact calculation; keep customer posting disabled"
+}

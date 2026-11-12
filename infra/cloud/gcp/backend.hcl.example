@@ -1,0 +1,2 @@
+bucket = "your-unique-piggybank-tfstate"
+prefix = "piggybank/evaluation"

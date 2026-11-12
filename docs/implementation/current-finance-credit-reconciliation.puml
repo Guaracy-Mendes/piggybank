@@ -1,0 +1,54 @@
+@startuml
+title UML - immutable incoming and return reconciliation, suspense and ownership
+actor "Current Finance adjuster" as maker
+participant "Finance BFF / API" as api
+participant "Frozen parent report" as report
+participant "Independent credit file provider" as provider
+participant "Core read-only credit port" as core
+participant "Payments read-only receipt port" as payments
+database "Finance credit observations" as store
+participant "Recovery worker" as worker
+participant "Controls Finance cases" as cases
+maker -> api : capture(reportId, fileId, actor/client/key)
+api -> api : current role / REVIEW + CSRF / origin
+api -> store : exact prior request lookup
+alt saved original request
+ store --> api : original artifact and immutable digest
+else new observation
+ api -> report : verify sealed journal / GL archives
+ report --> api : original membership, source clock and digest
+ api -> provider : signed CREDIT_RECONCILIATION_V1 + nonce
+ provider --> api : signed request binding + independent immutable file
+ api -> api : bounds / authentication / period checks
+ api -> core : discover movement + suspense / allocation / original receipts
+ core --> api : repeatable-read facts + lifetime returned principal + clock
+ api -> payments : capture signed receipt / identity / workflow
+ payments --> api : separate repeatable-read source and clock
+ api -> core : confirm explicit workflow and file movement identities
+ core --> api : committed native facts, original finality and cap
+ loop every bank / provider / journal identity in union
+  api -> api : verify movement signature / scope / amount / value date
+  api -> api : return original settlement / payer / cumulative principal cap
+  api -> api : exact suspense and allocation journal legs / original links
+  api -> api : independent file claims + captured GL / actual booking dates
+ end
+ api -> store : lock actor/client/key; recheck authority
+ api -> store : commit summary / private proofs / stable rows / issues + audit
+end
+api --> maker : saved scope / controls / completeness / digest
+worker -> store : next 50 unowned issues, wrapping cursor
+loop continue after failed scope
+ worker -> cases : stable issue origin, Finance queue
+ cases --> worker : original case ID after lost ACK
+ worker -> store : one-time case link
+end
+note over api,core
+MATCHED requires native customer allocation plus exact captured evidence.
+Funds in suspense remain PARTIAL and owned.
+A provider over-cap return claim cannot become bank money.
+Separate source clocks; no global atomic snapshot claim.
+end note
+maker -> api : reopen / stable ordinal pages
+api -> api : verify hashes, archived HMAC, parent and membership
+api --> maker : safe retained lineage + current case links
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+!include <C4/C4_Deployment>
+LAYOUT_TOP_DOWN()
+title GCP - implemented synthetic evaluation deployment
+Person(operator,"Trusted operator","Separate browser profiles; synthetic identities")
+Deployment_Node(workstation,"Operator workstation","Loopback only") {
+ Container(browser,"Customer / workforce browser","HTTP 127.0.0.1","4300 / 4301; issuer 18280; BFF 4180")
+ Container(tunnel,"gcloud + SSH","IAP + OS Login","Five default forwards; optional provider 4182")
+}
+Deployment_Node(gcp,"GCP evaluation project","Dedicated IAM / budget") {
+ Container(artifacts,"Private versioned GCS","Release archive + stopped backups","SHA256 checked; scoped backup creation")
+ Container(state,"Private versioned GCS backend","Terraform","Separate bucket and state locking")
+ Container(iap,"IAP TCP forwarding","Identity access","Only SSH port 22 enters VPC")
+ Deployment_Node(vpc,"Custom VPC / subnet","No external VM address") {
+  Container(nat,"Cloud NAT","Outbound","Package and image repositories")
+  Deployment_Node(vm,"Ubuntu 24.04 amd64 VM","Single host; no HA") {
+   Container(web,"Compiled React portals","NGINX","Loopback 4300 / 4301; channel filters")
+   Container(api,"API / worker","Rust containers","Loopback 4180 / 4181; separate module DB roles")
+   Container(provider,"Synthetic provider","Rust container","Loopback only; signed controls / rails / GL / cash / clearing files")
+   Container(deps,"PostgreSQL + Keycloak + NATS","Pinned containers","Loopback; owned schemas and durable transport")
+   ContainerDb(disk,"Protected encrypted Persistent Disk","/srv/piggybank","PG / broker / evidence / original keys; releases and backups")
+  }
+ }
+}
+Rel(operator,browser,"Uses")
+Rel(browser,tunnel,"Fixed loopback endpoints")
+Rel(tunnel,iap,"Authenticated encrypted forwarding")
+Rel(iap,vm,"SSH","IAP source range only")
+Rel(tunnel,web,"Forwards two channels")
+Rel(web,api,"Scoped same-channel proxy")
+Rel(api,deps,"OIDC / module data / durable events")
+Rel(api,provider,"Original-identity signed inquiry")
+Rel(tunnel,provider,"Optional trusted-operator fixture forward on 4182")
+Rel(vm,artifacts,"Read verified release; create owned backups","VM identity")
+Rel(vm,disk,"Bind-mounted durable state")
+Rel(vm,nat,"Outbound installation traffic")
+Rel(operator,state,"Reviewed Terraform with separate provisioner identity")
+@enduml

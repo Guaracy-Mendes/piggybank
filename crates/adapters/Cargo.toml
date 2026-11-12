@@ -1,0 +1,20 @@
+[package]
+name = "bank-adapters"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+[dependencies]
+anyhow.workspace = true
+bank-controls.workspace = true
+libc.workspace = true
+uuid.workspace = true
+[dev-dependencies]
+bank-platform = { workspace = true, features = ["test-support"] }
+serde_json.workspace = true
+sha2.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+url.workspace = true
+[lints]
+workspace = true
