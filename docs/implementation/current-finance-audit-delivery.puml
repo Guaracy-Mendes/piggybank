@@ -1,0 +1,43 @@
+@startuml
+title UML - durable Finance audit progress and native receipt recovery
+participant "Finance domain command" as Domain
+database "Finance immutable source / cursor / attempts" as Finance
+control "Worker audit relay" as Relay
+participant "Controls AuditLog" as Controls
+database "Native Controls audit events / chain" as Native
+actor "Finance operator" as Operator
+Domain -> Finance : Commit original ID / actor / occurrence time / payload
+Relay -> Finance : Next <= 50 undelivered IDs after cursor
+loop Bounded pass; per-event timeout
+ Relay -> Finance : Commit cursor at current attempted identity
+ Relay -> Relay : Validate exact original record / representation
+ alt Invalid or noncanonical original
+  Relay -> Finance : Retain safe failure attempt; keep original pending
+ else Valid original
+  Relay -> Finance : Native confirmation inquiry by original ID
+  Finance -> Native : Verify ID / finance stream / exact payload / native digest
+  alt Original native event already accepted
+   Finance -> Finance : Atomic immutable receipt + delivery acknowledgment
+  else Native receipt not observed
+   Relay -> Controls : Append original ID / stream / exact payload
+   Controls -> Native : Idempotent append; stream lock / original chain
+   Native --> Controls : Original accepted digest or unknown transport outcome
+   Relay -> Finance : Independent native confirmation inquiry
+   Finance -> Native : Verify original scope and digest; never trust caller flag
+   opt Original event confirmed
+    Finance -> Finance : Immutable receipt + acknowledgment in one transaction
+   end
+  end
+  Relay -> Finance : Retain safe attempt; original source digest
+ end
+end
+Relay -> Finance : Empty page resets cursor; failures retried after wrap
+Operator -> Finance : Workforce GET list / saved event URL
+Finance -> Native : Verify receipt against original native event
+Finance --> Operator : Safe IDs / codes / digest / native receipt; no raw payload
+note over Domain,Native
+A failed or uncertain audit attempt does not determine financial outcome.
+No original record is deleted, rewritten or marked delivered without native evidence.
+No transaction spans Controls append and Finance acknowledgment.
+end note
+@enduml

@@ -84,7 +84,7 @@ def verify_clearing_provider(key, schema):
             assert signed['body']['request']==query and signed['body']['manifest']==sealed
             group_count+=1
     if schema>=46:
-        paths=['credit-reconciliations']+(['reconciliation-groups'] if schema>=47 else [])+(['periodic-policies'] if schema>=48 else [])+(['corrections'] if schema>=50 else [])+(['periodic-bases'] if schema>=51 else [])
+        paths=['credit-reconciliations']+(['reconciliation-groups'] if schema>=47 else [])+(['periodic-policies'] if schema>=48 else [])+(['corrections'] if schema>=50 else [])+(['periodic-bases'] if schema>=51 else [])+(['audit-delivery'] if schema>=52 else [])
         for port,expected,path in [(port,expected,path) for path in paths for port,expected in [(24300,403),(24301,401)]]:
             try:
                 with urllib.request.urlopen(f'http://127.0.0.1:{port}/api/v1/staff/finance/{path}',timeout=5) as response:status=response.status
@@ -115,6 +115,33 @@ def verify_periodic_portal(schema):
     if schema>=51:
         assert all(label in bundle for label in [b'Native ledger basis',b'Capture fresh observation',b'Native source facts',b'OPEN_PERIOD_PROVISIONAL',b'Current booked at capture',b'Observed closing booked'])
         print('Actual archived workforce bundle contains native basis capture, provisional status and distinct historical/current positions.',flush=True)
+    if schema>=52:
+        assert all(label in bundle for label in [b'Audit delivery',b'Native audit receipt',b'Original record digest',b'Controls chain digest',b'APPEND_UNCONFIRMED'])
+        print('Actual archived workforce bundle contains safe audit delivery inquiry and native Controls receipt evidence.',flush=True)
+
+def verify_disclosure_feature(manifest):
+    if 'customer-periodic-disclosures-v1' not in manifest.get('features',[]):return
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self,*args,**kwargs):return None
+    opener=urllib.request.build_opener(NoRedirect())
+    with opener.open('http://127.0.0.1:24180/openapi.json',timeout=5) as response:body=response.read(2097153)
+    assert len(body)<=2097152
+    paths=json.loads(body)['paths']
+    for path in ['/api/v1/accounts/{id}/periodic-disclosures','/api/v1/accounts/{id}/periodic-disclosures/{policyId}']:
+        assert set(paths[path])=={'get'}
+    with opener.open('http://127.0.0.1:24300/',timeout=5) as response:page=response.read(65537)
+    script=re.search(rb'<script\b[^>]*\bsrc="([^"]+)"',page);assert script
+    path=script.group(1).decode('ascii');assert path.startswith('/assets/') and '..' not in path and '?' not in path
+    with opener.open('http://127.0.0.1:24300'+path,timeout=5) as response:bundle=response.read(1048577)
+    assert len(bundle)<=1048576
+    assert all(label in bundle for label in [b'Periodic rule previews',b'Version and verification',b'Disclosure digest',b'Upcoming preview'])
+    account=str(uuid.uuid4())
+    for port,expected in [(24300,401),(24301,403)]:
+        try:
+            with opener.open(f'http://127.0.0.1:{port}/api/v1/accounts/{account}/periodic-disclosures',timeout=5) as response:status=response.status
+        except urllib.error.HTTPError as error:status=error.code;error.close()
+        assert status==expected
+    print('Actual archived customer periodic disclosure feature passed OpenAPI, bundle and channel guards.',flush=True)
 
 with tempfile.TemporaryDirectory(prefix='cloud-runtime-',dir=ROOT/'.local') as directory:
     directory=Path(directory)
@@ -188,6 +215,7 @@ with tempfile.TemporaryDirectory(prefix='cloud-runtime-',dir=ROOT/'.local') as d
         subprocess.run(['python3',str(deployment/'smoke.py')],env={**os.environ,'BANK_CLOUD_SMOKE_PORT_OFFSET':'20000'},check=True)
         verify_clearing_provider(app['BANK_FINANCE_SIGNING_KEY'],manifest['schemaVersion'])
         verify_periodic_portal(manifest['schemaVersion'])
+        verify_disclosure_feature(manifest)
         if manifest['schemaVersion']>=50:
             usage=subprocess.run(['podman','run','--rm','--pod',name,'--env-file',str(directory/'state/runtime.env'),f'piggybank-runtime:{args.release}','bank-fund'],capture_output=True,text=True)
             assert usage.returncode==1 and 'Usage: bank-fund' in usage.stderr

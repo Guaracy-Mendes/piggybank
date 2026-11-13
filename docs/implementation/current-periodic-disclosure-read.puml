@@ -1,0 +1,30 @@
+@startuml
+title UML - owner-scoped immutable periodic disclosure inquiry
+actor Customer
+boundary "Customer Accounts view" as UI
+control "Customer BFF / API" as API
+participant "Controls authority" as Controls
+participant "Core owner/product + policy reader" as Core
+control "Disclosure V1 renderer" as Renderer
+Customer -> UI : Open owned account / saved rule URL
+UI -> API : GET list or exact native policy UUID
+API -> API : Authenticate customer trust
+API -> Controls : Current canonical ReadAccount authority
+Controls --> API : Current owner permission or hidden resource
+API -> Core : Recheck active OWNER relation and product
+alt List inquiry
+ Core -> Core : Select current/upcoming published rules\nLimit 101; refuse over 100 without truncation
+else Saved native version
+ Core -> Core : Resolve exact published rule including ended versions\nRequire same account product
+end
+Core -> Core : Verify original native policy / field scope / digest
+Core -> Renderer : Complete approved policy/calendar + owned account UUID
+Renderer -> Renderer : Exact V1 text, no floating point\nHash account + policy + policy digest + title + text
+Renderer --> API : Material + stable digest\nObservation clock / availability outside hash
+API --> UI : Safe disclosure; no approval people or operator notes
+UI --> Customer : Read material / compare version / retain URL and digest
+note over Customer,Renderer
+Read-only information. No acceptance, enrollment, activation or financial posting.
+A later version never rewrites an original disclosure.
+end note
+@enduml

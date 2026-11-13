@@ -1128,7 +1128,7 @@ Verification required:
 
 - AT-12/24/25, business-calendar cut-off, repeated accrual job and GL timeout/replay cases.
 
-**Evidence entries recorded:** 5.
+**Evidence entries recorded:** 8.
 
 ## WP-25 — Implement statements, secure retrieval, retention and legal holds
 

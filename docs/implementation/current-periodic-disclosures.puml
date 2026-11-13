@@ -1,0 +1,24 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - customer periodic rule disclosures (read-only preview information)
+Container_Ext(customer,"Account owner","Customer React portal","Exact text / current-upcoming labels / saved version / verification digest")
+Container_Boundary(api,"bank-api") {
+ Component(http,"Customer disclosure HTTP boundary","Axum / BFF","Customer trust; owner scope; GET only")
+ Component(controls,"Controls entitlements","bank-controls","Current canonical person; ReadAccount authorization")
+ Component(core,"Native account/product scope","bank-core","Current active OWNER relation; exact registered product")
+ Component(registry,"Immutable published policy reader","bank-core PolicyRegistry","Verify original native policy and digest; hide unpublished/wrong-product material")
+ Component(renderer,"Disclosure V1 renderer","bank-core","Full approved policy/calendar + account + exact text; stable SHA256; no balance / consent / money command")
+}
+ContainerDb_Ext(db,"PostgreSQL","Owned module schemas","Existing policy, product and account facts; no disclosure migration")
+Rel(customer,http,"Read list or saved account/native-policy URL")
+Rel(http,controls,"Authenticated customer and current account-read authority")
+Rel(http,core,"Recheck current owner/product relationship")
+Rel(core,registry,"At most 100 current/upcoming rules; reject 101; direct ended-version inquiry")
+Rel(registry,renderer,"Verified immutable policy/digest; no private approval metadata")
+Rel(renderer,customer,"Versioned material/digest; observation clock outside hash")
+Rel(core,db,"Core principal; owner/product lookup")
+Rel(registry,db,"Core principal; immutable policy reads")
+Rel(controls,db,"Controls principal; current authorization and access audit")
+SHOW_LEGEND()
+@enduml

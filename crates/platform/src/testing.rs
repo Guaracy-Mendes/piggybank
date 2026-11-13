@@ -1,6 +1,6 @@
 //! Explicit disposable PostgreSQL support. Required integration tests never skip.
 use crate::database::{MIGRATOR, Module, connect};
-use anyhow::Result;
+use anyhow::{Result, ensure};
 use sqlx::PgPool;
 
 pub struct TestDatabase {
@@ -11,6 +11,21 @@ pub struct TestDatabase {
 }
 impl TestDatabase {
     pub async fn new() -> Result<Self> {
+        Self::at_version(
+            MIGRATOR
+                .iter()
+                .map(|m| m.version)
+                .max()
+                .expect("Embedded migrations required"),
+        )
+        .await
+    }
+    /// Create an isolated database at an exact historical version for forward-upgrade tests.
+    pub async fn at_version(version: i64) -> Result<Self> {
+        ensure!(
+            MIGRATOR.iter().any(|m| m.version == version),
+            "Known embedded migration version required"
+        );
         let configured = std::env::var("BANK_TEST_ADMIN_URL").expect(
             "Real PostgreSQL integration needs BANK_TEST_ADMIN_URL; use make test-integration",
         );
@@ -28,13 +43,25 @@ impl TestDatabase {
         url.set_username("bank_migrator").unwrap();
         url.set_password(Some("synthetic-local-only")).unwrap();
         let migrator = connect(url.as_str()).await?;
-        MIGRATOR.run(&migrator).await?;
-        Ok(Self {
+        let selected = sqlx::migrate::Migrator::with_migrations(
+            MIGRATOR
+                .iter()
+                .filter(|m| m.version <= version)
+                .cloned()
+                .collect(),
+        );
+        let result = selected.run(&migrator).await;
+        let db = Self {
             migrator,
             admin,
             base,
             name,
-        })
+        };
+        if let Err(error) = result {
+            db.close().await?;
+            return Err(error.into());
+        }
+        Ok(db)
     }
     pub fn module_url(&self, module: Module) -> String {
         let mut url = self.base.clone();

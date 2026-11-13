@@ -23,7 +23,7 @@ export AWS_DEFAULT_REGION="$AWS_REGION"
 export AWS_AVAILABILITY_ZONE=us-east-1a
 export STATE_BUCKET=YOUR_GLOBALLY_UNIQUE_PIGGYBANK_TFSTATE
 export ARTIFACT_BUCKET=YOUR_GLOBALLY_UNIQUE_PIGGYBANK_ARTIFACTS
-export RELEASE=cloud-20261111-01
+export RELEASE=cloud-20261112-02
 aws sts get-caller-identity
 terraform version
 session-manager-plugin --version
@@ -150,6 +150,10 @@ sudo awk -F= '$1 == "BANK_FIXTURE_PASSWORD" { print $2 }' /srv/piggybank/state/.
 Open `http://127.0.0.1:4300` as `alice`/`bob` and `http://127.0.0.1:4301` as `reviewer`, `approver` or `security`. Use independent browser profiles for maker/checker and for different environments. Confirm login/callback/logout and permitted staff tools. Reviewer/approver have independent canonical identities; security alone has no Finance inquiry. Catalog/chart fixtures are present, while funded balances and fresh liquidity evidence are not fabricated. Fixture authorities expire after 365 days, and product/chart validity retains its explicit 2030 cutoff.
 
 For an authenticated native-basis scenario after deployment, follow the [periodic policy publication runbook](../../runbooks/periodic-accounting-policies.md), then the [native basis runbook](../../runbooks/periodic-native-basis.md). Use this installation's fixture password, a registered matching account and actual covered UTC dates. Expected: immutable original replay, fresh observation after later facts, distinct historical/current positions and read-only checker access; no periodic journal or enrollment. Record this functional result separately from infrastructure smoke.
+
+Verify the [Finance audit delivery workflow](../../runbooks/finance-audit-delivery.md) after deployment. Expected: retained pending records, original native receipt recovery and a read-only checker view. Schema 52 refuses legacy delivery flags without original matching Controls evidence; investigate a refused upgrade without manufacturing receipts.
+
+Follow the [customer periodic disclosure runbook](../../runbooks/customer-periodic-disclosures.md) to verify exact approved rule information for an owned account, saved URLs and private approval-data redaction. Reading must not enroll the account or enable a financial posting.
 
 ## 11. Complete acceptance and handoff
 

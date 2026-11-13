@@ -1,5 +1,65 @@
 # Cloud deployment validation
 
+## Customer periodic disclosure checkpoint, 2026-11-12
+
+The immutable `cloud-20261112-02` archive was built and accepted locally from its exact checksum-verified contents. Schema remains 52; the validated `customer-periodic-disclosures-v1` manifest feature identifies this code/UI increment independently of schema. Earlier sealed releases retain their original checksums and acceptance path.
+
+| Accepted artifact | Recorded value |
+| --- | --- |
+| Release / profile / platform | `cloud-20261112-02` / `synthetic-local` / `linux/amd64` |
+| Archive size | 84,374,476 bytes |
+| Archive SHA256 | `92d2354c50539b4bf3429640cc35712d7f966fd2585a555e63f89c9a48dad611` |
+| Schema / deployment manifest files | 52 / 21 |
+| Nested image archive SHA256 | `711dbc0691e57286fd532280564fb243adbe995224ebde8b1b4a8a10fb03d7ba` |
+| Runtime image content ID | `fb97aab3389a1c219aab85853b9971b9006641236a57c2bd890545ddceeb4c8e` |
+| Web image content ID | `4d38538ef748d4cd39284194f55d430513d44816d191c4d2ac3585858df99e99` |
+
+Actual packaged acceptance passed randomized credentials/identity, migration, distinct maker/checker bootstrap, API/worker/provider health, compiled portals and channel guards, both signed clearing namespaces, two closed signed groups, repeated seed and packaged funding CLI usage without financial posting. The new feature gate inspected the actual archived OpenAPI and served customer JavaScript, and exercised customer/workforce disclosure channel boundaries. Full authenticated ownership, material/version stability and failure handling were tested separately through host browsers and PostgreSQL cases.
+
+Host checks passed all 113 integration cases across nine targets (112 database-backed and one pure exact-total case), including 80 Finance cases; 19 library cases; twelve payment/Finance browser flows plus three independent customer/staff/issuer regressions; the focused disclosure flow; 113 ingress patterns; foundation, identity, events and lifecycle HTTP acceptance; Rust/OpenAPI/generated-client/web checks and both portal builds; six cloud checks; both Terraform format/validate/mock plans; and all 50 diagram renders/checks. Mobile disclosure material was visually inspected. All 52 persistent migration SHA384 checksums match source. The [checkpoint evidence](../implementation/evidence/WP-24-disclosures.md) and [runbook](../runbooks/customer-periodic-disclosures.md) preserve the read-only information boundary. Actual logs use `.local/disclosures-*`.
+
+Disposable fixtures were removed; developer dependencies and unrelated services were retained. Both cloud runbooks and infrastructure examples use this release. No live AWS/GCP apply, customer consent/enrollment, financial policy activation or periodic posting was performed. WP-24 remains in progress for attributable acceptance/enrollment, durable legal/material document controls where required, authoritative economic finalization and native fee/accrual jobs/corrections.
+
+## Durable audit delivery checkpoint, 2026-11-12
+
+The immutable `cloud-20261112-01` archive was built and accepted locally from its exact checksum-verified contents. Schema 52 adds durable Finance audit progress, immutable attempts and independently confirmed native Controls receipts, including verified legacy backfill. Earlier archive seals remain unchanged.
+
+| Accepted artifact | Recorded value |
+| --- | --- |
+| Release / profile / platform | `cloud-20261112-01` / `synthetic-local` / `linux/amd64` |
+| Archive size | 84,334,644 bytes |
+| Archive SHA256 | `6940b976458323249bcc9aa987a2e07664f65303349e3a09af7b767726063109` |
+| Schema / deployment manifest files | 52 / 21 |
+| Nested image archive SHA256 | `8c559118aa91685fe85520c8768549ca8ce85de14fcddc3e6b79521f8c2d052b` |
+| Runtime image content ID | `79ecc1e8ffc9212268f640272246f766ea0f359a5dd76fa85ee21c177940a3cd` |
+| Web image content ID | `918610275914364e344af53740b9a50042033ab0725347da4c69ce6c67f6bfaa` |
+
+Actual packaged acceptance passed migration, randomized credentials/identity, distinct maker/checker bootstrap, API/worker/provider health, compiled portals/channel guards, both signed clearing namespaces, two closed signed groups, repeated seed and packaged funding CLI usage without monetary posting. Audit-delivery customer/workforce channel guards passed, and fetching the actual served archived JavaScript verified safe delivery inquiry and native receipt controls. Full authenticated audit workflow was tested separately by host browsers and native PostgreSQL cases.
+
+Host checks passed 108 integration cases across nine targets (107 database-backed and one pure exact-total case), including 75 Finance cases; 17 library cases; eleven payment/Finance browser flows plus independent customer/staff/issuer regressions; the focused audit flow; 111 ingress patterns; foundation, identity, events and lifecycle HTTP acceptance; current Rust/OpenAPI/client/web checks and both portal builds; six cloud checks; both Terraform format/validate/mock plans; and all 48 diagram renders/checks. The [checkpoint evidence](../implementation/evidence/WP-24-audit-delivery.md) and [runbook](../runbooks/finance-audit-delivery.md) preserve the exact delivery/financial boundary. Actual logs use `.local/audit-delivery-*`.
+
+All disposable app/image fixtures were removed; developer dependencies and unrelated services were retained. Both cloud runbooks and infrastructure examples use the new identifier. No live GCP/AWS apply, production financial activation, external audit anchoring or real-provider qualification was performed. WP-24 remains open for periodic enrollment/material terms, authoritative economic finalization, native fee/accrual jobs and their linked corrections.
+
+## Native periodic basis checkpoint, 2026-11-12
+
+The immutable `cloud-20261111-01` archive was built and accepted locally from its actual checksum-verified contents. It contains schema 51, native periodic ledger basis observations, exact saved-clock previews and all prior payment, policy, reconciliation and funding-correction capabilities. Earlier sealed archives remain unchanged.
+
+| Accepted artifact | Recorded value |
+| --- | --- |
+| Release / profile / platform | `cloud-20261111-01` / `synthetic-local` / `linux/amd64` |
+| Archive size | 84,308,685 bytes |
+| Archive SHA256 | `02acb63d09a22865dc1a3f4308db7b436f3e2d1291398d56c15dfa546d34461b` |
+| Schema / deployment manifest files | 51 / 21 |
+| Nested image archive SHA256 | `7072318fbaf504ef7cbeb293cebe49fcd331fe0c9b293957dc3e31f8d545d22a` |
+| Runtime image content ID | `2410070361016eb405c726288596f5a984d61ee9b4f6d2f69498888ff207b91e` |
+| Web image content ID | `c3bb4607fbfdcc3e127ab8478384cc817f5ed3e8d6bb91986be69871cc6038eb` |
+
+Actual packaged acceptance passed migration, randomized installation credentials and identity, distinct maker/checker bootstrap, API/worker/provider health, static portals/channel guards, both signed clearing namespaces, two closed signed two-member groups, packaged funding-CLI usage without posting, and repeated immutable seed. Fetching the actual archived workforce JavaScript verified native-basis controls, explicit provisional status and separate historical/current positions in addition to prior policy/correction controls. Native-basis role boundaries were checked through both packaged channels. Full authenticated capture/replay/fresh-evidence behavior was tested separately by host browser and native PostgreSQL cases. A further November 12 host-browser run aborted a successful post-commit native-basis response and verified original-key recovery, one Core artifact, one audit event and unchanged money; application code/images were unchanged.
+
+Host validation passed 101 integration cases across nine targets (100 database-backed and one pure exact-total case), including 68 Finance cases; 17 library cases; ten payment/Finance flows plus customer, staff and issuer browser regressions; the focused native-basis flow; all 109 ingress patterns; foundation restart/readiness, identity, event and lifecycle HTTP acceptance; current Rust/OpenAPI/TypeScript/portal builds; six cloud configuration/archive checks; both Terraform format/validate/mock plans; and 46 diagram renders/checks. Mobile native-basis evidence was visually inspected. See [checkpoint evidence](../implementation/evidence/WP-24-native-basis.md) and [step-by-step runbook](../runbooks/periodic-native-basis.md).
+
+Disposable app and image fixtures were removed; developer dependencies were retained. Actual logs use `.local/basis-*`, with archive/checksum under `.local/cloud/releases/`. Both cloud runbooks and infrastructure examples use the new immutable identifier. No live GCP/AWS apply, production policy or real-provider qualification was performed. WP-24 remains open for enrollment/material terms, authoritative economic finalization, periodic posting jobs/native commands and corresponding periodic corrections.
+
 ## Controlled funding correction checkpoint, 2026-11-10
 
 The immutable `cloud-20261110-01` archive was built and accepted locally from its actual checksum-verified contents. It contains schema 50, independently approved exact synthetic funding corrections, original native receipt recovery and the prior periodic-policy/payment-status capabilities. No earlier sealed release was overwritten.

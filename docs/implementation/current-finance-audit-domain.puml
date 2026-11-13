@@ -1,0 +1,48 @@
+@startuml
+title UML - immutable audit source, native confirmation and durable progress
+hide methods
+class PendingAudit <<Finance original immutable>> {
+ id : original event UUID
+ record : original actor / payload / occurrence time
+ deliveredAt : guarded one-time UTC?
+}
+class RelayCursor <<Finance mutable progress>> {
+ lastId : attempted original UUID
+ scannedAt : native UTC?
+ page <= 50; work budget and timeout
+ wraps after empty page
+}
+class DeliveryAttempt <<Finance immutable observation>> {
+ id / auditId : UUID
+ sourceDigest : original raw JSON SHA256
+ outcome : safe enum; no raw exception
+ attemptedAt : native UTC
+}
+class NativeAuditEvent <<Controls immutable authority>> {
+ id / stream / original payload
+ sequence / previousDigest / digest
+ guarded idempotent append
+}
+class DeliveryReceipt <<Finance immutable native link>> {
+ auditId : original UUID
+ controlsDigest : accepted native chain digest
+ controlsSequence : exact decimal string
+ confirmedAt : native UTC
+ origin : NATIVE_CONFIRMATION or LEGACY_VERIFIED
+}
+class ConfirmationFunction <<guarded native command>>
+class ReceiptInquiry <<native read-only verifier>>
+PendingAudit "1" -- "0..*" DeliveryAttempt
+PendingAudit "1" -- "0..1" DeliveryReceipt
+DeliveryReceipt "1" --> "1" NativeAuditEvent : exact ID / stream / payload / digest
+RelayCursor --> PendingAudit : progress committed per attempted identity
+ConfirmationFunction --> NativeAuditEvent : independently confirms accepted original
+ConfirmationFunction --> DeliveryReceipt : atomic receipt + acknowledgment
+ReceiptInquiry --> DeliveryReceipt
+ReceiptInquiry --> NativeAuditEvent : rejects missing or damaged native links
+note bottom of DeliveryReceipt
+No caller-provided success flag, payload, digest or sequence.
+Legacy migration preserves old delivery time and verifies original native evidence.
+This receipt proves audit delivery; Core receipts prove financial completion.
+end note
+@enduml

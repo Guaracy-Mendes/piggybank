@@ -124,9 +124,22 @@ pub fn router(identity: IdentityService, finance: Arc<Finance>) -> Router {
             "/api/v1/staff/finance/periodic-bases/{id}/items",
             get(periodic_basis_items),
         )
+        .route(
+            "/api/v1/staff/finance/audit-delivery",
+            get(audit_delivery_status),
+        )
+        .route(
+            "/api/v1/staff/finance/audit-delivery/{id}",
+            get(audit_delivery),
+        )
         .with_state(Arc::new((identity, finance)))
 }
 fn error(e: anyhow::Error) -> StatusCode {
+    if e.downcast_ref::<bank_finance::audit::AuditDeliveryConflict>()
+        .is_some()
+    {
+        return StatusCode::CONFLICT;
+    }
     if e.downcast_ref::<bank_core::accruals::basis::BasisConflict>()
         .is_some()
     {
@@ -775,4 +788,26 @@ async fn periodic_basis_items(
     .await
     .map(Json)
     .map_err(error)
+}
+
+async fn audit_delivery_status(
+    State(s): State<App>,
+    h: HeaderMap,
+) -> Result<Json<bank_finance::audit::AuditDeliveryStatus>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.audit_delivery_status(&a.actor)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn audit_delivery(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<Json<bank_finance::audit::AuditDeliveryItem>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.audit_delivery(&a.actor, id)
+        .await
+        .map(Json)
+        .map_err(error)
 }

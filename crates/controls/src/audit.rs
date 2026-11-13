@@ -35,7 +35,7 @@ impl AuditRecord {
             occurred_at: chrono::Utc::now(),
         }
     }
-    fn validate(&self) -> Result<()> {
+    pub fn validate(&self) -> Result<()> {
         for code in [
             &self.action,
             &self.outcome,

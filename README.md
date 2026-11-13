@@ -6,6 +6,7 @@ This repository contains a proposed product requirements baseline, editable C4/U
 
 | Document | Purpose |
 | --- | --- |
+| [Implementation completion status](docs/implementation/COMPLETION_STATUS.md) | Current package counts, completed scope, remaining work, validation and deployment status |
 | [Current implementation and runtime diagrams](docs/implementation/README.md) | Implemented scope, local C4/UML models and explicit remaining work |
 | [Implementation plan](docs/IMPLEMENTATION_PLAN.md) | Execution order, technical baseline, local/provider boundaries, validation and release gates |
 | [Implementation work packages](docs/implementation/WORK_PACKAGES.md) | 41 actionable packages with dependencies, requirement allocation and completion conditions |
@@ -62,3 +63,7 @@ Periodic accounting configuration now has a [complete specification](docs/implem
 The [controlled funding correction workflow](docs/implementation/finance-corrections.md) adds exact-source independent approval, one native linked reversal and original receipt recovery. Its [runbook](docs/runbooks/finance-corrections.md) covers local/cloud fixture funding, financial review/execution and GL lineage. Periodic charges/accruals remain disabled pending their enrollment, economic finalization and posting work.
 
 [Native periodic basis observations](docs/implementation/periodic-native-basis.md) now preserve the exact committed Core business-date journal prefix, source provenance and capture clock. The [operator runbook](docs/runbooks/periodic-native-basis.md) covers immutable replay and fresh evidence. These observations support previews without posting money or establishing customer enrollment.
+
+[Durable Finance audit delivery](docs/implementation/finance-audit-delivery.md) now preserves original records while progressing past failed events. The [runbook](docs/runbooks/finance-audit-delivery.md) covers native receipt confirmation, retained pending records and forward-upgrade checks.
+
+[Customer periodic disclosures](docs/implementation/customer-periodic-disclosures.md) expose exact approved preview rules for owned accounts. The [runbook](docs/runbooks/customer-periodic-disclosures.md) explains material digests and saved versions. This information does not enroll accounts or enable charges.

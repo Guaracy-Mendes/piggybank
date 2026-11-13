@@ -4,7 +4,7 @@ Use this runbook for a full reversal of an eligible original `SYNTHETIC_FUNDING`
 
 ## 1. Prepare matching runtime and identities
 
-Follow [local development](local-development.md), or the complete [GCP](../deployment/gcp/RUNBOOK.md)/[AWS](../deployment/aws/RUNBOOK.md) deployment runbook and normal workstation tunnels. Use matching binaries and migrations at schema 50 or later; the current release uses schema 51. Older sealed schema-49 releases retain policy previews but do not contain this correction workflow.
+Follow [local development](local-development.md), or the complete [GCP](../deployment/gcp/RUNBOOK.md)/[AWS](../deployment/aws/RUNBOOK.md) deployment runbook and normal workstation tunnels. Use matching binaries and migrations at schema 50 or later; the current release uses schema 52. Older sealed schema-49 releases retain policy previews but do not contain this correction workflow.
 
 Confirm API/worker/provider readiness and the workforce portal at `http://127.0.0.1:4301`. Prepare separate Finance maker/checker identities with current `finance_adjuster`/REVIEW and `finance_approver`/APPROVE relationships. Local fixtures use `reviewer` and `approver`; use installation credentials. Security administration alone does not grant Finance inquiry or execution.
 

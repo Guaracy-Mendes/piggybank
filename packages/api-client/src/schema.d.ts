@@ -1823,6 +1823,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/staff/finance/audit-delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Current Finance inquiry role and queue required. Read-only audit delivery observations. Durable per-event progress in wrapping pages of 50 avoids poisoned-prefix starvation. DELIVERED requires a native Controls event with the original ID, finance stream, exact original payload and verified chain digest, plus an immutable Finance receipt. Unknown append outcomes retain original identities. No raw actor/payload/signatures or financial commands. Counts and list are live observations, not an immutable financial report. */
+        get: operations["staffFinanceAuditDeliveryStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/staff/finance/audit-delivery/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Current Finance inquiry role and queue required. Read-only audit delivery observations. Durable per-event progress in wrapping pages of 50 avoids poisoned-prefix starvation. DELIVERED requires a native Controls event with the original ID, finance stream, exact original payload and verified chain digest, plus an immutable Finance receipt. Unknown append outcomes retain original identities. No raw actor/payload/signatures or financial commands. Counts and list are live observations, not an immutable financial report. */
+        get: operations["staffFinanceAuditDelivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/periodic-disclosures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Customer information only, derived from exact approved immutable PREVIEW_ONLY policies for the owned account product. Current customer ownership is checked in Controls and the native product lookup. Other products, foreign accounts and unpublished policies are hidden. The material digest binds account, complete policy/calendar, native policy digest and renderer V1 text; observation clock/availability are outside that hash. List includes at most 100 current/upcoming policies; 101 refuses truncation. Saved native policy inquiry retains ended versions. No private approval people/reason, customer balance, consent, enrollment or financial command. */
+        get: operations["customerPeriodicDisclosures"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/periodic-disclosures/{policyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Customer information only, derived from exact approved immutable PREVIEW_ONLY policies for the owned account product. Current customer ownership is checked in Controls and the native product lookup. Other products, foreign accounts and unpublished policies are hidden. The material digest binds account, complete policy/calendar, native policy digest and renderer V1 text; observation clock/availability are outside that hash. List includes at most 100 current/upcoming policies; 101 refuses truncation. Saved native policy inquiry retains ended versions. No private approval people/reason, customer balance, consent, enrollment or financial command. */
+        get: operations["customerPeriodicDisclosure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3359,6 +3427,74 @@ export interface components {
             digest: string;
             items: components["schemas"]["PeriodicBasisItem"][];
             nextAfter: number | null;
+        };
+        FinanceAuditReceipt: {
+            /** Format: uuid */
+            auditId: string;
+            controlsDigest: string;
+            controlsSequence: string;
+            /** Format: date-time */
+            confirmedAt: string;
+            /** @enum {string} */
+            origin: "NATIVE_CONFIRMATION" | "LEGACY_VERIFIED";
+        };
+        FinanceAuditAttempt: {
+            /** @enum {string} */
+            outcome: "NATIVE_RECEIPT_CONFIRMED" | "INVALID_RECORD" | "NON_CANONICAL_RECORD" | "AUDIT_IDENTITY_CONFLICT" | "CONFIRMATION_UNAVAILABLE" | "APPEND_UNCONFIRMED";
+            sourceDigest: string;
+            /** Format: date-time */
+            attemptedAt: string;
+        };
+        FinanceAuditDelivery: {
+            /** Format: uuid */
+            id: string;
+            sourceDigest: string;
+            resourceId: string | null;
+            action: string | null;
+            /** @enum {string} */
+            state: "PENDING" | "PENDING_RETRY" | "DELIVERED";
+            deliveredAt: string | null;
+            receipt: components["schemas"]["FinanceAuditReceipt"] | null;
+            lastAttempt: components["schemas"]["FinanceAuditAttempt"] | null;
+        };
+        FinanceAuditStatus: {
+            /** Format: date-time */
+            asOf: string;
+            pendingCount: string;
+            confirmedCount: string;
+            /** Format: uuid */
+            cursor: string;
+            lastScannedAt: string | null;
+            items: components["schemas"]["FinanceAuditDelivery"][];
+        };
+        PeriodicDisclosureMaterial: {
+            /** @constant */
+            formatVersion: 1;
+            /** @constant */
+            source: "CORE_APPROVED_PERIODIC_DISCLOSURE_V1";
+            /** Format: uuid */
+            accountId: string;
+            policy: components["schemas"]["PeriodicPolicy"];
+            policyDigest: string;
+            title: string;
+            text: string;
+        };
+        PeriodicDisclosure: {
+            /** Format: date-time */
+            observedAt: string;
+            /** @enum {string} */
+            availability: "CURRENT_PREVIEW" | "UPCOMING_PREVIEW" | "ENDED_PREVIEW";
+            material: components["schemas"]["PeriodicDisclosureMaterial"];
+            digest: string;
+        };
+        PeriodicDisclosurePage: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            productVersionId: string;
+            /** Format: date-time */
+            observedAt: string;
+            items: components["schemas"]["PeriodicDisclosure"][];
         };
     };
     responses: never;
@@ -13458,6 +13594,345 @@ export interface operations {
                 content?: never;
             };
             /** @description Invalid fields */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staffFinanceAuditDeliveryStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized safe native audit delivery evidence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceAuditStatus"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current role, relationship, independent-person or state guard denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current instruction, policy, proof, amount or request identity guard rejected the action */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description JSON content type required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid fields */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    staffFinanceAuditDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized safe native audit delivery evidence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceAuditDelivery"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current role, relationship, independent-person or state guard denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current instruction, policy, proof, amount or request identity guard rejected the action */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description JSON content type required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid fields */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    customerPeriodicDisclosures: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped synthetic periodic disclosure */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodicDisclosurePage"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Customer authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Trust, origin or CSRF denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource or cursor unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current authority, version, state or financial precondition denied */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description JSON content type required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description More than 100 current/upcoming policies; response is never truncated */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Dependency unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    customerPeriodicDisclosure: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                policyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner-scoped synthetic periodic disclosure */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeriodicDisclosure"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Customer authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Trust, origin or CSRF denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Resource or cursor unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current authority, version, state or financial precondition denied */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description JSON content type required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description More than 100 current/upcoming policies; response is never truncated */
             422: {
                 headers: {
                     [name: string]: unknown;

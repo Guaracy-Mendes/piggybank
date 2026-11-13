@@ -36,9 +36,11 @@ def main():
         shutil.copytree(ROOT / 'infra/identity', stage / 'deployment/identity')
         shutil.copy2(ROOT / 'scripts/identity.py', stage / 'deployment/identity_provision.py')
         (stage / 'deployment/release.env').write_text(f'RELEASE_ID={args.release}\n')
+        paths=json.loads((ROOT/'contracts/openapi/implemented.json').read_text())['paths']
+        features=['customer-periodic-disclosures-v1'] if '/api/v1/accounts/{id}/periodic-disclosures/{policyId}' in paths else []
         manifest = {'release': args.release, 'platform': 'linux/amd64', 'profile': 'synthetic-local',
                     'schemaVersion': max(int(p.name.split('_')[0]) for p in (ROOT / 'migrations').glob('*.sql')),
-                    'files': {}}
+                    'files': {}, 'features': features}
         for path in sorted((stage / 'deployment').rglob('*')):
             if path.is_file():
                 manifest['files'][str(path.relative_to(stage))] = hashlib.sha256(path.read_bytes()).hexdigest()

@@ -2,7 +2,7 @@
 
 These two packages deploy the **implemented synthetic evaluation system**. They preserve the current local-only application profile, loopback OIDC issuer and provider endpoints, separate PostgreSQL module authorities and immutable financial records. A private operator tunnel makes the VM's loopback services available on the same workstation ports.
 
-These packages include the grouped-clearing workbench the independently approved periodic preview-policy workspace, funding-only corrections and native ledger basis observations. The current release examples target schema 51; preview policies do not create customer charges or interest journals.
+These packages include the grouped-clearing workbench, independently approved periodic preview-policy workspace, funding-only corrections, native ledger basis observations, durable audit delivery with native Controls receipts, and owner-scoped customer periodic disclosures. The current release examples target schema 52; preview policies do not create customer charges or interest journals.
 
 | Package | Step-by-step deployment | Day-two operations | Infrastructure |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ terraform -chdir=infra/cloud/aws init -backend=false
 terraform -chdir=infra/cloud/aws validate
 terraform -chdir=infra/cloud/aws test
 # Full disposable image/dependency acceptance, after packaging; requires Podman:
-python3 tests/deployment/runtime.py cloud-20261111-01
+python3 tests/deployment/runtime.py cloud-20261112-02
 ```
 
 `terraform init -backend=false` is for an unused validation checkout. Use the cloud runbook's backend initialization for real deployments. Keep the generated provider lockfiles. Image acceptance verifies the selected `.tgz` checksum, complete manifest and member hashes, rejects unsafe archive entries, loads its exact image archive and runs its packaged deployment code. It does not substitute files from the current checkout. The build uses `npm ci --ignore-scripts`, locked Cargo inputs, compiled static portals and a non-root application runtime. `make cloud-check` requires Python 3.11+, Docker Compose v2 and Bash. Terraform 1.10+ is required for native S3 lockfiles. [HashiCorp documents GCS locking](https://developer.hashicorp.com/terraform/language/backend/gcs) and [S3 `use_lockfile`](https://developer.hashicorp.com/terraform/language/backend/s3).
@@ -68,3 +68,5 @@ On either VM, use `sudo piggybank status`, `sudo piggybank logs worker`, `sudo p
 Preserve uncertain payment/GL identities during outages. Resume original-identity inquiry through the [payment recovery](../runbooks/payment-recovery.md), [Finance recovery](../runbooks/finance-recovery.md), [reporting](../runbooks/finance-reporting.md) and [report revision](../runbooks/finance-revisions.md) procedures. A backup restore rolls the simulator back with Core; this is safe only for the included synthetic providers. Real external provider outcomes would require independent post-restore reconciliation.
 
 The archive recorded in the 2026-11-03 validation is a historical migration-44 checkpoint. Current grouped clearing reconciliation requires migration 47 (single-file outgoing and incoming/return matching require 45/46); the runbook examples now use a fresh release identifier and build current source. Do not reuse the historical image archive to deploy the newer implementation.
+
+New release manifests declare optional validated feature metadata. The current `customer-periodic-disclosures-v1` feature triggers actual archived API/portal checks without changing the validation path of older sealed schema-52 archives.

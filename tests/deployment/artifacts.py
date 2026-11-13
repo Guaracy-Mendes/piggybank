@@ -34,6 +34,9 @@ def extract_release(archive: Path, destination: Path, release: str) -> dict:
         if (manifest['release'] != release or manifest['platform'] != 'linux/amd64'
                 or manifest['profile'] != 'synthetic-local' or not isinstance(manifest['schemaVersion'], int)):
             raise ValueError('Release manifest identity mismatch')
+        features=manifest.get('features',[])
+        if (not isinstance(features,list) or len(features)>32 or any(not isinstance(f,str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,63}',f) for f in features) or len(set(features))!=len(features)):
+            raise ValueError('Invalid release feature metadata')
         expected = set(manifest['files']) | {'images.tar', 'manifest.json'}
         if {m.name for m in members if m.isfile()} != expected:
             raise ValueError('Release manifest membership mismatch')

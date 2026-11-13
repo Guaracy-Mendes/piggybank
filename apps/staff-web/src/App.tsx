@@ -16,6 +16,7 @@ import { CasesView } from "./Cases";
 import { ConfigurationView } from "./Configuration";
 import { RolesView } from "./Roles";
 import { FinanceView } from "./Finance";
+import { FinanceAudit } from "./FinanceAudit";
 import { FinancePolicies } from "./FinancePolicies";
 import { FinanceCorrections } from "./FinanceCorrections";
 export type Access = Schema["StaffAccess"];
@@ -118,6 +119,12 @@ function Workbench() {
             ["/rails", "Rail controls", "accounts", can("rail.")],
             ["/finance", "Finance & GL", "accounts", can("finance.inquire")],
             [
+              "/finance/audit",
+              "Audit delivery",
+              "shield",
+              can("finance.inquire"),
+            ],
+            [
               "/finance/corrections",
               "Financial corrections",
               "accounts",
@@ -145,7 +152,8 @@ function Workbench() {
                   !(
                     url === "/finance" &&
                     (route.startsWith("/finance/policies") ||
-                      route.startsWith("/finance/corrections"))
+                      route.startsWith("/finance/corrections") ||
+                      route.startsWith("/finance/audit"))
                   )
                     ? "page"
                     : undefined
@@ -205,6 +213,14 @@ function Workbench() {
                 <ConfigurationView access={access} />
               ) : route === "/rails" ? (
                 <RailsView access={access} />
+              ) : route.startsWith("/finance/audit") ? (
+                <FinanceAudit
+                  selected={
+                    /^\/finance\/audit\/[a-f0-9-]{36}$/.test(route)
+                      ? route.split("/")[3]
+                      : undefined
+                  }
+                />
               ) : route.startsWith("/finance/corrections") ? (
                 <FinanceCorrections
                   access={access}

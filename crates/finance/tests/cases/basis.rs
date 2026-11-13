@@ -23,7 +23,7 @@ impl OpeningPolicy for TestOpening {
         })
     }
 }
-async fn setup(f: &Fixture) -> Result<(Uuid, AccountId)> {
+pub(super) async fn setup(f: &Fixture) -> Result<(Uuid, AccountId)> {
     let mut input = super::periodic::setup(f).await?;
     let today = Utc::now().date_naive();
     input.policy.code = "NATIVE_DAILY".into();

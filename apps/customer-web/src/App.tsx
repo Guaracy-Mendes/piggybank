@@ -10,7 +10,13 @@ import {
   value,
 } from "@piggybank/web-core";
 import type { Application, Product, Account, Cases } from "./types";
-import { navigate, useRoute, stableKey, doneKey } from "./lib/navigation";
+import {
+  navigate,
+  useRoute,
+  stableKey,
+  doneKey,
+  validRoute,
+} from "./lib/navigation";
 import { StateBadge, PageTitle } from "./lib/display";
 import { Wordmark, Welcome, ProductCard } from "./components/Catalog";
 import { ApplicationList, ApplicationView } from "./components/Applications";
@@ -28,9 +34,7 @@ export function Root() {
         sessionStorage.removeItem("pb:return");
         if (
           (!window.location.hash || window.location.hash === "#/home") &&
-          /^\/(home|accounts|applications|profile|support|payments)(?:\/[a-zA-Z0-9-]+)?$/.test(
-            saved,
-          )
+          validRoute(saved)
         )
           navigate(saved);
       }
@@ -233,6 +237,11 @@ export function Bank() {
               key={selected ?? "all"}
               accounts={accounts}
               selected={selected}
+              disclosureId={
+                current.split("/")[3] === "periodic"
+                  ? current.split("/")[4]
+                  : undefined
+              }
               refresh={refresh}
               notify={setNotice}
             />

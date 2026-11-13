@@ -1,8 +1,12 @@
 use anyhow::Result;
+#[path = "cases/audit_delivery.rs"]
+mod audit_delivery;
 #[path = "cases/basis.rs"]
 mod basis;
 #[path = "cases/corrections.rs"]
 mod corrections;
+#[path = "cases/disclosures.rs"]
+mod disclosures;
 #[path = "cases/periodic.rs"]
 mod periodic;
 #[path = "cases/reconciliation.rs"]

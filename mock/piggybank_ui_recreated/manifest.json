@@ -1,0 +1,346 @@
+{
+  "project": "PiggyBank UI high-quality recreations",
+  "source": "source/original_reference.png",
+  "count": 26,
+  "note": "All 26 panels have been redrawn as clean vector UI compositions using the supplied mock-up as visual direction. Previously clipped fragments were reconstructed into complete reference panels. Text, charts and simple mascot artwork are editable in SVG. These are reference screens, not a production application or Figma document.",
+  "canvases": [
+    {
+      "id": "01",
+      "name": "top_01_savings_action",
+      "description": "Savings confirmation card",
+      "svg": "svg/01_top_01_savings_action.svg",
+      "png": "png/01_top_01_savings_action.png",
+      "dimensions_px": {
+        "width": 1520,
+        "height": 960
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "02",
+      "name": "top_02_payment_action",
+      "description": "Payment confirmation card",
+      "svg": "svg/02_top_02_payment_action.svg",
+      "png": "png/02_top_02_payment_action.png",
+      "dimensions_px": {
+        "width": 1520,
+        "height": 960
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "03",
+      "name": "top_03_login_form",
+      "description": "Login form",
+      "svg": "svg/03_top_03_login_form.svg",
+      "png": "png/03_top_03_login_form.png",
+      "dimensions_px": {
+        "width": 1520,
+        "height": 960
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "04",
+      "name": "top_04_notifications",
+      "description": "Notification panel",
+      "svg": "svg/04_top_04_notifications.svg",
+      "png": "png/04_top_04_notifications.png",
+      "dimensions_px": {
+        "width": 1520,
+        "height": 1040
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "05",
+      "name": "top_05_transaction_list",
+      "description": "Transaction list",
+      "svg": "svg/05_top_05_transaction_list.svg",
+      "png": "png/05_top_05_transaction_list.png",
+      "dimensions_px": {
+        "width": 1600,
+        "height": 1120
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "06",
+      "name": "desktop_dashboard_compact",
+      "description": "Desktop dashboard compact",
+      "svg": "svg/06_desktop_dashboard_compact.svg",
+      "png": "png/06_desktop_dashboard_compact.png",
+      "dimensions_px": {
+        "width": 1800,
+        "height": 1215
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "07",
+      "name": "desktop_financial_overview",
+      "description": "Financial overview dashboard",
+      "svg": "svg/07_desktop_financial_overview.svg",
+      "png": "png/07_desktop_financial_overview.png",
+      "dimensions_px": {
+        "width": 1764,
+        "height": 1288
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "08",
+      "name": "side_savings_action",
+      "description": "Savings goal card",
+      "svg": "svg/08_side_savings_action.svg",
+      "png": "png/08_side_savings_action.png",
+      "dimensions_px": {
+        "width": 1350,
+        "height": 975
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "09",
+      "name": "side_benefit_balance",
+      "description": "Benefit balance panel",
+      "svg": "svg/09_side_benefit_balance.svg",
+      "png": "png/09_side_benefit_balance.png",
+      "dimensions_px": {
+        "width": 1350,
+        "height": 1350
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "10",
+      "name": "side_rewards_summary",
+      "description": "Rewards summary panel",
+      "svg": "svg/10_side_rewards_summary.svg",
+      "png": "png/10_side_rewards_summary.png",
+      "dimensions_px": {
+        "width": 1350,
+        "height": 1380
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "11",
+      "name": "desktop_account_balances",
+      "description": "Desktop account balances",
+      "svg": "svg/11_desktop_account_balances.svg",
+      "png": "png/11_desktop_account_balances.png",
+      "dimensions_px": {
+        "width": 1680,
+        "height": 1764
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "12",
+      "name": "desktop_recent_transactions",
+      "description": "Desktop recent transactions",
+      "svg": "svg/12_desktop_recent_transactions.svg",
+      "png": "png/12_desktop_recent_transactions.png",
+      "dimensions_px": {
+        "width": 1800,
+        "height": 1230
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "13",
+      "name": "welcome_screen",
+      "description": "Welcome and onboarding screen",
+      "svg": "svg/13_welcome_screen.svg",
+      "png": "png/13_welcome_screen.png",
+      "dimensions_px": {
+        "width": 1080,
+        "height": 1440
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "14",
+      "name": "desktop_dashboard_wide",
+      "description": "Wide desktop dashboard",
+      "svg": "svg/14_desktop_dashboard_wide.svg",
+      "png": "png/14_desktop_dashboard_wide.png",
+      "dimensions_px": {
+        "width": 1960,
+        "height": 1372
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "15",
+      "name": "mobile_recent_money",
+      "description": "Mobile recent money overview",
+      "svg": "svg/15_mobile_recent_money.svg",
+      "png": "png/15_mobile_recent_money.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "16",
+      "name": "mobile_qr_payment",
+      "description": "Mobile QR payment screen",
+      "svg": "svg/16_mobile_qr_payment.svg",
+      "png": "png/16_mobile_qr_payment.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "17",
+      "name": "dashboard_analytics",
+      "description": "Analytics dashboard",
+      "svg": "svg/17_dashboard_analytics.svg",
+      "png": "png/17_dashboard_analytics.png",
+      "dimensions_px": {
+        "width": 1064,
+        "height": 1512
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "18",
+      "name": "payment_methods",
+      "description": "Payment methods management screen",
+      "svg": "svg/18_payment_methods.svg",
+      "png": "png/18_payment_methods.png",
+      "dimensions_px": {
+        "width": 1064,
+        "height": 1512
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "19",
+      "name": "mobile_recent_money_list",
+      "description": "Mobile recent money list",
+      "svg": "svg/19_mobile_recent_money_list.svg",
+      "png": "png/19_mobile_recent_money_list.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "20",
+      "name": "mobile_money_overview",
+      "description": "Mobile money overview",
+      "svg": "svg/20_mobile_money_overview.svg",
+      "png": "png/20_mobile_money_overview.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "21",
+      "name": "mobile_activity_menu",
+      "description": "Mobile activity and menu screen",
+      "svg": "svg/21_mobile_activity_menu.svg",
+      "png": "png/21_mobile_activity_menu.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "22",
+      "name": "bottom_01_desktop_activity",
+      "description": "Desktop activity dashboard",
+      "svg": "svg/22_bottom_01_desktop_activity.svg",
+      "png": "png/22_bottom_01_desktop_activity.png",
+      "dimensions_px": {
+        "width": 1500,
+        "height": 1170
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "23",
+      "name": "bottom_02_api_tokens",
+      "description": "API tokens settings panel",
+      "svg": "svg/23_bottom_02_api_tokens.svg",
+      "png": "png/23_bottom_02_api_tokens.png",
+      "dimensions_px": {
+        "width": 1960,
+        "height": 1148
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "24",
+      "name": "bottom_03_mobile_transactions",
+      "description": "Mobile transactions list",
+      "svg": "svg/24_bottom_03_mobile_transactions.svg",
+      "png": "png/24_bottom_03_mobile_transactions.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "25",
+      "name": "bottom_04_mobile_points",
+      "description": "Mobile rewards points screen",
+      "svg": "svg/25_bottom_04_mobile_points.svg",
+      "png": "png/25_bottom_04_mobile_points.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    },
+    {
+      "id": "26",
+      "name": "bottom_05_mobile_rewards",
+      "description": "Mobile rewards catalogue",
+      "svg": "svg/26_bottom_05_mobile_rewards.svg",
+      "png": "png/26_bottom_05_mobile_rewards.png",
+      "dimensions_px": {
+        "width": 875,
+        "height": 1600
+      },
+      "format": "SVG vector + high-resolution PNG",
+      "status": "recreated"
+    }
+  ]
+}

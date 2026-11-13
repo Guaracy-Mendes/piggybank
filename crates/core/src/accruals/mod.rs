@@ -1,5 +1,6 @@
 //! Immutable preview policies. This capability cannot post money or enroll an account.
 pub mod basis;
+pub mod disclosures;
 use crate::{Core, products::ProductVersion};
 use anyhow::{Result, ensure};
 use bank_controls::{entitlements::Entitlements, governance::ChangeKind};

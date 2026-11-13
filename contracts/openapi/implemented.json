@@ -8345,6 +8345,260 @@
           }
         ]
       }
+    },
+    "/api/v1/staff/finance/audit-delivery": {
+      "get": {
+        "operationId": "staffFinanceAuditDeliveryStatus",
+        "responses": {
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current role, relationship, independent-person or state guard denied"
+          },
+          "404": {
+            "description": "Resource unavailable"
+          },
+          "415": {
+            "description": "JSON content type required"
+          },
+          "422": {
+            "description": "Invalid fields"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "409": {
+            "description": "Current instruction, policy, proof, amount or request identity guard rejected the action"
+          },
+          "200": {
+            "description": "Authorized safe native audit delivery evidence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceAuditStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "workforceSession": []
+          }
+        ],
+        "description": "Current Finance inquiry role and queue required. Read-only audit delivery observations. Durable per-event progress in wrapping pages of 50 avoids poisoned-prefix starvation. DELIVERED requires a native Controls event with the original ID, finance stream, exact original payload and verified chain digest, plus an immutable Finance receipt. Unknown append outcomes retain original identities. No raw actor/payload/signatures or financial commands. Counts and list are live observations, not an immutable financial report."
+      }
+    },
+    "/api/v1/staff/finance/audit-delivery/{id}": {
+      "get": {
+        "operationId": "staffFinanceAuditDelivery",
+        "responses": {
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current role, relationship, independent-person or state guard denied"
+          },
+          "404": {
+            "description": "Resource unavailable"
+          },
+          "415": {
+            "description": "JSON content type required"
+          },
+          "422": {
+            "description": "Invalid fields"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "409": {
+            "description": "Current instruction, policy, proof, amount or request identity guard rejected the action"
+          },
+          "200": {
+            "description": "Authorized safe native audit delivery evidence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceAuditDelivery"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "workforceSession": []
+          }
+        ],
+        "description": "Current Finance inquiry role and queue required. Read-only audit delivery observations. Durable per-event progress in wrapping pages of 50 avoids poisoned-prefix starvation. DELIVERED requires a native Controls event with the original ID, finance stream, exact original payload and verified chain digest, plus an immutable Finance receipt. Unknown append outcomes retain original identities. No raw actor/payload/signatures or financial commands. Counts and list are live observations, not an immutable financial report.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/accounts/{id}/periodic-disclosures": {
+      "get": {
+        "operationId": "customerPeriodicDisclosures",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "customerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Customer authentication required"
+          },
+          "403": {
+            "description": "Trust, origin or CSRF denied"
+          },
+          "404": {
+            "description": "Resource or cursor unavailable"
+          },
+          "409": {
+            "description": "Current authority, version, state or financial precondition denied"
+          },
+          "415": {
+            "description": "JSON content type required"
+          },
+          "422": {
+            "description": "More than 100 current/upcoming policies; response is never truncated"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "200": {
+            "description": "Owner-scoped synthetic periodic disclosure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodicDisclosurePage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "Customer information only, derived from exact approved immutable PREVIEW_ONLY policies for the owned account product. Current customer ownership is checked in Controls and the native product lookup. Other products, foreign accounts and unpublished policies are hidden. The material digest binds account, complete policy/calendar, native policy digest and renderer V1 text; observation clock/availability are outside that hash. List includes at most 100 current/upcoming policies; 101 refuses truncation. Saved native policy inquiry retains ended versions. No private approval people/reason, customer balance, consent, enrollment or financial command."
+      }
+    },
+    "/api/v1/accounts/{id}/periodic-disclosures/{policyId}": {
+      "get": {
+        "operationId": "customerPeriodicDisclosure",
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "customerSession": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Customer authentication required"
+          },
+          "403": {
+            "description": "Trust, origin or CSRF denied"
+          },
+          "404": {
+            "description": "Resource or cursor unavailable"
+          },
+          "409": {
+            "description": "Current authority, version, state or financial precondition denied"
+          },
+          "415": {
+            "description": "JSON content type required"
+          },
+          "422": {
+            "description": "More than 100 current/upcoming policies; response is never truncated"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          },
+          "200": {
+            "description": "Owner-scoped synthetic periodic disclosure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodicDisclosure"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "policyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "description": "Customer information only, derived from exact approved immutable PREVIEW_ONLY policies for the owned account product. Current customer ownership is checked in Controls and the native product lookup. Other products, foreign accounts and unpublished policies are hidden. The material digest binds account, complete policy/calendar, native policy digest and renderer V1 text; observation clock/availability are outside that hash. List includes at most 100 current/upcoming policies; 101 refuses truncation. Saved native policy inquiry retains ended versions. No private approval people/reason, customer balance, consent, enrollment or financial command."
+      }
     }
   },
   "components": {
@@ -14838,6 +15092,310 @@
                 "type": "null"
               }
             ]
+          }
+        }
+      },
+      "FinanceAuditReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "auditId",
+          "controlsDigest",
+          "controlsSequence",
+          "confirmedAt",
+          "origin"
+        ],
+        "properties": {
+          "auditId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "controlsDigest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "controlsSequence": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "NATIVE_CONFIRMATION",
+              "LEGACY_VERIFIED"
+            ]
+          }
+        }
+      },
+      "FinanceAuditAttempt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "sourceDigest",
+          "attemptedAt"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "NATIVE_RECEIPT_CONFIRMED",
+              "INVALID_RECORD",
+              "NON_CANONICAL_RECORD",
+              "AUDIT_IDENTITY_CONFLICT",
+              "CONFIRMATION_UNAVAILABLE",
+              "APPEND_UNCONFIRMED"
+            ]
+          },
+          "sourceDigest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "attemptedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FinanceAuditDelivery": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sourceDigest",
+          "resourceId",
+          "action",
+          "state",
+          "deliveredAt",
+          "receipt",
+          "lastAttempt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceDigest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "resourceId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PENDING_RETRY",
+              "DELIVERED"
+            ]
+          },
+          "deliveredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receipt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinanceAuditReceipt"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastAttempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinanceAuditAttempt"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "FinanceAuditStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "asOf",
+          "pendingCount",
+          "confirmedCount",
+          "cursor",
+          "lastScannedAt",
+          "items"
+        ],
+        "properties": {
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pendingCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "maxLength": 19
+          },
+          "confirmedCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "maxLength": 19
+          },
+          "cursor": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lastScannedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/FinanceAuditDelivery"
+            }
+          }
+        }
+      },
+      "PeriodicDisclosureMaterial": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "formatVersion",
+          "source",
+          "accountId",
+          "policy",
+          "policyDigest",
+          "title",
+          "text"
+        ],
+        "properties": {
+          "formatVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "source": {
+            "type": "string",
+            "const": "CORE_APPROVED_PERIODIC_DISCLOSURE_V1"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PeriodicPolicy"
+          },
+          "policyDigest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "PeriodicDisclosure": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "observedAt",
+          "availability",
+          "material",
+          "digest"
+        ],
+        "properties": {
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "CURRENT_PREVIEW",
+              "UPCOMING_PREVIEW",
+              "ENDED_PREVIEW"
+            ]
+          },
+          "material": {
+            "$ref": "#/components/schemas/PeriodicDisclosureMaterial"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      },
+      "PeriodicDisclosurePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accountId",
+          "productVersionId",
+          "observedAt",
+          "items"
+        ],
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "productVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/PeriodicDisclosure"
+            }
           }
         }
       }

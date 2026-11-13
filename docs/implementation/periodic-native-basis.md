@@ -1,6 +1,6 @@
 # Native periodic ledger basis observations
 
-Date: 2026-11-11. WP-24 remains **in progress**. This increment replaces operator-supplied balance assumptions with a separate immutable Core evidence artifact. It enables observation and calculation previews; periodic enrollment and financial execution remain open.
+Date: 2026-11-12. WP-24 remains **in progress**. This increment replaces operator-supplied balance assumptions with a separate immutable Core evidence artifact. It enables observation and calculation previews; periodic enrollment and financial execution remain open.
 
 ## Authority and storage
 

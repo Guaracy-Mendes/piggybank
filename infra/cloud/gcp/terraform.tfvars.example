@@ -5,6 +5,6 @@ name            = "piggybank-eval"
 machine_type    = "e2-standard-4"
 data_disk_gb    = 100
 artifact_bucket = "your-unique-piggybank-artifacts"
-release_object  = "releases/cloud-20261111-01.tgz"
+release_object  = "releases/cloud-20261112-02.tgz"
 release_sha256  = "REPLACE_WITH_64_CHARACTER_SHA256_FROM_PACKAGE"
 protect_vm      = true

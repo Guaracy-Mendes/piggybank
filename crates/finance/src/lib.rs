@@ -1,5 +1,5 @@
 //! Finance observes Core sources, exports GL and coordinates exact approved synthetic funding corrections.
-mod audit;
+pub mod audit;
 pub mod basis;
 pub mod chart;
 pub mod client;

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 
+export function validRoute(path: string) {
+  return (
+    /^\/(home|accounts|applications|profile|support|payments)(?:\/[a-zA-Z0-9-]+)?$/.test(
+      path,
+    ) || /^\/accounts\/[a-f0-9-]{36}\/periodic\/[a-f0-9-]{36}$/.test(path)
+  );
+}
 export function route() {
   const hash = window.location.hash.slice(1);
-  return /^\/(home|accounts|applications|profile|support|payments)(?:\/[a-zA-Z0-9-]+)?$/.test(
-    hash,
-  )
-    ? hash
-    : "/home";
+  return validRoute(hash) ? hash : "/home";
 }
 
 export function navigate(path: string) {

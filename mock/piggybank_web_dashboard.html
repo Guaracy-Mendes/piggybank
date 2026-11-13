@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiggyBank — Financial Dashboard</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter for crisp fintech typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            sidebar: '#1E2D2F',
+            sidebarHover: '#26383B',
+            emeraldBrand: '#1D6E4E',
+            emeraldLight: '#E8F3EE',
+            mintBg: '#F6F9F8',
+            cardBorder: '#E6ECEA',
+          },
+          boxShadow: {
+            soft: '0 4px 20px -2px rgba(30, 45, 47, 0.04), 0 1px 3px 0 rgba(30, 45, 47, 0.02)',
+            cardHover: '0 10px 25px -5px rgba(29, 110, 78, 0.08), 0 4px 10px -2px rgba(30, 45, 47, 0.03)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    /* Custom scrollbar for clean fintech aesthetic */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F6F9F8;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5D1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9FB0AA;
+    }
+
+    /* Subtle floating animation for the 3D Piggy Bank illustration */
+    @keyframes floatSlow {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+    .animate-float {
+      animation: floatSlow 4s ease-in-out infinite;
+    }
+
+    /* Chart line draw animation */
+    .chart-path {
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: drawLine 1.5s ease-out forwards;
+    }
+    @keyframes drawLine {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+  </style>
+</head>
+<body class="bg-mintBg text-[#1E2D2F] antialiased selection:bg-emeraldBrand selection:text-white">
+  <!-- Toast / Message Banner for Interactive Feedback (replaces alert) -->
+  <div
+    id="toastBanner"
+    class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-[#1E2D2F] text-white px-4 py-3 rounded-2xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none"
+  >
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span id="toastMessage" class="text-sm font-medium">Action triggered</span>
+  </div>
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div
+    id="sidebarBackdrop"
+    onclick="toggleSidebar()"
+    class="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity"
+  ></div>
+
+  <div class="min-h-screen flex flex-col lg:flex-row">
+    <!-- LEFT SIDEBAR NAVIGATION (#1E2D2F) -->
+    <aside
+      id="sidebar"
+      class="fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-sidebar text-white flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 shrink-0 select-none"
+    >
+      <!-- Top Brand & Navigation -->
+      <div class="p-5">
+        <!-- Brand Logo -->
+        <div class="flex items-center justify-between mb-8 px-2">
+          <a href="#" class="flex items-center gap-3 group">
+            <!-- Emerald Green Piggy Icon Badge -->
+            <div class="w-10 h-10 rounded-xl bg-emeraldBrand flex items-center justify-center shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform">
+              <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z" />
+                <path d="M2 9v1c0 1.1.9 2 2 2h1" />
+                <path d="M16 11h.01" />
+              </svg>
+            </div>
+            <div>
+              <span class="font-display font-bold text-lg tracking-tight text-white block leading-none">PiggyBank</span>
+              <span class="text-[11px] text-emerald-300/70 font-medium tracking-wider uppercase mt-0.5 block">Smart Wealth</span>
+            </div>
+          </a>
+          <!-- Close Button on Mobile -->
+          <button
+            onclick="toggleSidebar()"
+            class="lg:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-sidebarHover"
+            aria-label="Close Sidebar"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="space-y-1.5" id="navMenu">
+          <!-- Dashboard (Active) -->
+          <button
+            data-nav="Dashboard"
+            onclick="selectNav(this, 'Dashboard')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold bg-emeraldBrand text-white shadow-sm transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            </svg>
+            <span>Dashboard</span>
+          </button>
+
+          <!-- Account -->
+          <button
+            data-nav="Account"
+            onclick="selectNav(this, 'Account')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>Account</span>
+          </button>
+
+          <!-- Transactions -->
+          <button
+            data-nav="Transactions"
+            onclick="selectNav(this, 'Transactions')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            <span>Transactions</span>
+          </button>
+
+          <!-- Savings -->
+          <button
+            data-nav="Savings"
+            onclick="selectNav(this, 'Savings')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Savings</span>
+          </button>
+
+          <!-- Cards -->
+          <button
+            data-nav="Cards"
+            onclick="selectNav(this, 'Cards')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            <span>Cards</span>
+          </button>
+
+          <!-- Analytics -->
+          <button
+            data-nav="Analytics"
+            onclick="selectNav(this, 'Analytics')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Analytics</span>
+          </button>
+
+          <!-- Settings -->
+          <button
+            data-nav="Settings"
+            onclick="selectNav(this, 'Settings')"
+            class="nav-item w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-sidebarHover transition-all"
+          >
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bottom User Profile Card -->
+      <div class="p-4 border-t border-white/10">
+        <div
+          onclick="showToast('Viewing profile settings for Clara Bennett')"
+          class="flex items-center gap-3 p-2.5 rounded-xl bg-sidebarHover/70 hover:bg-sidebarHover cursor-pointer transition-colors"
+        >
+          <div class="relative shrink-0">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+              onerror="this.src='https://placehold.co/100x100/1D6E4E/FFFFFF?text=CB'"
+              alt="Clara Bennett"
+              class="w-10 h-10 rounded-full object-cover ring-2 ring-emeraldBrand"
+            />
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-sidebar rounded-full"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-white truncate">Clara Bennett</p>
+            <p class="text-xs text-gray-400 truncate">clara.b@piggybank.io</p>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA (#F6F9F8) -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- TOP HEADER BAR -->
+      <header class="sticky top-0 z-20 bg-mintBg/90 backdrop-blur-md border-b border-cardBorder px-4 sm:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <!-- Left: Mobile Hamburger + Search Bar -->
+          <div class="flex items-center gap-3 flex-1 max-w-md">
+            <button
+              onclick="toggleSidebar()"
+              class="lg:hidden p-2.5 rounded-xl bg-white border border-cardBorder text-[#1E2D2F] hover:bg-gray-50 transition-colors"
+              aria-label="Open Navigation"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            <!-- Search Input -->
+            <div class="relative flex-1">
+              <svg
+                class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                id="searchInput"
+                type="text"
+                onkeyup="filterTransactions()"
+                placeholder="Search transactions, goals, or recipients..."
+                class="w-full bg-white border border-cardBorder rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#1E2D2F] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emeraldBrand/25 focus:border-emeraldBrand transition-all shadow-2xs"
+              />
+            </div>
+          </div>
+
+          <!-- Right: Utility Icons & Profile -->
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <!-- Quick Help / Support -->
+            <button
+              onclick="showToast('Support center is online 24/7')"
+              class="hidden sm:flex p-2.5 rounded-xl bg-white border border-cardBorder text-gray-600 hover:text-emeraldBrand hover:border-emeraldBrand/30 transition-all shadow-2xs"
+              title="Help & Support"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </button>
+
+            <!-- Notifications -->
+            <button
+              onclick="showToast('You have 2 unread savings milestones!')"
+              class="relative p-2.5 rounded-xl bg-white border border-cardBorder text-gray-600 hover:text-emeraldBrand hover:border-emeraldBrand/30 transition-all shadow-2xs"
+              title="Notifications"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span class="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-emeraldBrand ring-2 ring-white"></span>
+            </button>
+
+            <!-- Header User Avatar -->
+            <button
+              onclick="showToast('Account verified • Plus Member')"
+              class="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-xl bg-white border border-cardBorder hover:border-emeraldBrand/30 transition-all shadow-2xs"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                onerror="this.src='https://placehold.co/100x100/1D6E4E/FFFFFF?text=CB'"
+                alt="User"
+                class="w-7 h-7 rounded-lg object-cover"
+              />
+              <span class="hidden md:inline text-xs font-semibold text-[#1E2D2F]">Clara B.</span>
+              <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD WORKSPACE -->
+      <main class="flex-1 px-4 sm:px-8 py-6 sm:py-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+          <!-- Page Title & Date Filter Bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emeraldLight text-emeraldBrand flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+              </div>
+              <div>
+                <h1 id="pageHeaderTitle" class="font-display text-2xl sm:text-3xl font-bold text-[#1E2D2F] tracking-tight">
+                  Dashboard
+                </h1>
+                <p class="text-xs sm:text-sm text-gray-500">Welcome back, Clara! Here is your financial overview.</p>
+              </div>
+            </div>
+
+            <!-- Date / Export Controls -->
+            <div class="flex items-center gap-2.5">
+              <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-cardBorder text-xs font-medium text-gray-600 shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Nov 2026
+              </span>
+              <button
+                onclick="showToast('Downloading monthly PDF statement...')"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-cardBorder text-xs font-semibold text-[#1E2D2F] hover:bg-emeraldLight hover:text-emeraldBrand hover:border-emeraldBrand/30 transition-all shadow-2xs"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Export Report</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TOP ROW GRID: Main Balance Card (Left/Center) + Recent Transactions (Right) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- MAIN BALANCE & QUICK ACTIONS CARD (7 Columns on Desktop) -->
+            <section class="lg:col-span-7 bg-white rounded-3xl border border-cardBorder p-6 sm:p-7 shadow-soft hover:shadow-cardHover transition-shadow flex flex-col justify-between">
+              <div>
+                <!-- Card Header Row -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-500">Total Available Balance</span>
+                    <button
+                      onclick="toggleBalanceVisibility()"
+                      class="p-1 rounded-lg text-gray-400 hover:text-emeraldBrand hover:bg-emeraldLight transition-colors"
+                      title="Toggle Balance Visibility"
+                    >
+                      <svg id="eyeIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emeraldLight text-emeraldBrand text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                    +14.2% this month
+                  </span>
+                </div>
+
+                <!-- Primary Balance Figure + Mini Sparkline -->
+                <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+                  <div>
+                    <div id="balanceDisplay" class="font-display text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-[#1E2D2F] tracking-tight leading-none">
+                      $12,415.72
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">
+                      USD Primary Checking •••• 4829
+                    </p>
+                  </div>
+
+                  <!-- Decorative Mini Trend Sparkline matching Mock-up -->
+                  <div class="w-32 h-12">
+                    <svg viewBox="0 0 120 44" class="w-full h-full overflow-visible">
+                      <defs>
+                        <linearGradient id="miniSpark" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.22" />
+                          <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M2,34 Q20,30 35,22 T70,25 T100,10 L118,6 L118,42 L2,42 Z"
+                        fill="url(#miniSpark)"
+                      />
+                      <path
+                        d="M2,34 Q20,30 35,22 T70,25 T100,10 L118,6"
+                        fill="none"
+                        stroke="#1D6E4E"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                      />
+                      <circle cx="118" cy="6" r="3.5" fill="#1D6E4E" stroke="#fff" stroke-width="1.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Monthly Spending Limit Green Progress Bar -->
+                <div class="bg-mintBg rounded-2xl p-4 border border-cardBorder/80 mb-6">
+                  <div class="flex items-center justify-between text-xs mb-2">
+                    <span class="font-semibold text-[#1E2D2F]">Monthly Savings & Spending Target</span>
+                    <span class="font-bold text-emeraldBrand">$3,250.00 <span class="text-gray-400 font-normal">/ $5,000.00</span></span>
+                  </div>
+                  <div class="w-full h-2.5 bg-gray-200/80 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-emeraldBrand to-emerald-500 rounded-full transition-all duration-700"
+                      style="width: 65%"
+                    ></div>
+                  </div>
+                  <div class="flex justify-between text-[11px] text-gray-400 mt-1.5">
+                    <span>65% allocated</span>
+                    <span>$1,750.00 remaining</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Action Buttons + Primary CTA -->
+              <div class="space-y-4">
+                <div class="grid grid-cols-4 gap-2.5 sm:gap-3">
+                  <!-- Send -->
+                  <button
+                    onclick="openQuickModal('Send Money')"
+                    class="group flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-mintBg hover:bg-emeraldLight border border-cardBorder hover:border-emeraldBrand/30 transition-all"
+                  >
+                    <div class="w-9 h-9 rounded-xl bg-white group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center shadow-2xs transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-[#1E2D2F]">Send</span>
+                  </button>
+
+                  <!-- Request -->
+                  <button
+                    onclick="openQuickModal('Request Payment')"
+                    class="group flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-mintBg hover:bg-emeraldLight border border-cardBorder hover:border-emeraldBrand/30 transition-all"
+                  >
+                    <div class="w-9 h-9 rounded-xl bg-white group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center shadow-2xs transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-[#1E2D2F]">Request</span>
+                  </button>
+
+                  <!-- Exchange -->
+                  <button
+                    onclick="openQuickModal('Currency Exchange')"
+                    class="group flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-mintBg hover:bg-emeraldLight border border-cardBorder hover:border-emeraldBrand/30 transition-all"
+                  >
+                    <div class="w-9 h-9 rounded-xl bg-white group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center shadow-2xs transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-[#1E2D2F]">Exchange</span>
+                  </button>
+
+                  <!-- More -->
+                  <button
+                    onclick="showToast('More options: Pay Bills, QR Scan, Split Check')"
+                    class="group flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-2xl bg-mintBg hover:bg-emeraldLight border border-cardBorder hover:border-emeraldBrand/30 transition-all"
+                  >
+                    <div class="w-9 h-9 rounded-xl bg-white group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center shadow-2xs transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="19" cy="12" r="1.5" />
+                        <circle cx="5" cy="12" r="1.5" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-[#1E2D2F]">More</span>
+                  </button>
+                </div>
+
+                <!-- Primary Emerald Green CTA Button -->
+                <button
+                  onclick="openQuickModal('Add Funds to Balance')"
+                  class="w-full py-3.5 px-6 rounded-2xl bg-emeraldBrand hover:bg-[#17593F] active:scale-[0.99] text-white font-semibold text-sm shadow-md shadow-emeraldBrand/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>Top Up Balance</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- RECENT TRANSACTIONS LIST CARD (5 Columns on Desktop) -->
+            <section class="lg:col-span-5 bg-white rounded-3xl border border-cardBorder p-6 sm:p-7 shadow-soft hover:shadow-cardHover transition-shadow flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 class="font-display text-lg font-bold text-[#1E2D2F]">Recent Transactions</h2>
+                    <p class="text-xs text-gray-400">Latest account activity</p>
+                  </div>
+                  <button
+                    onclick="showToast('Showing all 48 transactions')"
+                    class="text-xs font-semibold text-emeraldBrand hover:underline"
+                  >
+                    View All
+                  </button>
+                </div>
+
+                <!-- Transactions List -->
+                <div id="transactionList" class="space-y-3">
+                  <!-- Item 1 -->
+                  <div
+                    data-name="Sophia Miller Design Studio"
+                    class="tx-item flex items-center justify-between p-3 rounded-2xl hover:bg-mintBg border border-transparent hover:border-cardBorder transition-all cursor-pointer"
+                    onclick="showToast('Received $850.00 from Sophia Miller')"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img
+                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+                        onerror="this.src='https://placehold.co/100x100/E8F3EE/1D6E4E?text=SM'"
+                        alt="Sophia Miller"
+                        class="w-10 h-10 rounded-xl object-cover shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-[#1E2D2F] truncate">Sophia Miller</p>
+                        <p class="text-xs text-gray-400 truncate">Today, 2:45 PM • Transfer</p>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                      <span class="text-sm font-bold text-emeraldBrand">+$850.00</span>
+                      <span class="block text-[10px] text-emerald-600 font-medium">Completed</span>
+                    </div>
+                  </div>
+
+                  <!-- Item 2 -->
+                  <div
+                    data-name="Whole Foods Market Groceries"
+                    class="tx-item flex items-center justify-between p-3 rounded-2xl hover:bg-mintBg border border-transparent hover:border-cardBorder transition-all cursor-pointer"
+                    onclick="showToast('Paid $124.50 at Whole Foods Market')"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-10 h-10 rounded-xl bg-emeraldLight text-emeraldBrand flex items-center justify-center font-bold text-sm shrink-0">
+                        WF
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-[#1E2D2F] truncate">Whole Foods Market</p>
+                        <p class="text-xs text-gray-400 truncate">Yesterday • Groceries</p>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                      <span class="text-sm font-bold text-[#1E2D2F]">-$124.50</span>
+                      <span class="block text-[10px] text-gray-400">Card ••4829</span>
+                    </div>
+                  </div>
+
+                  <!-- Item 3 -->
+                  <div
+                    data-name="Liam Carter Split Dinner"
+                    class="tx-item flex items-center justify-between p-3 rounded-2xl hover:bg-mintBg border border-transparent hover:border-cardBorder transition-all cursor-pointer"
+                    onclick="showToast('Sent $48.00 to Liam Carter')"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img
+                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
+                        onerror="this.src='https://placehold.co/100x100/1E2D2F/FFFFFF?text=LC'"
+                        alt="Liam Carter"
+                        class="w-10 h-10 rounded-xl object-cover shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-[#1E2D2F] truncate">Liam Carter</p>
+                        <p class="text-xs text-gray-400 truncate">Nov 10 • Split Dinner</p>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                      <span class="text-sm font-bold text-[#1E2D2F]">-$48.00</span>
+                      <span class="block text-[10px] text-gray-400">Instant Pay</span>
+                    </div>
+                  </div>
+
+                  <!-- Item 4 -->
+                  <div
+                    data-name="Auto-Save Vacation Fund"
+                    class="tx-item flex items-center justify-between p-3 rounded-2xl hover:bg-mintBg border border-transparent hover:border-cardBorder transition-all cursor-pointer"
+                    onclick="showToast('Auto-saved $300.00 to Vacation Fund')"
+                  >
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-[#1E2D2F] truncate">Vacation Fund Vault</p>
+                        <p class="text-xs text-gray-400 truncate">Nov 08 • Auto-Save</p>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                      <span class="text-sm font-bold text-emeraldBrand">+$300.00</span>
+                      <span class="block text-[10px] text-emerald-600 font-medium">Vault Goal</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Quick Button -->
+              <button
+                onclick="showToast('Opening full transaction ledger...')"
+                class="mt-4 w-full py-2.5 rounded-xl bg-mintBg hover:bg-emeraldLight text-xs font-semibold text-[#1E2D2F] hover:text-emeraldBrand border border-cardBorder transition-colors"
+              >
+                See All Transactions
+              </button>
+            </section>
+          </div>
+
+          <!-- BOTTOM ROW GRID: Account Balance Area Line Chart (Left) + Savings Goals 'Vacation Fund' (Right) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- ACCOUNT BALANCE AREA LINE CHART (7 Columns on Desktop) -->
+            <section class="lg:col-span-7 bg-white rounded-3xl border border-cardBorder p-6 sm:p-7 shadow-soft hover:shadow-cardHover transition-shadow flex flex-col justify-between">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                <div>
+                  <h2 class="font-display text-lg font-bold text-[#1E2D2F]">Account Balance</h2>
+                  <p class="text-xs text-gray-400">Net growth trajectory across all vaults</p>
+                </div>
+
+                <!-- Interactive Period Selector Pills -->
+                <div class="inline-flex p-1 rounded-xl bg-mintBg border border-cardBorder">
+                  <button
+                    onclick="updateChartPeriod('7D', this)"
+                    class="chart-tab px-3 py-1 rounded-lg text-xs font-semibold text-gray-500 hover:text-[#1E2D2F] transition-all"
+                  >
+                    7D
+                  </button>
+                  <button
+                    onclick="updateChartPeriod('1M', this)"
+                    class="chart-tab px-3 py-1 rounded-lg text-xs font-semibold bg-white text-emeraldBrand shadow-2xs transition-all"
+                  >
+                    1M
+                  </button>
+                  <button
+                    onclick="updateChartPeriod('6M', this)"
+                    class="chart-tab px-3 py-1 rounded-lg text-xs font-semibold text-gray-500 hover:text-[#1E2D2F] transition-all"
+                  >
+                    6M
+                  </button>
+                  <button
+                    onclick="updateChartPeriod('1Y', this)"
+                    class="chart-tab px-3 py-1 rounded-lg text-xs font-semibold text-gray-500 hover:text-[#1E2D2F] transition-all"
+                  >
+                    1Y
+                  </button>
+                </div>
+              </div>
+
+              <!-- Responsive SVG Area Line Chart in Emerald Green -->
+              <div class="relative w-full h-56 sm:h-64 select-none">
+                <svg id="balanceChartSvg" viewBox="0 0 600 220" class="w-full h-full overflow-visible">
+                  <defs>
+                    <linearGradient id="emeraldAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.28" />
+                      <stop offset="85%" stop-color="#1D6E4E" stop-opacity="0.03" />
+                      <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Horizontal Dashed Gridlines & Y-Axis Labels -->
+                  <g class="text-[11px] fill-gray-400" font-family="Inter, sans-serif">
+                    <line x1="48" y1="20" x2="585" y2="20" stroke="#E6ECEA" stroke-dasharray="4 4" />
+                    <text x="0" y="24">$15k</text>
+
+                    <line x1="48" y1="65" x2="585" y2="65" stroke="#E6ECEA" stroke-dasharray="4 4" />
+                    <text x="0" y="69">$12k</text>
+
+                    <line x1="48" y1="110" x2="585" y2="110" stroke="#E6ECEA" stroke-dasharray="4 4" />
+                    <text x="0" y="114">$9k</text>
+
+                    <line x1="48" y1="155" x2="585" y2="155" stroke="#E6ECEA" stroke-dasharray="4 4" />
+                    <text x="0" y="159">$6k</text>
+
+                    <line x1="48" y1="190" x2="585" y2="190" stroke="#E6ECEA" />
+                  </g>
+
+                  <!-- Area Fill -->
+                  <path
+                    id="chartAreaPath"
+                    d="M55,148 C110,142 140,120 190,115 C240,110 275,128 325,95 C375,62 415,78 465,52 C515,26 550,36 580,28 L580,190 L55,190 Z"
+                    fill="url(#emeraldAreaGradient)"
+                  />
+
+                  <!-- Main Emerald Curve -->
+                  <path
+                    id="chartLinePath"
+                    class="chart-path"
+                    d="M55,148 C110,142 140,120 190,115 C240,110 275,128 325,95 C375,62 415,78 465,52 C515,26 550,36 580,28"
+                    fill="none"
+                    stroke="#1D6E4E"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+
+                  <!-- Interactive Data Nodes -->
+                  <g id="chartNodes">
+                    <circle cx="55" cy="148" r="4" fill="#fff" stroke="#1D6E4E" stroke-width="2.5" />
+                    <circle cx="190" cy="115" r="4" fill="#fff" stroke="#1D6E4E" stroke-width="2.5" />
+                    <circle cx="325" cy="95" r="4" fill="#fff" stroke="#1D6E4E" stroke-width="2.5" />
+                    <circle cx="465" cy="52" r="5.5" fill="#1D6E4E" stroke="#fff" stroke-width="2.5" />
+                    <circle cx="580" cy="28" r="4.5" fill="#fff" stroke="#1D6E4E" stroke-width="2.5" />
+                  </g>
+
+                  <!-- Highlight Callout Badge on Peak Node -->
+                  <g transform="translate(425, 14)">
+                    <rect x="0" y="0" width="80" height="24" rx="8" fill="#1E2D2F" />
+                    <text x="40" y="16" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600" font-family="Inter, sans-serif">
+                      $12,415
+                    </text>
+                  </g>
+
+                  <!-- X-Axis Labels -->
+                  <g id="chartXLabels" class="text-[11px] fill-gray-400" font-family="Inter, sans-serif" text-anchor="middle">
+                    <text x="55" y="212">Week 1</text>
+                    <text x="190" y="212">Week 2</text>
+                    <text x="325" y="212">Week 3</text>
+                    <text x="465" y="212">Week 4</text>
+                    <text x="580" y="212">Today</text>
+                  </g>
+                </svg>
+              </div>
+            </section>
+
+            <!-- SAVINGS GOALS CARD: 'VACATION FUND' WITH 3D-STYLE PIGGY BANK ILLUSTRATION (5 Columns on Desktop) -->
+            <section class="lg:col-span-5 bg-white rounded-3xl border border-cardBorder p-6 sm:p-7 shadow-soft hover:shadow-cardHover transition-shadow flex flex-col justify-between">
+              <div>
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 class="font-display text-lg font-bold text-[#1E2D2F]">Savings Goals</h2>
+                    <p class="text-xs text-gray-400">Active target vault</p>
+                  </div>
+                  <button
+                    onclick="showToast('Creating a new savings vault...')"
+                    class="inline-flex items-center gap-1 text-xs font-semibold text-emeraldBrand bg-emeraldLight hover:bg-emeraldBrand hover:text-white px-3 py-1.5 rounded-xl transition-colors"
+                  >
+                    <span>+ New Goal</span>
+                  </button>
+                </div>
+
+                <!-- 3D-Style Cute Piggy Bank & Gold Coins Illustration Stage (Matches Mockup) -->
+                <div class="relative rounded-2xl bg-gradient-to-br from-[#E4F2EC] via-[#EDF6F2] to-[#D6ECE2] p-5 mb-5 overflow-hidden border border-emeraldBrand/10 flex flex-col items-center">
+                  <!-- Decorative Soft Botanical Leaves in Background -->
+                  <svg class="w-full h-36 animate-float" viewBox="0 0 260 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <!-- 3D Pink Piggy Gradient -->
+                      <radialGradient id="piggyBody3D" cx="38%" cy="32%" r="65%">
+                        <stop offset="0%" stop-color="#FFD4DF" />
+                        <stop offset="55%" stop-color="#F79BB4" />
+                        <stop offset="100%" stop-color="#DF6E8E" />
+                      </radialGradient>
+                      <radialGradient id="piggySnout3D" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#FFC2D1" />
+                        <stop offset="100%" stop-color="#E37795" />
+                      </radialGradient>
+                      <!-- 3D Gold Coin Gradient -->
+                      <linearGradient id="goldCoin3D" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#FFE47A" />
+                        <stop offset="50%" stop-color="#F7B928" />
+                        <stop offset="100%" stop-color="#D48806" />
+                      </linearGradient>
+                      <!-- Shadow -->
+                      <radialGradient id="groundShadow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.22" />
+                        <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0" />
+                      </radialGradient>
+                    </defs>
+
+                    <!-- Soft Ground Shadow -->
+                    <ellipse cx="130" cy="134" rx="74" ry="10" fill="url(#groundShadow)" />
+
+                    <!-- Decorative Mint Leaves -->
+                    <path d="M58 112 C38 98 35 72 55 62 C68 80 68 98 58 112 Z" fill="#6BBF9B" opacity="0.65" />
+                    <path d="M204 110 C222 94 224 68 205 60 C192 78 193 96 204 110 Z" fill="#1D6E4E" opacity="0.45" />
+
+                    <!-- Floating Gold Coin Dropping into Slot -->
+                    <g transform="translate(116, 10)">
+                      <circle cx="15" cy="15" r="13" fill="url(#goldCoin3D)" stroke="#FFF3B0" stroke-width="1.5" />
+                      <text x="15" y="20" text-anchor="middle" fill="#9A5B00" font-size="13" font-weight="800" font-family="Plus Jakarta Sans, sans-serif">$</text>
+                    </g>
+
+                    <!-- Piggy Back Legs -->
+                    <rect x="92" y="108" width="16" height="22" rx="7" fill="#D96B8A" />
+                    <rect x="148" y="108" width="16" height="22" rx="7" fill="#D96B8A" />
+
+                    <!-- Cute Curly Tail -->
+                    <path d="M182 82 C194 78 196 66 187 65 C180 64 181 74 191 74" stroke="#E57A98" stroke-width="4" stroke-linecap="round" fill="none" />
+
+                    <!-- Piggy Ear (Back) -->
+                    <path d="M98 48 C92 32 108 28 114 44 Z" fill="#E07291" />
+
+                    <!-- Main 3D Piggy Body -->
+                    <ellipse cx="130" cy="82" rx="54" ry="42" fill="url(#piggyBody3D)" />
+
+                    <!-- Coin Slot on Top -->
+                    <rect x="118" y="43" width="24" height="5" rx="2.5" fill="#7D2941" />
+
+                    <!-- Piggy Front Legs -->
+                    <rect x="102" y="112" width="17" height="21" rx="7.5" fill="#EE83A1" />
+                    <rect x="140" y="112" width="17" height="21" rx="7.5" fill="#EE83A1" />
+
+                    <!-- Piggy Ear (Front) -->
+                    <path d="M110 52 C102 34 120 30 125 48 Z" fill="#F695B0" />
+
+                    <!-- Cute 3D Snout -->
+                    <ellipse cx="77" cy="84" rx="14" ry="17" fill="url(#piggySnout3D)" />
+                    <ellipse cx="73" cy="81" rx="2.5" ry="4" fill="#9E3B57" />
+                    <ellipse cx="81" cy="81" rx="2.5" ry="4" fill="#9E3B57" />
+
+                    <!-- Expressive Glossy Eye -->
+                    <circle cx="96" cy="70" r="4.5" fill="#1E2D2F" />
+                    <circle cx="94.5" cy="68.5" r="1.5" fill="#FFFFFF" />
+
+                    <!-- Rosy Cheek -->
+                    <ellipse cx="96" cy="84" rx="6" ry="3.5" fill="#FF7597" opacity="0.55" />
+
+                    <!-- Stacked Gold Coins on Bottom Right -->
+                    <g transform="translate(166, 102)">
+                      <ellipse cx="22" cy="24" rx="16" ry="5" fill="#D48806" />
+                      <ellipse cx="22" cy="21" rx="16" ry="5" fill="url(#goldCoin3D)" />
+                      <ellipse cx="22" cy="17" rx="16" ry="5" fill="#D48806" />
+                      <ellipse cx="22" cy="14" rx="16" ry="5" fill="url(#goldCoin3D)" />
+                      <ellipse cx="22" cy="10" rx="16" ry="5" fill="#D48806" />
+                      <ellipse cx="22" cy="7" rx="16" ry="5" fill="#FFE47A" />
+                    </g>
+
+                    <!-- Stacked Gold Coins on Bottom Left -->
+                    <g transform="translate(46, 110)">
+                      <ellipse cx="16" cy="16" rx="14" ry="4.5" fill="#D48806" />
+                      <ellipse cx="16" cy="13" rx="14" ry="4.5" fill="url(#goldCoin3D)" />
+                      <ellipse cx="16" cy="9" rx="14" ry="4.5" fill="#FFE47A" />
+                    </g>
+                  </svg>
+                </div>
+
+                <!-- Goal Info & Progress -->
+                <div class="text-center mb-4">
+                  <h3 class="font-display text-lg font-bold text-[#1E2D2F]">Vacation Fund</h3>
+                  <p class="text-xs text-gray-500 mt-0.5">Kyoto & Amalfi Coast Summer Trip</p>
+                </div>
+
+                <div class="space-y-2 mb-5">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-emeraldBrand text-sm" id="goalSavedAmount">$3,450.00</span>
+                    <span class="text-gray-400 font-medium">Goal: $5,000.00 (<span id="goalPercentText">69%</span>)</span>
+                  </div>
+                  <div class="w-full h-2.5 bg-mintBg rounded-full overflow-hidden border border-cardBorder">
+                    <div
+                      id="goalProgressBar"
+                      class="h-full bg-emeraldBrand rounded-full transition-all duration-500"
+                      style="width: 69%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Save Money CTA Button -->
+              <button
+                onclick="boostVacationFund()"
+                class="w-full py-3 px-5 rounded-2xl bg-emeraldBrand hover:bg-[#17593F] active:scale-[0.99] text-white font-semibold text-sm shadow-sm flex items-center justify-center gap-2 transition-all"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Save Money (+$150)</span>
+              </button>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE ACTION MODAL (For Send, Request, Top Up) -->
+  <div
+    id="actionModal"
+    class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs hidden items-center justify-center p-4"
+  >
+    <div class="bg-white rounded-3xl border border-cardBorder max-w-md w-full p-6 shadow-2xl transform transition-all">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modalTitle" class="font-display text-lg font-bold text-[#1E2D2F]">Quick Transfer</h3>
+        <button
+          onclick="closeQuickModal()"
+          class="p-2 rounded-xl text-gray-400 hover:text-[#1E2D2F] hover:bg-mintBg transition-colors"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form onsubmit="submitQuickModal(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5">Amount (USD)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-display font-bold text-lg text-[#1E2D2F]">$</span>
+            <input
+              id="modalAmountInput"
+              type="number"
+              step="0.01"
+              min="1"
+              value="250.00"
+              required
+              class="w-full pl-9 pr-4 py-3 rounded-2xl bg-mintBg border border-cardBorder font-display text-xl font-bold text-[#1E2D2F] focus:outline-none focus:border-emeraldBrand"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1.5">Note or Recipient</label>
+          <input
+            id="modalNoteInput"
+            type="text"
+            placeholder="e.g., Monthly deposit or Alex Morgan"
+            class="w-full px-4 py-2.5 rounded-xl bg-mintBg border border-cardBorder text-sm text-[#1E2D2F] focus:outline-none focus:border-emeraldBrand"
+          />
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onclick="closeQuickModal()"
+            class="flex-1 py-3 rounded-xl bg-mintBg hover:bg-gray-200/70 text-sm font-semibold text-gray-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="flex-1 py-3 rounded-xl bg-emeraldBrand hover:bg-[#17593F] text-sm font-semibold text-white shadow-md shadow-emeraldBrand/20 transition-all"
+          >
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // State variables
+    let currentBalance = 12415.72;
+    let isBalanceHidden = false;
+    let vacationSaved = 3450.00;
+    const vacationTarget = 5000.00;
+    let currentModalMode = '';
+
+    // Toggle mobile sidebar
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      const isClosed = sidebar.classList.contains('-translate-x-full');
+
+      if (isClosed) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // Active navigation item switching
+    function selectNav(el, name) {
+      document.querySelectorAll('.nav-item').forEach((item) => {
+        item.classList.remove('bg-emeraldBrand', 'text-white', 'font-semibold', 'shadow-sm');
+        item.classList.add('text-gray-300', 'font-medium');
+      });
+
+      el.classList.remove('text-gray-300', 'font-medium');
+      el.classList.add('bg-emeraldBrand', 'text-white', 'font-semibold', 'shadow-sm');
+
+      document.getElementById('pageHeaderTitle').textContent = name;
+      showToast(`Navigated to ${name}`);
+
+      // Close mobile drawer automatically
+      if (window.innerWidth < 1024) {
+        toggleSidebar();
+      }
+    }
+
+    // Show clean toast message (never uses alert)
+    let toastTimeout;
+    function showToast(message) {
+      const banner = document.getElementById('toastBanner');
+      const msgEl = document.getElementById('toastMessage');
+      msgEl.textContent = message;
+
+      banner.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    // Format currency helper
+    function formatCurrency(val) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+      }).format(val);
+    }
+
+    // Toggle hide/show balance
+    function toggleBalanceVisibility() {
+      isBalanceHidden = !isBalanceHidden;
+      const display = document.getElementById('balanceDisplay');
+      display.textContent = isBalanceHidden ? '••••••••••' : formatCurrency(currentBalance);
+    }
+
+    // Boost Vacation Fund savings goal interactively
+    function boostVacationFund() {
+      if (vacationSaved >= vacationTarget) {
+        showToast('Congratulations! Vacation Fund goal reached!');
+        return;
+      }
+      vacationSaved = Math.min(vacationTarget, vacationSaved + 150);
+      const pct = Math.round((vacationSaved / vacationTarget) * 100);
+
+      document.getElementById('goalSavedAmount').textContent = formatCurrency(vacationSaved);
+      document.getElementById('goalPercentText').textContent = `${pct}%`;
+      document.getElementById('goalProgressBar').style.width = `${pct}%`;
+
+      showToast(`Added $150.00 to Vacation Fund (${pct}%)`);
+    }
+
+    // Live filter recent transactions via top search bar
+    function filterTransactions() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const items = document.querySelectorAll('.tx-item');
+      items.forEach((item) => {
+        const text = item.getAttribute('data-name').toLowerCase();
+        item.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    }
+
+    // Quick Modal Controls
+    function openQuickModal(title) {
+      currentModalMode = title;
+      document.getElementById('modalTitle').textContent = title;
+      const modal = document.getElementById('actionModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeQuickModal() {
+      const modal = document.getElementById('actionModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function submitQuickModal(e) {
+      e.preventDefault();
+      const amount = parseFloat(document.getElementById('modalAmountInput').value);
+      if (isNaN(amount) || amount <= 0) return;
+
+      if (currentModalMode === 'Send Money') {
+        currentBalance = Math.max(0, currentBalance - amount);
+        showToast(`Sent ${formatCurrency(amount)} successfully!`);
+      } else {
+        currentBalance += amount;
+        showToast(`Added ${formatCurrency(amount)} to your balance!`);
+      }
+
+      if (!isBalanceHidden) {
+        document.getElementById('balanceDisplay').textContent = formatCurrency(currentBalance);
+      }
+      closeQuickModal();
+    }
+
+    // Update SVG Account Balance Area Chart on Period Tab Click
+    function updateChartPeriod(period, btnEl) {
+      document.querySelectorAll('.chart-tab').forEach((tab) => {
+        tab.classList.remove('bg-white', 'text-emeraldBrand', 'shadow-2xs');
+        tab.classList.add('text-gray-500');
+      });
+      btnEl.classList.add('bg-white', 'text-emeraldBrand', 'shadow-2xs');
+      btnEl.classList.remove('text-gray-500');
+
+      const datasets = {
+        '7D': {
+          line: 'M55,130 C130,126 160,118 190,108 C240,92 280,104 325,84 C375,62 420,66 465,48 C515,30 550,34 580,28',
+          area: 'M55,130 C130,126 160,118 190,108 C240,92 280,104 325,84 C375,62 420,66 465,48 C515,30 550,34 580,28 L580,190 L55,190 Z',
+          labels: ['Mon', 'Wed', 'Fri', 'Sat', 'Today'],
+        },
+        '1M': {
+          line: 'M55,148 C110,142 140,120 190,115 C240,110 275,128 325,95 C375,62 415,78 465,52 C515,26 550,36 580,28',
+          area: 'M55,148 C110,142 140,120 190,115 C240,110 275,128 325,95 C375,62 415,78 465,52 C515,26 550,36 580,28 L580,190 L55,190 Z',
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Today'],
+        },
+        '6M': {
+          line: 'M55,168 C110,155 150,145 190,132 C240,115 280,102 325,88 C375,72 420,60 465,45 C515,32 550,30 580,24',
+          area: 'M55,168 C110,155 150,145 190,132 C240,115 280,102 325,88 C375,72 420,60 465,45 C515,32 550,30 580,24 L580,190 L55,190 Z',
+          labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Nov'],
+        },
+        '1Y': {
+          line: 'M55,178 C115,170 150,150 190,140 C245,126 280,112 325,90 C375,68 420,58 465,42 C515,25 550,28 580,20',
+          area: 'M55,178 C115,170 150,150 190,140 C245,126 280,112 325,90 C375,68 420,58 465,42 C515,25 550,28 580,20 L580,190 L55,190 Z',
+          labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Now'],
+        },
+      };
+
+      const selected = datasets[period];
+      const linePath = document.getElementById('chartLinePath');
+      const areaPath = document.getElementById('chartAreaPath');
+
+      linePath.setAttribute('d', selected.line);
+      areaPath.setAttribute('d', selected.area);
+
+      // Re-trigger line draw animation
+      linePath.classList.remove('chart-path');
+      void linePath.offsetWidth;
+      linePath.classList.add('chart-path');
+
+      const xTexts = document.getElementById('chartXLabels').querySelectorAll('text');
+      selected.labels.forEach((lbl, idx) => {
+        if (xTexts[idx]) xTexts[idx].textContent = lbl;
+      });
+    }
+  </script>
+</body>
+</html>

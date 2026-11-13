@@ -3410,6 +3410,38 @@ test("Finance captures immutable native periodic bases, retries original evidenc
   await region.getByLabel("Basis period start", { exact: true }).fill(today);
   const before = native(),
     base = "/api/v1/staff/finance/periodic-bases";
+  // The real Core capture and Finance audit commit; only the browser reply is lost.
+  let acceptedCapture: unknown, interruptedKey: string | undefined;
+  await reviewer.page.route("**" + base, async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    const actual = await route.fetch();
+    expect(actual.status()).toBe(201);
+    acceptedCapture = await actual.json();
+    interruptedKey = route.request().headers()["idempotency-key"];
+    await route.abort("failed");
+  });
+  const interrupted = reviewer.page.waitForEvent(
+    "requestfailed",
+    (r) => r.url().endsWith(base) && r.method() === "POST",
+  );
+  await region
+    .getByRole("button", { name: "Capture or retry basis", exact: true })
+    .click();
+  await interrupted;
+  await expect(region.getByRole("alert")).toBeVisible();
+  await expect(
+    region.getByRole("heading", {
+      name: "Captured Core observation",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect(native()).toBe(before);
+  expect(
+    sql(
+      `SELECT count(*) FROM core.periodic_bases WHERE policy_id='${input.policy.id}' AND account_id='${account}'`,
+    ),
+  ).toBe("1");
+  await reviewer.page.unroute("**" + base);
   const waiting = reviewer.page.waitForResponse(
     (r) => r.url().endsWith(base) && r.request().method() === "POST",
   );
@@ -3421,6 +3453,18 @@ test("Finance captures immutable native periodic bases, retries original evidenc
   const original = await response.json(),
     body = response.request().postDataJSON(),
     key = response.request().headers()["idempotency-key"];
+  expect(key).toBe(interruptedKey);
+  expect(original).toEqual(acceptedCapture);
+  expect(
+    sql(
+      `SELECT count(*) FROM core.periodic_bases WHERE policy_id='${input.policy.id}' AND account_id='${account}'`,
+    ),
+  ).toBe("1");
+  expect(
+    sql(
+      `SELECT count(*) FROM finance.audit_pending WHERE id='${original.basis.id}'`,
+    ),
+  ).toBe("1");
   expect(original.basis.periodStatus).toBe("OPEN_PERIOD_PROVISIONAL");
   expect(original.basis.source).toBe("CORE_BUSINESS_DATE_BASIS_V1");
   expect(original.basis.sourceCount).toBeGreaterThan(5);
@@ -3679,4 +3723,503 @@ test("Finance captures immutable native periodic bases, retries original evidenc
   await approver.context.close();
   await security.context.close();
   await alice.context.close();
+});
+
+test("Finance audit delivery passes poisoned records, recovers original native evidence and exposes safe receipts", async ({
+  browser,
+}) => {
+  const reviewer = await login(browser, "reviewer", true),
+    approver = await login(browser, "approver", true),
+    security = await login(browser, "security", true),
+    alice = await login(browser, "alice");
+  const errors: string[] = [];
+  reviewer.page.on("pageerror", (e) => errors.push(e.message));
+  const fixture = JSON.parse(
+    readFileSync(resolve(".local/customer-browser-fixture.json"), "utf8"),
+  );
+  expect(fixture.database).toMatch(/^piggybank_http_test_[a-f0-9]{32}$/);
+  const sql = (statement: string) =>
+    execFileSync(
+      "podman",
+      [
+        "exec",
+        "piggybank-postgres-1",
+        "psql",
+        "-U",
+        "dev_admin",
+        "-d",
+        fixture.database,
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        statement,
+      ],
+      { encoding: "utf8" },
+    ).trim();
+  const native = () =>
+    sql(
+      "SELECT jsonb_build_object('journals',(SELECT count(*) FROM core.journal_batches),'positions',(SELECT jsonb_agg(jsonb_build_array(id,booked,held,version) ORDER BY id) FROM core.ledger_accounts))",
+    );
+  const before = native(),
+    good = "ffffffff-ffff-ffff-ffff-fffffffffffd",
+    bad = "00000000-0000-0000-0000-000000000001";
+  // Disposable metadata fault only. The valid Controls event is appended through
+  // its original guarded native command; no financial source is written here.
+  sql(
+    "INSERT INTO finance.audit_pending(id,record) SELECT ('00000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,jsonb_build_object('broken',true,'privateMarker','DO_NOT_EXPOSE_AUDIT_PAYLOAD') FROM generate_series(1,51)n",
+  );
+  const record = {
+    actorIssuer: "urn:synthetic-browser-audit",
+    actorSubject: "private-browser-actor",
+    actorPersonId: null,
+    representedParty: null,
+    action: "finance.test.browser",
+    resource: good,
+    outcome: "RECORDED",
+    policyVersion: "synthetic-v1",
+    reasonCode: "DOMAIN_EVENT",
+    correlationId: good,
+    occurredAt: new Date().toISOString().replace(".000Z", "Z"),
+  };
+  // Generated constants only; dollar quoting avoids interpolating a user string.
+  sql(
+    `INSERT INTO finance.audit_pending(id,record) VALUES('${good}',$audit$${JSON.stringify(record)}$audit$::jsonb); SELECT controls.append_audit('${good}','finance',$audit$${JSON.stringify(record)}$audit$::jsonb)`,
+  );
+  await reviewer.page.goto(staff + "/#/finance/audit/" + bad);
+  await expect(
+    reviewer.page.getByRole("heading", {
+      name: "Track every audit handoff.",
+      exact: true,
+    }),
+  ).toBeVisible();
+  const selected = reviewer.page.getByRole("region", {
+    name: "Selected audit event",
+    exact: true,
+  });
+  await expect(
+    selected.getByText("PENDING_RETRY", { exact: true }),
+  ).toBeVisible({ timeout: 30000 });
+  await expect(
+    selected.getByText("Original record needs investigation", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    selected.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect
+    .poll(
+      () =>
+        sql(
+          `SELECT delivered_at IS NOT NULL FROM finance.audit_pending WHERE id='${good}'`,
+        ),
+      { timeout: 30000 },
+    )
+    .toBe("t");
+  expect(
+    sql(
+      "SELECT count(*) FROM finance.audit_pending WHERE record ? 'broken' AND delivered_at IS NULL",
+    ),
+  ).toBe("51");
+  expect(
+    sql(`SELECT count(*) FROM controls.audit_events WHERE id='${good}'`),
+  ).toBe("1");
+  const base = "/api/v1/staff/finance/audit-delivery";
+  const visible = await (
+    await reviewer.context.request.get(staff + base)
+  ).json();
+  expect(BigInt(visible.pendingCount)).toBeGreaterThanOrEqual(51n);
+  expect(JSON.stringify(visible)).not.toContain("DO_NOT_EXPOSE_AUDIT_PAYLOAD");
+  expect(JSON.stringify(visible)).not.toContain("private-browser-actor");
+  expect(JSON.stringify(visible)).not.toContain("actorIssuer");
+  // Native acknowledgment can commit before an optional relay attempt record.
+  // Its receipt still proves delivery; the UI must not say it is awaiting confirmation.
+  const bare = "ffffffff-ffff-ffff-ffff-fffffffffffc";
+  const bareRecord = { ...record, resource: bare, correlationId: bare };
+  sql(
+    `BEGIN; INSERT INTO finance.audit_pending(id,record) VALUES('${bare}',$audit$${JSON.stringify(bareRecord)}$audit$::jsonb); SELECT controls.append_audit('${bare}','finance',$audit$${JSON.stringify(bareRecord)}$audit$::jsonb); SELECT finance.confirm_audit_delivery('${bare}'); COMMIT`,
+  );
+  expect(
+    (
+      await (
+        await reviewer.context.request.get(staff + base + "/" + bare)
+      ).json()
+    ).lastAttempt,
+  ).toBeNull();
+  await reviewer.page.goto(staff + "/#/finance/audit/" + bare);
+  await expect(
+    selected.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    selected.getByText("No relay attempt retained", { exact: true }).first(),
+  ).toBeVisible();
+  await reviewer.page.goto(staff + "/#/finance/audit/" + good);
+  await expect(
+    selected.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(selected.getByText("DELIVERED", { exact: true })).toBeVisible();
+  const original = await (
+    await reviewer.context.request.get(staff + base + "/" + good)
+  ).json();
+  expect(original.receipt.auditId).toBe(good);
+  expect(original.receipt.controlsDigest).toBe(
+    sql(`SELECT digest FROM controls.audit_events WHERE id='${good}'`),
+  );
+  expect(original.receipt.origin).toBe("NATIVE_CONFIRMATION");
+  expect(original.sourceDigest).toMatch(/^[a-f0-9]{64}$/);
+  expect(native()).toBe(before);
+  await reviewer.page.reload();
+  await expect(
+    selected.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await approver.page.goto(reviewer.page.url());
+  await expect(
+    approver.page.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toBeVisible();
+  expect((await security.context.request.get(staff + base)).status()).toBe(403);
+  expect((await alice.context.request.get(customer + base)).status()).toBe(403);
+  expect(
+    (
+      await reviewer.context.request.post(staff + base, {
+        data: { delivered: true },
+      })
+    ).status(),
+  ).toBe(405);
+  await reviewer.page.locator(".staff-sidebar").evaluate((node) => {
+    node.scrollTop = node.scrollHeight;
+  });
+  await expect(
+    reviewer.page.locator(".staff-sidebar .synthetic"),
+  ).toBeInViewport();
+  await accessible(reviewer.page);
+  await reviewer.page.screenshot({
+    path: ".local/finance-audit-desktop.png",
+    fullPage: true,
+  });
+  await reviewer.page.setViewportSize({ width: 390, height: 844 });
+  await accessible(reviewer.page);
+  expect(
+    await reviewer.page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await selected.screenshot({ path: ".local/finance-audit-mobile.png" });
+  // A trusted restore can damage a receipt link. Inquiry must refuse it and
+  // clear the previously displayed proof rather than retain a delivered badge.
+  sql("ALTER TABLE finance.audit_delivery_receipts DISABLE TRIGGER USER");
+  sql(
+    `UPDATE finance.audit_delivery_receipts SET controls_digest=repeat('a',64) WHERE audit_id='${good}'`,
+  );
+  sql("ALTER TABLE finance.audit_delivery_receipts ENABLE TRIGGER USER");
+  expect(
+    (await reviewer.context.request.get(staff + base + "/" + good)).status(),
+  ).toBe(409);
+  await reviewer.page
+    .getByRole("button", { name: "Refresh audit delivery", exact: true })
+    .click();
+  await expect(reviewer.page.getByRole("alert")).toBeVisible();
+  await expect(
+    reviewer.page.getByRole("heading", {
+      name: "Native audit receipt",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(
+    reviewer.page.getByText("DELIVERED", { exact: true }),
+  ).toHaveCount(0);
+  expect(native()).toBe(before);
+  expect(errors).toEqual([]);
+  await reviewer.context.close();
+  await approver.context.close();
+  await security.context.close();
+  await alice.context.close();
+});
+
+test("Customers read exact owner-scoped periodic disclosures and retain saved versions without enrollment", async ({
+  browser,
+}) => {
+  const alice = await login(browser, "alice"),
+    bob = await login(browser, "bob"),
+    reviewer = await login(browser, "reviewer", true),
+    approver = await login(browser, "approver", true);
+  const errors: string[] = [];
+  alice.page.on("pageerror", (e) => errors.push(e.message));
+  const accounts = await (
+    await alice.context.request.get(customer + "/api/v1/accounts")
+  ).json();
+  const account =
+    accounts.find((a: { state: string }) => a.state === "ACTIVE")?.id ??
+    (await open(alice.context, "Payer"));
+  const fixture = JSON.parse(
+    readFileSync(resolve(".local/customer-browser-fixture.json"), "utf8"),
+  );
+  expect(fixture.database).toMatch(/^piggybank_http_test_[a-f0-9]{32}$/);
+  const sql = (statement: string) =>
+    execFileSync(
+      "podman",
+      [
+        "exec",
+        "piggybank-postgres-1",
+        "psql",
+        "-U",
+        "dev_admin",
+        "-d",
+        fixture.database,
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        statement,
+      ],
+      { encoding: "utf8" },
+    ).trim();
+  const product = sql(
+    `SELECT product_version_id FROM core.account_registry WHERE id='${account}'`,
+  );
+  const native = () =>
+    sql(
+      "SELECT jsonb_build_object('journals',(SELECT count(*) FROM core.journal_batches),'positions',(SELECT jsonb_agg(jsonb_build_array(id,booked,held,version) ORDER BY id) FROM core.ledger_accounts))",
+    );
+  const before = native(),
+    now = new Date(),
+    date = (n: number) =>
+      new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + n, 1))
+        .toISOString()
+        .slice(0, 10);
+  const plus = (d: string, n: number) =>
+    new Date(Date.parse(d + "T00:00:00Z") + n * 86400000)
+      .toISOString()
+      .slice(0, 10);
+  const code = "CUSTOMER_DISC_" + crypto.randomUUID().slice(0, 8).toUpperCase();
+  async function publish(
+    version: number,
+    from: string,
+    until: string,
+    minor: string,
+  ) {
+    const p = {
+      id: crypto.randomUUID(),
+      code,
+      version,
+      label: "SYNTHETIC",
+      activation: "PREVIEW_ONLY",
+      productVersionId: product,
+      effectiveFrom: from,
+      effectiveUntil: until,
+      calendar: {
+        id: crypto.randomUUID(),
+        code: "DISCLOSURE_UTC",
+        version,
+        timezone: "UTC",
+        coverageFrom: from,
+        coverageUntil: plus(until, 15),
+        businessWeekdays: [1, 2, 3, 4, 5, 6, 7],
+        holidays: [],
+        cutoff: "15:00:00",
+        rollConvention: "FOLLOWING_14_DAYS",
+      },
+      calculation: {
+        kind: "MONTHLY_FIXED_FEE",
+        amount: { minorUnits: minor, currency: { code: "TST", scale: 2 } },
+      },
+    };
+    const staged = await send(
+      reviewer.context,
+      "/api/v1/staff/finance/periodic-policies",
+      { policy: p, reason: "PRIVATE_OPERATOR_DISCLOSURE_REASON" },
+      "POST",
+      crypto.randomUUID(),
+      true,
+    );
+    expect(staged.status()).toBe(202);
+    const r = await staged.json(),
+      path = "/api/v1/staff/finance/periodic-policies/" + r.id;
+    expect(
+      (
+        await send(
+          approver.context,
+          path + "/approval",
+          { detailsDigest: r.policyDigest },
+          "POST",
+          undefined,
+          true,
+        )
+      ).status(),
+    ).toBe(200);
+    expect(
+      (
+        await send(
+          reviewer.context,
+          path + "/publication",
+          { detailsDigest: r.policyDigest },
+          "POST",
+          undefined,
+          true,
+        )
+      ).status(),
+    ).toBe(200);
+    return p;
+  }
+  const first = await publish(1, date(0), date(1), "9007199254740993"),
+    base = `/api/v1/accounts/${account}/periodic-disclosures`;
+  const original = await (
+    await alice.context.request.get(customer + base + "/" + first.id)
+  ).json();
+  expect(original.material.policy.calculation.amount.minorUnits).toBe(
+    "9007199254740993",
+  );
+  expect(original.availability).toBe("CURRENT_PREVIEW");
+  function sorted(v: any): any {
+    return Array.isArray(v)
+      ? v.map(sorted)
+      : v && typeof v === "object"
+        ? Object.fromEntries(
+            Object.keys(v)
+              .sort()
+              .map((k) => [k, sorted(v[k])]),
+          )
+        : v;
+  }
+  const hash = new Uint8Array(
+    await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(JSON.stringify(sorted(original.material))),
+    ),
+  );
+  expect(original.digest).toBe(
+    Array.from(hash, (b) => b.toString(16).padStart(2, "0")).join(""),
+  );
+  const second = await publish(2, date(1), date(2), "125");
+  const list = await (await alice.context.request.get(customer + base)).json();
+  expect(
+    list.items.some(
+      (d: any) =>
+        d.material.policy.id === second.id &&
+        d.availability === "UPCOMING_PREVIEW",
+    ),
+  ).toBe(true);
+  const visible = JSON.stringify(list);
+  for (const hidden of [
+    "makerPerson",
+    "checkerPerson",
+    "proposalId",
+    "PRIVATE_OPERATOR_DISCLOSURE_REASON",
+  ])
+    expect(visible).not.toContain(hidden);
+  expect((await bob.context.request.get(customer + base)).status()).toBe(404);
+  expect(
+    (await bob.context.request.get(customer + base + "/" + first.id)).status(),
+  ).toBe(404);
+  expect((await reviewer.context.request.get(staff + base)).status()).toBe(403);
+  expect(
+    (
+      await alice.context.request.post(customer + base + "/" + first.id, {
+        data: { accept: true },
+      })
+    ).status(),
+  ).toBe(405);
+  await alice.page.goto(customer + "/#/accounts/" + account);
+  // Account opening above used the authenticated API; reload the page's initial
+  // account inventory before exercising navigation within the rendered app.
+  await alice.page.reload();
+  const region = alice.page.getByRole("region", {
+    name: "Periodic rule previews",
+    exact: true,
+  });
+  await region
+    .locator('a[href="#/accounts/' + account + "/periodic/" + first.id + '"]')
+    .click();
+  const selected = region.getByRole("article", {
+    name: "Selected periodic disclosure",
+    exact: true,
+  });
+  await expect(selected.getByTestId("periodic-disclosure-text")).toContainText(
+    "TST 90071992547409.93 (9007199254740993 minor units)",
+  );
+  await selected.getByText("Version and verification", { exact: true }).click();
+  await expect(selected.getByTestId("periodic-disclosure-digest")).toHaveText(
+    original.digest,
+  );
+  await expect(
+    selected.getByText("Current preview", { exact: true }),
+  ).toBeVisible();
+  const savedUrl = alice.page.url();
+  await alice.page.reload();
+  await expect(selected.getByTestId("periodic-disclosure-text")).toBeVisible();
+  await expect(region).toHaveCount(1);
+  await selected.getByText("Version and verification", { exact: true }).click();
+  await expect(selected.getByTestId("periodic-disclosure-digest")).toHaveText(
+    original.digest,
+  );
+  expect(
+    (
+      await (
+        await alice.context.request.get(customer + base + "/" + first.id)
+      ).json()
+    ).digest,
+  ).toBe(original.digest);
+  await accessible(alice.page);
+  await alice.page.screenshot({
+    path: ".local/customer-periodic-disclosure-desktop.png",
+    fullPage: true,
+  });
+  await alice.page.setViewportSize({ width: 390, height: 844 });
+  await accessible(alice.page);
+  await expect(region).toHaveCount(1);
+  expect(
+    await alice.page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await region.screenshot({
+    path: ".local/customer-periodic-disclosure-mobile.png",
+  });
+  const fresh = await browser.newContext(),
+    returned = await fresh.newPage();
+  await returned.goto(savedUrl);
+  await returned.getByRole("button", { name: /Sign in/ }).click();
+  await returned.locator("#username").fill("alice");
+  await returned.locator("#password").fill("Synthetic-Local-123!");
+  await returned.locator("#kc-login").click();
+  await returned.waitForURL(savedUrl);
+  await expect(returned.getByTestId("periodic-disclosure-text")).toContainText(
+    "90071992547409.93",
+  );
+  expect(native()).toBe(before);
+  sql("ALTER TABLE core.periodic_policies DISABLE TRIGGER USER");
+  sql(
+    `UPDATE core.periodic_policies SET document=jsonb_set(document,'{calculation,amount,minorUnits}','\"999\"') WHERE id='${first.id}'`,
+  );
+  sql("ALTER TABLE core.periodic_policies ENABLE TRIGGER USER");
+  expect(
+    (
+      await alice.context.request.get(customer + base + "/" + first.id)
+    ).status(),
+  ).toBe(409);
+  await region
+    .getByRole("button", { name: "Refresh rule previews", exact: true })
+    .click();
+  await expect(region.getByRole("alert")).toBeVisible();
+  await expect(region.getByTestId("periodic-disclosure-text")).toHaveCount(0);
+  expect(native()).toBe(before);
+  expect(errors).toEqual([]);
+  await fresh.close();
+  await alice.context.close();
+  await bob.context.close();
+  await reviewer.context.close();
+  await approver.context.close();
 });

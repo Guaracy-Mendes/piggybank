@@ -42,6 +42,14 @@ pub fn router(identity: IdentityService, journeys: Arc<LocalJourneys>) -> Router
         .route("/api/v1/accounts", get(accounts))
         .route("/api/v1/accounts/{id}/balance", get(balance))
         .route("/api/v1/accounts/{id}/transactions", get(history))
+        .route(
+            "/api/v1/accounts/{id}/periodic-disclosures",
+            get(periodic_disclosures),
+        )
+        .route(
+            "/api/v1/accounts/{id}/periodic-disclosures/{policyId}",
+            get(periodic_disclosure),
+        )
         .route("/api/v1/accounts/{id}/freeze", post(freeze))
         .route("/api/v1/accounts/{id}/closure", post(close))
         .route("/api/v1/profile", get(profile))
@@ -54,6 +62,12 @@ pub fn router(identity: IdentityService, journeys: Arc<LocalJourneys>) -> Router
         .with_state(Arc::new((identity, journeys)))
 }
 fn error(e: anyhow::Error) -> StatusCode {
+    if e.downcast_ref::<bank_core::accruals::disclosures::DisclosureLimit>()
+        .is_some()
+    {
+        return StatusCode::UNPROCESSABLE_ENTITY;
+    }
+
     match e.downcast_ref::<sqlx::Error>() {
         Some(sqlx::Error::RowNotFound) => StatusCode::NOT_FOUND,
         Some(sqlx::Error::Database(db))
@@ -309,5 +323,32 @@ async fn service_request(
         .ensure(&identity.actor, source)
         .await
         .map(|id| (StatusCode::CREATED, Json(serde_json::json!({"caseId":id}))))
+        .map_err(error)
+}
+
+async fn periodic_disclosures(
+    State(app): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<Json<bank_core::accruals::disclosures::DisclosurePage>, StatusCode> {
+    let a = app.0.authenticate(&h, Trust::Customer, false).await?;
+    app.1
+        .core
+        .periodic_disclosures(&app.1.controls, &a.actor, AccountId(id))
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn periodic_disclosure(
+    State(app): State<App>,
+    h: HeaderMap,
+    Path((id, policy)): Path<(Uuid, Uuid)>,
+) -> Result<Json<bank_core::accruals::disclosures::PeriodicDisclosure>, StatusCode> {
+    let a = app.0.authenticate(&h, Trust::Customer, false).await?;
+    app.1
+        .core
+        .periodic_disclosure(&app.1.controls, &a.actor, AccountId(id), policy)
+        .await
+        .map(Json)
         .map_err(error)
 }

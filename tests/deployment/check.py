@@ -19,13 +19,14 @@ SPEC.loader.exec_module(BOOT)
 
 class DeploymentChecks(unittest.TestCase):
     def test_actual_release_archive_rejects_tampering_and_unsafe_members(self):
-        for kind in ['valid', 'bad_image', 'bad_outer', 'traversal', 'symlink', 'undeclared', 'duplicate']:
+        for kind in ['valid', 'bad_image', 'bad_outer', 'traversal', 'symlink', 'undeclared', 'duplicate', 'bad_features']:
             with self.subTest(kind=kind), tempfile.TemporaryDirectory() as folder:
                 root=Path(folder);archive=root/'fixture-01.tgz'
                 content={'deployment/release.env':b'RELEASE_ID=fixture-01\n','images.tar':b'image archive fixture'}
                 manifest={'release':'fixture-01','platform':'linux/amd64','profile':'synthetic-local','schemaVersion':46,
                     'files':{'deployment/release.env':hashlib.sha256(content['deployment/release.env']).hexdigest()},
                     'imagesSha256':hashlib.sha256(content['images.tar']).hexdigest()}
+                if kind=='bad_features':manifest['features']=['duplicate','duplicate']
                 if kind=='bad_image':content['images.tar']=b'damaged image archive'
                 if kind=='undeclared':content['deployment/extra.env']=b'not declared'
                 content['manifest.json']=(json.dumps(manifest)+'\n').encode()

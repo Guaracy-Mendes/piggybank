@@ -2,6 +2,8 @@
 
 The [execution board](WORK_PACKAGES.md) is generated from the [authoritative backlog](backlog.json). A package is completed only with recorded validation and a linked evidence file. Package counts describe delivery tasks, not a percentage of production readiness.
 
+The [completion status report](COMPLETION_STATUS.md) summarizes the current 23 completed packages, active WP-24 increments, remaining roadmap, latest validation and deployment boundaries.
+
 The current local implementation includes Rust/Axum API and worker processes, PostgreSQL module stores, real local OIDC/BFF sessions, exact-money Core ledger, immutable evidence/audit, entitlement and independent approval checks, signed synthetic control providers, persistent onboarding/opening, exact accepted terms, account servicing, data projections and the customer browser client. The workforce portal implements scoped review/evidence/support, independent product/pricing/terms publication and audited role proposals/approvals/revocation. Its verification is recorded in [WP-19 evidence](evidence/WP-19.md). Internal payments, recipient references, exact quotes and action-bound approval are implemented under WP-20. WP-21 adds reserved outgoing SIMULATED rail submission, persistent authenticated provider instructions, inquiry after lost responses, and independent policy/resume controls. WP-22 adds authenticated settlement/release, incoming funds through controlled suspense and principal-capped linked returns. WP-23 adds durable cancellation, bounded original-identity operator recovery and owned reconciliation with retained observations. Finance, statements, notifications, native clients and qualification remain separately tracked. Real providers, market policy and production activation are separate gates.
 
 | Runtime model | Editable notation | Preview |
@@ -65,3 +67,17 @@ The [native periodic basis increment](periodic-native-basis.md) captures the exa
 | --- | --- | --- |
 | Native snapshot, original replay and stable audit recovery | [PlantUML](current-periodic-native-basis.puml) | [SVG](current-periodic-native-basis.svg) |
 | Immutable basis, original native source and calculation domain | [PlantUML](current-periodic-basis-domain.puml) | [SVG](current-periodic-basis-domain.svg) |
+
+The [audit delivery increment](finance-audit-delivery.md) prevents a damaged pending prefix from starving later events. Native Controls receipt verification gates delivery acknowledgment; original payloads/times remain unchanged. The [operator runbook](../runbooks/finance-audit-delivery.md) covers retained failures, original-identity recovery and verified legacy upgrade. Its [checkpoint evidence](evidence/WP-24-audit-delivery.md) separates audit delivery from Core financial completion.
+
+| Audit delivery view | Source | Preview |
+| --- | --- | --- |
+| Bounded durable relay and original native confirmation | [PlantUML](current-finance-audit-delivery.puml) | [SVG](current-finance-audit-delivery.svg) |
+| Original record, attempts, cursor and immutable receipt domain | [PlantUML](current-finance-audit-domain.puml) | [SVG](current-finance-audit-domain.svg) |
+
+The [customer periodic disclosure increment](customer-periodic-disclosures.md) adds owner-scoped, versioned information derived from exact approved policies/calendars, with stable material digests and saved URLs. The [runbook](../runbooks/customer-periodic-disclosures.md) covers exact review and privacy boundaries; its [evidence](evidence/WP-24-disclosures.md) records checks. Reading does not create consent, enrollment or financial activation.
+
+| Customer disclosure view | Source | Preview |
+| --- | --- | --- |
+| Customer authority, native policy and versioned renderer components | [PlantUML](current-periodic-disclosures.puml) | [SVG](current-periodic-disclosures.svg) |
+| Original material inquiry and stable disclosure digest | [PlantUML](current-periodic-disclosure-read.puml) | [SVG](current-periodic-disclosure-read.svg) |
