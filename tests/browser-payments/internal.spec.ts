@@ -2981,7 +2981,7 @@ test("Finance executes one independently approved synthetic funding correction a
     .toBe("BOOKED");
   await reviewer.page.goto(staff + "/#/finance/corrections");
   await reviewer.page
-    .getByLabel("Original funding journal ID", { exact: true })
+    .getByLabel("Original financial journal ID", { exact: true })
     .fill(source);
   await reviewer.page
     .getByLabel("Correction reason", { exact: true })
@@ -2995,7 +2995,7 @@ test("Finance executes one independently approved synthetic funding correction a
   );
   await reviewer.page
     .getByRole("button", {
-      name: "Save funding correction request",
+      name: "Save financial correction request",
       exact: true,
     })
     .click();
@@ -3046,7 +3046,7 @@ test("Finance executes one independently approved synthetic funding correction a
   await approver.page.goto(staff + "/#/finance/corrections/" + request.id);
   await expect(
     approver.page.getByRole("button", {
-      name: "Approve funding correction",
+      name: "Approve financial correction",
       exact: true,
     }),
   ).toBeDisabled();
@@ -3057,7 +3057,7 @@ test("Finance executes one independently approved synthetic funding correction a
     )
     .check();
   await approver.page
-    .getByRole("button", { name: "Approve funding correction", exact: true })
+    .getByRole("button", { name: "Approve financial correction", exact: true })
     .click();
   await expect(
     approver.page.getByText("Independent correction approval recorded.", {
@@ -3093,7 +3093,7 @@ test("Finance executes one independently approved synthetic funding correction a
   ).toBeDisabled();
   await reviewer.page
     .getByLabel(
-      "I intend to reverse this exact synthetic funding and debit the customer account.",
+      "I intend to reverse this exact synthetic posting and apply the displayed reversing legs to the customer account.",
       { exact: true },
     )
     .check();
@@ -4216,10 +4216,863 @@ test("Customers read exact owner-scoped periodic disclosures and retain saved ve
   await expect(region.getByRole("alert")).toBeVisible();
   await expect(region.getByTestId("periodic-disclosure-text")).toHaveCount(0);
   expect(native()).toBe(before);
+  // Restore only this disposable source-policy fixture for subsequent flows.
+  sql("ALTER TABLE core.periodic_policies DISABLE TRIGGER USER");
+  sql(
+    `UPDATE core.periodic_policies SET document='${JSON.stringify(first).replaceAll("'", "''")}'::jsonb WHERE id='${first.id}'`,
+  );
+  sql("ALTER TABLE core.periodic_policies ENABLE TRIGGER USER");
   expect(errors).toEqual([]);
   await fresh.close();
   await alice.context.close();
   await bob.context.close();
   await reviewer.context.close();
   await approver.context.close();
+});
+
+test("Customers retain exact preview review receipts through lost responses and damaged live source without enrollment", async ({
+  browser,
+}) => {
+  const alice = await login(browser, "alice"),
+    bob = await login(browser, "bob"),
+    maker = await login(browser, "reviewer", true),
+    checker = await login(browser, "approver", true);
+  const errors: string[] = [];
+  alice.page.on("pageerror", (e) => errors.push(e.message));
+  const accounts = await (
+    await alice.context.request.get(customer + "/api/v1/accounts")
+  ).json();
+  const account =
+    accounts.find((a: { state: string }) => a.state === "ACTIVE")?.id ??
+    (await open(alice.context, "Review"));
+  const fixture = JSON.parse(
+    readFileSync(resolve(".local/customer-browser-fixture.json"), "utf8"),
+  );
+  expect(fixture.database).toMatch(/^piggybank_http_test_[a-f0-9]{32}$/);
+  const sql = (statement: string) =>
+    execFileSync(
+      "podman",
+      [
+        "exec",
+        "piggybank-postgres-1",
+        "psql",
+        "-U",
+        "dev_admin",
+        "-d",
+        fixture.database,
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        statement,
+      ],
+      { encoding: "utf8" },
+    ).trim();
+  const native = () =>
+    sql(
+      "SELECT jsonb_build_object('journals',(SELECT count(*) FROM core.journal_batches),'positions',(SELECT jsonb_agg(jsonb_build_array(id,booked,held,version) ORDER BY id) FROM core.ledger_accounts))",
+    );
+  const before = native(),
+    product = sql(
+      `SELECT product_version_id FROM core.account_registry WHERE id='${account}'`,
+    ),
+    now = new Date();
+  const date = (n: number) =>
+    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + n, 1))
+      .toISOString()
+      .slice(0, 10);
+  const p = {
+    id: crypto.randomUUID(),
+    code: "REVIEW_" + crypto.randomUUID().slice(0, 8).toUpperCase(),
+    version: 1,
+    label: "SYNTHETIC",
+    activation: "PREVIEW_ONLY",
+    productVersionId: product,
+    effectiveFrom: date(0),
+    effectiveUntil: date(2),
+    calendar: {
+      id: crypto.randomUUID(),
+      code: "REVIEW_UTC",
+      version: 1,
+      timezone: "UTC",
+      coverageFrom: date(0),
+      coverageUntil: new Date(
+        Date.parse(date(2) + "T00:00:00Z") + 15 * 86400000,
+      )
+        .toISOString()
+        .slice(0, 10),
+      businessWeekdays: [1, 2, 3, 4, 5, 6, 7],
+      holidays: [],
+      cutoff: "15:00:00",
+      rollConvention: "FOLLOWING_14_DAYS",
+    },
+    calculation: {
+      kind: "MONTHLY_FIXED_FEE",
+      amount: {
+        minorUnits: "9007199254740993",
+        currency: { code: "TST", scale: 2 },
+      },
+    },
+  };
+  const staged = await send(
+    maker.context,
+    "/api/v1/staff/finance/periodic-policies",
+    { policy: p, reason: "Private review publication reason" },
+    "POST",
+    crypto.randomUUID(),
+    true,
+  );
+  expect(staged.status()).toBe(202);
+  const proposal = await staged.json(),
+    finance = "/api/v1/staff/finance/periodic-policies/" + proposal.id;
+  expect(
+    (
+      await send(
+        checker.context,
+        finance + "/approval",
+        { detailsDigest: proposal.policyDigest },
+        "POST",
+        undefined,
+        true,
+      )
+    ).status(),
+  ).toBe(200);
+  expect(
+    (
+      await send(
+        maker.context,
+        finance + "/publication",
+        { detailsDigest: proposal.policyDigest },
+        "POST",
+        undefined,
+        true,
+      )
+    ).status(),
+  ).toBe(200);
+  const live = `/api/v1/accounts/${account}/periodic-disclosures/${p.id}`,
+    path = live + "/review",
+    material = await (await alice.context.request.get(customer + live)).json();
+  expect((await alice.context.request.get(customer + path)).status()).toBe(404);
+  expect(
+    (
+      await send(
+        alice.context,
+        path,
+        { disclosureDigest: material.digest, acknowledged: false },
+        "POST",
+        crypto.randomUUID(),
+      )
+    ).status(),
+  ).toBe(422);
+  expect(
+    (
+      await send(
+        alice.context,
+        path,
+        { disclosureDigest: "0".repeat(64), acknowledged: true },
+        "POST",
+        crypto.randomUUID(),
+      )
+    ).status(),
+  ).toBe(409);
+  expect((await bob.context.request.get(customer + path)).status()).toBe(404);
+  expect(
+    (
+      await send(
+        bob.context,
+        path,
+        { disclosureDigest: material.digest, acknowledged: true },
+        "POST",
+        crypto.randomUUID(),
+      )
+    ).status(),
+  ).toBe(404);
+  expect((await maker.context.request.get(staff + path)).status()).toBe(403);
+  expect(
+    sql(
+      `SELECT count(*) FROM documents.periodic_preview_reviews WHERE account_id='${account}' AND policy_id='${p.id}'`,
+    ),
+  ).toBe("0");
+  await alice.page.goto(customer + `/#/accounts/${account}/periodic/${p.id}`);
+  await alice.page.reload();
+  const region = alice.page.getByRole("region", {
+      name: "Saved preview review",
+      exact: true,
+    }),
+    save = region.getByRole("button", {
+      name: "Save review acknowledgment",
+      exact: true,
+    });
+  await expect(save).toBeDisabled();
+  await region.getByRole("checkbox").check();
+  await expect(save).toBeEnabled();
+  let original: any,
+    originalKey: string | undefined,
+    resolveCommit: () => void = () => {};
+  const committed = new Promise<void>((r) => {
+    resolveCommit = r;
+  });
+  await alice.page.route("**" + path, async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.continue();
+      return;
+    }
+    originalKey =
+      (await route.request().headerValue("Idempotency-Key")) ?? undefined;
+    const response = await route.fetch();
+    expect(response.status()).toBe(201);
+    original = await response.json();
+    resolveCommit();
+    await route.abort("failed");
+  });
+  await save.click();
+  await committed;
+  await expect(region.getByRole("alert")).toBeVisible();
+  await expect(region.getByTestId("periodic-review-id")).toHaveCount(0);
+  expect(
+    sql(
+      `SELECT count(*) FROM documents.periodic_preview_reviews WHERE id='${original.review.id}'`,
+    ),
+  ).toBe("1");
+  await alice.page.unroute("**" + path);
+  const retry = alice.page.waitForRequest(
+    (r) => r.method() === "POST" && r.url().endsWith(path),
+  );
+  await save.click();
+  expect(await (await retry).headerValue("Idempotency-Key")).toBe(originalKey);
+  await expect(region.getByTestId("periodic-review-id")).toHaveText(
+    original.review.id,
+  );
+  await expect(region.getByTestId("periodic-reviewed-at")).toHaveText(
+    original.review.reviewedAt,
+  );
+  await expect(region.getByTestId("periodic-review-digest")).toHaveText(
+    original.digest,
+  );
+  const persisted = await (
+    await alice.context.request.get(customer + path)
+  ).json();
+  expect(persisted.digest).toBe(original.digest);
+  expect(persisted.review.materialDigest).toBe(material.digest);
+  for (const privateField of [
+    "issuer",
+    "subject",
+    "actorContext",
+    "personId",
+    "makerPerson",
+    "checkerPerson",
+    "Private review publication reason",
+  ])
+    expect(JSON.stringify(persisted)).not.toContain(privateField);
+  expect(
+    sql(
+      `SELECT count(*) FROM documents.periodic_review_requests WHERE review_id='${original.review.id}'`,
+    ),
+  ).toBe("1");
+  await expect
+    .poll(
+      () =>
+        sql(
+          `SELECT count(*) FROM documents.outbox WHERE event_id='${original.review.id}' AND delivered_at IS NOT NULL`,
+        ),
+      { timeout: 15000 },
+    )
+    .toBe("1");
+  await alice.page.reload();
+  await expect(region.getByTestId("periodic-review-id")).toHaveText(
+    original.review.id,
+  );
+  await region
+    .getByText("Exact saved preview material", { exact: true })
+    .click();
+  await expect(region.getByTestId("periodic-review-material")).toContainText(
+    "90071992547409.93 (9007199254740993 minor units)",
+  );
+  await accessible(alice.page);
+  await alice.page.setViewportSize({ width: 390, height: 844 });
+  await accessible(alice.page);
+  expect(
+    await alice.page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await region.screenshot({
+    path: ".local/customer-periodic-review-mobile.png",
+  });
+  sql("ALTER TABLE core.periodic_policies DISABLE TRIGGER USER");
+  sql(
+    `UPDATE core.periodic_policies SET document=jsonb_set(document,'{calculation,amount,minorUnits}','\"999\"') WHERE id='${p.id}'`,
+  );
+  sql("ALTER TABLE core.periodic_policies ENABLE TRIGGER USER");
+  expect((await alice.context.request.get(customer + live)).status()).toBe(409);
+  await alice.page
+    .getByRole("button", { name: "Refresh rule previews", exact: true })
+    .click();
+  await expect(alice.page.getByTestId("periodic-disclosure-text")).toHaveCount(
+    0,
+  );
+  await region
+    .getByRole("button", { name: "Refresh saved review", exact: true })
+    .click();
+  await expect(region.getByTestId("periodic-review-id")).toHaveText(
+    original.review.id,
+  );
+  await expect(region.getByTestId("periodic-review-material")).toContainText(
+    "9007199254740993",
+  );
+  expect(native()).toBe(before);
+  sql("ALTER TABLE documents.periodic_preview_reviews DISABLE TRIGGER USER");
+  sql(
+    `UPDATE documents.periodic_preview_reviews SET actor_context=jsonb_set(actor_context,'{subject}','\"forged review attribution\"') WHERE id='${original.review.id}'`,
+  );
+  sql("ALTER TABLE documents.periodic_preview_reviews ENABLE TRIGGER USER");
+  expect((await alice.context.request.get(customer + path)).status()).toBe(409);
+  await region
+    .getByRole("button", { name: "Refresh saved review", exact: true })
+    .click();
+  await expect(region.getByRole("alert")).toBeVisible();
+  await expect(region.getByTestId("periodic-review-id")).toHaveCount(0);
+  await expect(region.getByTestId("periodic-review-material")).toHaveCount(0);
+  expect(native()).toBe(before);
+  expect(errors).toEqual([]);
+  await alice.context.close();
+  await bob.context.close();
+  await maker.context.close();
+  await checker.context.close();
+});
+
+test("Periodic financial terms, explicit consent, independent activation and native posting complete with linked correction", async ({
+  browser,
+}) => {
+  const maker = await login(browser, "reviewer", true),
+    checker = await login(browser, "approver", true),
+    alice = await login(browser, "alice"),
+    bob = await login(browser, "bob");
+  const errors: string[] = [];
+  for (const p of [maker.page, checker.page, alice.page])
+    p.on("pageerror", (e) => errors.push(e.message));
+  const fixture = JSON.parse(
+    readFileSync(resolve(".local/customer-browser-fixture.json"), "utf8"),
+  );
+  expect(fixture.database).toMatch(/^piggybank_http_test_[a-f0-9]{32}$/);
+  const sql = (q: string) =>
+    execFileSync(
+      "podman",
+      [
+        "exec",
+        "piggybank-postgres-1",
+        "psql",
+        "-U",
+        "dev_admin",
+        "-d",
+        fixture.database,
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        q,
+      ],
+      { encoding: "utf8" },
+    ).trim();
+  const setClock = (day: string) => {
+    expect(day).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    sql(
+      `CREATE OR REPLACE FUNCTION core.periodic_clock() RETURNS timestamptz LANGUAGE sql VOLATILE SECURITY DEFINER SET search_path=pg_catalog AS $$ SELECT '${day}T00:00:00Z'::timestamptz $$`,
+    );
+  };
+  const now = new Date(),
+    business = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2, 1),
+    )
+      .toISOString()
+      .slice(0, 10),
+    until = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 2, 1))
+      .toISOString()
+      .slice(0, 10),
+    coverage = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 2, 16),
+    )
+      .toISOString()
+      .slice(0, 10);
+  const json = async (r: Awaited<ReturnType<typeof send>>, status = 200) => {
+    expect(r.status(), await r.text()).toBe(status);
+    return r.json();
+  };
+  try {
+    // Financial enrollment starts with an existing eligible account. Earlier
+    // workflows may have already established the canonical customer profile.
+    const eligible = async (context: BrowserContext, label: string) => {
+      const accounts = await (
+        await context.request.get(customer + "/api/v1/accounts")
+      ).json();
+      return (
+        accounts.find(
+          (r: {
+            id: string;
+            state: string;
+            debitBlocked: boolean;
+            creditBlocked: boolean;
+          }) =>
+            r.state === "ACTIVE" &&
+            !r.debitBlocked &&
+            !r.creditBlocked &&
+            sql(`SELECT held FROM core.ledger_accounts WHERE id='${r.id}'`) ===
+              "0",
+        )?.id ?? (await open(context, label))
+      );
+    };
+    const account = await eligible(alice.context, "Payer"),
+      other = await eligible(bob.context, "Receiver");
+    const initial = BigInt(
+      sql(`SELECT booked FROM core.ledger_accounts WHERE id='${account}'`),
+    );
+    setClock(business);
+    execFileSync(
+      resolve("target/debug/bank-fund"),
+      [crypto.randomUUID(), account, "100000"],
+      {
+        env: {
+          ...process.env,
+          BANK_PROFILE: "local",
+          BANK_CORE_DATABASE_URL: `postgres://bank_core:synthetic-core-only@127.0.0.1:15432/${fixture.database}`,
+        },
+        encoding: "utf8",
+      },
+    );
+    const products = await (
+      await alice.context.request.get(customer + "/api/v1/products")
+    ).json();
+    const policy = {
+      id: crypto.randomUUID(),
+      code: "R1_FIN_" + crypto.randomUUID().slice(0, 8).toUpperCase(),
+      version: 1,
+      label: "SYNTHETIC",
+      activation: "PREVIEW_ONLY",
+      productVersionId: products[0].id,
+      effectiveFrom: business,
+      effectiveUntil: until,
+      calendar: {
+        id: crypto.randomUUID(),
+        code: "R1_UTC",
+        version: 1,
+        timezone: "UTC",
+        coverageFrom: business,
+        coverageUntil: coverage,
+        businessWeekdays: [1, 2, 3, 4, 5, 6, 7],
+        holidays: [],
+        cutoff: "00:00:00",
+        rollConvention: "FOLLOWING_14_DAYS",
+      },
+      calculation: {
+        kind: "MONTHLY_FIXED_FEE",
+        amount: { minorUnits: "25", currency: { code: "TST", scale: 2 } },
+      },
+    };
+    const saved = await json(
+      await send(
+        maker.context,
+        "/api/v1/staff/finance/periodic-policies",
+        { policy, reason: "Essential R1 monthly fee browser validation" },
+        "POST",
+        crypto.randomUUID(),
+        true,
+      ),
+      202,
+    );
+    const policyPath = "/api/v1/staff/finance/periodic-policies/" + saved.id;
+    await json(
+      await send(
+        checker.context,
+        policyPath + "/approval",
+        { detailsDigest: saved.policyDigest },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    await json(
+      await send(
+        maker.context,
+        policyPath + "/publication",
+        { detailsDigest: saved.policyDigest },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    await maker.page.goto(staff + "/#/finance/periodic");
+    await maker.page
+      .getByLabel("Published policy ID", { exact: true })
+      .fill(policy.id);
+    await maker.page
+      .getByLabel("Financial terms reason", { exact: true })
+      .fill("Offer these independently approved synthetic financial terms");
+    const offerCreated = maker.page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/finance/periodic-offers") &&
+        r.request().method() === "POST",
+    );
+    await maker.page
+      .getByRole("button", { name: "Stage financial terms", exact: true })
+      .click();
+    const offer = await (await offerCreated).json();
+    const offerPath = "/api/v1/staff/finance/periodic-offers/" + offer.id;
+    expect(
+      (
+        await send(
+          maker.context,
+          offerPath + "/approval",
+          { detailsDigest: offer.digest },
+          "POST",
+          undefined,
+          true,
+        )
+      ).status(),
+    ).toBe(403);
+    await checker.page.goto(staff + "/#/finance/periodic/offers/" + offer.id);
+    await checker.page
+      .getByLabel(
+        "I reviewed these financial terms, policy, calendar and digest.",
+        { exact: true },
+      )
+      .check();
+    await checker.page
+      .getByRole("button", { name: "Approve financial terms", exact: true })
+      .click();
+    await expect(
+      checker.page.getByText("Financial terms approval recorded.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await maker.page
+      .getByRole("button", { name: "Refresh periodic finance", exact: true })
+      .click();
+    await maker.page
+      .getByRole("button", { name: "Publish financial offer", exact: true })
+      .click();
+    await expect(
+      maker.page.getByText("Financial terms publication recorded.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    const customerPath = `/api/v1/accounts/${account}/periodic-offers/${offer.id}`,
+      url = customer + `/#/accounts/${account}/offers/${offer.id}`;
+    expect(
+      (await bob.context.request.get(customer + customerPath)).status(),
+    ).toBe(404);
+    const before = sql(
+      `SELECT booked FROM core.ledger_accounts WHERE id='${account}'`,
+    );
+    expect(BigInt(before)).toBe(initial + 100000n);
+    const afterFee = BigInt(before) - 25n;
+    // Reading and preview acknowledgment never infer financial acceptance.
+    await alice.page.goto(url);
+    // This fixture opened accounts through the API after the page booted.
+    await alice.page.reload();
+    await expect(alice.page.getByTestId("financial-offer-text")).toContainText(
+      "PENDING_ACTIVATION",
+    );
+    await expect(
+      alice.page.getByRole("button", {
+        name: "Request financial enrollment",
+        exact: true,
+      }),
+    ).toBeDisabled();
+    expect(
+      sql(
+        `SELECT count(*) FROM documents.periodic_enrollment_consents WHERE account_id='${account}'`,
+      ),
+    ).toBe("0");
+    let consent: any;
+    await alice.page.route(
+      "**" + customerPath + "/enrollment",
+      async (route) => {
+        if (route.request().method() !== "POST") return route.continue();
+        const r = await route.fetch();
+        expect(r.status()).toBe(201);
+        consent = await r.json();
+        await route.abort("failed");
+      },
+    );
+    await alice.page
+      .getByLabel(/I accept these exact synthetic financial terms/)
+      .check();
+    await alice.page
+      .getByRole("button", {
+        name: "Request financial enrollment",
+        exact: true,
+      })
+      .click();
+    await expect(
+      alice.page.getByRole("button", {
+        name: "Refresh financial offers",
+        exact: true,
+      }),
+    ).toBeEnabled();
+    await alice.page.unroute("**" + customerPath + "/enrollment");
+    await alice.page
+      .getByRole("button", { name: "Refresh financial offers", exact: true })
+      .click();
+    await expect(alice.page.getByTestId("financial-consent-id")).toHaveText(
+      consent.consent.id,
+    );
+    expect(consent.status).toBe("PENDING_ACTIVATION");
+    expect(
+      sql(`SELECT booked FROM core.ledger_accounts WHERE id='${account}'`),
+    ).toBe(before);
+    await expect
+      .poll(
+        () =>
+          sql(
+            `SELECT count(*) FROM documents.outbox WHERE aggregate_id='${consent.consent.id}' AND aggregate_version=1 AND delivered_at IS NOT NULL`,
+          ),
+        { timeout: 30000 },
+      )
+      .toBe("1");
+    // Withdrawal is available only before activation and never becomes a new consent.
+    await bob.page.goto(customer + `/#/accounts/${other}/offers/${offer.id}`);
+    await bob.page.reload();
+    await bob.page
+      .getByLabel(/I accept these exact synthetic financial terms/)
+      .check();
+    await bob.page
+      .getByRole("button", {
+        name: "Request financial enrollment",
+        exact: true,
+      })
+      .click();
+    await bob.page
+      .getByRole("button", { name: "Withdraw pending enrollment", exact: true })
+      .click();
+    await expect(
+      bob.page.getByText("WITHDRAWN", { exact: true }),
+    ).toBeVisible();
+    await maker.page.goto(staff + "/#/finance/periodic");
+    await maker.page
+      .getByLabel("Customer consent ID", { exact: true })
+      .fill(consent.consent.id);
+    await maker.page
+      .getByLabel("Explicit counter account ID", { exact: true })
+      .fill("4f1a780b-3e31-48ef-a294-000000000004");
+    const activationCreated = maker.page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/finance/periodic-activations") &&
+        r.request().method() === "POST",
+    );
+    await maker.page
+      .getByRole("button", { name: "Stage account activation", exact: true })
+      .click();
+    const activation = await (await activationCreated).json();
+    await checker.page.goto(
+      staff + "/#/finance/periodic/activations/" + activation.id,
+    );
+    await expect(
+      checker.page.getByText("Account: " + account, { exact: true }),
+    ).toBeVisible();
+    await checker.page
+      .getByLabel(
+        "I reviewed the consent digest, counter account and activation digest.",
+        { exact: true },
+      )
+      .check();
+    await checker.page
+      .getByRole("button", { name: "Approve account activation", exact: true })
+      .click();
+    await expect(
+      checker.page.getByText("Activation approval recorded.", { exact: true }),
+    ).toBeVisible();
+    await maker.page
+      .getByRole("button", { name: "Refresh periodic finance", exact: true })
+      .click();
+    const activatedResponse = maker.page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/" + activation.id + "/execution") &&
+        r.request().method() === "POST",
+    );
+    await maker.page
+      .getByRole("button", { name: "Activate periodic finance", exact: true })
+      .click();
+    const active = await (await activatedResponse).json();
+    expect(active.state).toBe("ACTIVE");
+    await alice.page
+      .getByRole("button", { name: "Refresh financial offers", exact: true })
+      .click();
+    await expect(alice.page.getByText("ACTIVE", { exact: true })).toBeVisible();
+    await expect(
+      alice.page.getByRole("button", {
+        name: "Withdraw pending enrollment",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    const first = active.receipt.activation.firstPeriodStart,
+      end = new Date(first + "T00:00:00Z");
+    end.setUTCMonth(end.getUTCMonth() + 1);
+    setClock(end.toISOString().slice(0, 10));
+    // Real worker auto-discovery and durable jobs perform the due financial effect.
+    await expect
+      .poll(
+        () =>
+          sql(
+            `SELECT count(*) FROM core.periodic_postings p JOIN core.periodic_finalizations f ON f.id=p.finalization_id WHERE f.activation_id='${activation.id}' AND f.period_start='${first}'`,
+          ),
+        { timeout: 30000 },
+      )
+      .toBe("1");
+    const batch = sql(
+      `SELECT batch_id FROM core.periodic_postings p JOIN core.periodic_finalizations f ON f.id=p.finalization_id WHERE f.activation_id='${activation.id}' AND f.period_start='${first}'`,
+    );
+    expect(batch).toMatch(/^[a-f0-9-]{36}$/);
+    expect(
+      sql(`SELECT booked FROM core.ledger_accounts WHERE id='${account}'`),
+    ).toBe(afterFee.toString());
+    await expect
+      .poll(
+        () =>
+          sql(
+            `SELECT state FROM finance.gl_exports WHERE source_batch_id='${batch}'`,
+          ),
+        { timeout: 30000 },
+      )
+      .toBe("BOOKED");
+    // History is paginated. Inspect the native booking day explicitly rather
+    // than assuming an older fee appears among the newest twenty movements.
+    const bookingDay = end.toISOString().slice(0, 10),
+      afterBooking = new Date(end);
+    afterBooking.setUTCDate(afterBooking.getUTCDate() + 1);
+    await alice.page.getByLabel("From", { exact: true }).fill(bookingDay);
+    await alice.page
+      .getByLabel("To, exclusive", { exact: true })
+      .fill(afterBooking.toISOString().slice(0, 10));
+    await alice.page
+      .getByRole("button", { name: "Apply dates", exact: true })
+      .click();
+    await expect(
+      alice.page.getByRole("cell", {
+        name: "periodic fee Posted",
+        exact: true,
+      }),
+    ).toBeVisible();
+    const native = sql(
+      `SELECT digest FROM core.periodic_finalizations WHERE activation_id='${activation.id}' AND period_start='${first}'`,
+    );
+    const runs = await (
+      await maker.context.request.get(
+        staff + "/api/v1/staff/finance/periodic-runs",
+      )
+    ).json();
+    expect(
+      runs.some(
+        (r: any) =>
+          r.activationId === activation.id &&
+          r.receipt?.posted &&
+          r.receipt.batchId === batch,
+      ),
+    ).toBe(true);
+    await maker.page
+      .getByRole("button", { name: "Refresh periodic finance", exact: true })
+      .click();
+    await expect(
+      maker.page.getByText("POSTED", { exact: true }).first(),
+    ).toBeVisible();
+    await alice.page
+      .getByRole("button", { name: "Refresh", exact: true })
+      .click();
+    await expect(alice.page.locator(".balance-main")).toContainText(
+      `TST ${(afterFee / 100n).toLocaleString("en-US")}.${(afterFee % 100n).toString().padStart(2, "0")}`,
+    );
+    await alice.page.setViewportSize({ width: 390, height: 844 });
+    await expect
+      .poll(() =>
+        alice.page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+    await alice.page.screenshot({
+      path: ".local/wp24-periodic-finance-mobile.png",
+      fullPage: true,
+    });
+    await accessible(maker.page);
+    await accessible(alice.page);
+    // Existing independent correction workflow supports the exact native periodic source.
+    const correction = await json(
+      await send(
+        maker.context,
+        "/api/v1/staff/finance/corrections",
+        {
+          originalBatchId: batch,
+          reason:
+            "Reverse the exact synthetic periodic fee while retaining closed basis",
+        },
+        "POST",
+        crypto.randomUUID(),
+        true,
+      ),
+      202,
+    );
+    expect(correction.details.kind).toBe("FULL_PERIODIC_REVERSAL_V1");
+    const correctionPath = "/api/v1/staff/finance/corrections/" + correction.id;
+    await json(
+      await send(
+        checker.context,
+        correctionPath + "/approval",
+        { detailsDigest: correction.detailsDigest },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    const corrected = await json(
+      await send(
+        maker.context,
+        correctionPath + "/execution",
+        { detailsDigest: correction.detailsDigest },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    expect(corrected.receipt.originalBatchId).toBe(batch);
+    expect(
+      sql(`SELECT booked FROM core.ledger_accounts WHERE id='${account}'`),
+    ).toBe(before);
+    expect(
+      sql(
+        `SELECT digest FROM core.periodic_finalizations WHERE activation_id='${activation.id}' AND period_start='${first}'`,
+      ),
+    ).toBe(native);
+    const replay = await json(
+      await send(
+        maker.context,
+        correctionPath + "/execution",
+        { detailsDigest: correction.detailsDigest },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    expect(replay.receipt.batchId).toBe(corrected.receipt.batchId);
+    await json(
+      await send(
+        maker.context,
+        `/api/v1/staff/finance/periodic-activations/${activation.id}/stop`,
+        { reason: "Finish this synthetic browser enrollment" },
+        "POST",
+        undefined,
+        true,
+      ),
+    );
+    await alice.page
+      .getByRole("button", { name: "Refresh financial offers", exact: true })
+      .click();
+    await expect(
+      alice.page.getByText("PAUSED", { exact: true }).first(),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+  } finally {
+    sql(
+      "CREATE OR REPLACE FUNCTION core.periodic_clock() RETURNS timestamptz LANGUAGE sql VOLATILE SECURITY DEFINER SET search_path=pg_catalog AS $$ SELECT clock_timestamp() $$",
+    );
+    for (const c of [maker, checker, alice, bob]) await c.context.close();
+  }
 });

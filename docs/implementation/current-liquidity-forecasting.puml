@@ -1,0 +1,39 @@
+@startuml
+title UML sequence - liquidity breach, restriction and independently approved automation (WP-40)
+actor "Finance maker" as maker
+actor "Finance approver" as checker
+participant "Finance\n(forecasting, automation)" as fin
+participant "Liquidity simulator\n(signed evidence)" as liq
+participant "Warehouse\n(analytics facts)" as wh
+participant "Core" as core
+participant "Payments\n(external submission)" as pay
+database "controls.cases" as cases
+
+maker -> fin : run forecast (or worker, if scheduled)
+fin -> core : positions (commitments)
+fin -> liq : signed inquiry
+liq --> fin : evidence (fresh / stale / missing)
+fin -> wh : daily settlement outflow at fact cut
+fin -> fin : forecast_compute(policy, inputs, history)\nstored immutable with digest
+alt no confirmed funds (stale, missing, invalid)
+  fin -> cases : DEGRADED escalation (reuse open case)
+  note right of fin : no automated action possible
+else confirmed or uncertain low band below buffer
+  fin -> cases : BREACH escalation
+  fin -> fin : restriction on EXTERNAL_SUBMISSION
+  opt status CONFIRMED and automation enabled
+    fin -> fin : propose prefunding\n(min(target - low, per-action limit))
+  end
+end
+pay -> fin : liquidity_restricted?
+fin --> pay : true: wait as RAIL_PAUSED\n(no hold, nothing sent)
+maker -> fin : confirm action (forecast current)
+checker -> fin : approve (different person, forecast current)
+fin -> core : execute_liquidity_action(details, digest, maker, checker)
+core -> core : re-check approval, roles,\nper-action and daily limits
+core --> fin : one LIQUIDITY_PREFUNDING batch (replay: same batch)
+maker -> fin : propose lift
+checker -> fin : apply lift (needs current confirmed\nWITHIN_LIMITS forecast)
+pay -> fin : liquidity_restricted?
+fin --> pay : false: submission resumes
+@enduml

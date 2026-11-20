@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - essential periodic financial execution
+Person(customer,"Sole account owner","Explicit consent to exact financial terms")
+Person(maker,"Finance maker","Stage, publish, activate, review and recover")
+Person(checker,"Independent Finance checker","Current canonical person and queue authority")
+Container_Boundary(api,"Rust bank-api") {
+ Component(http,"Customer / workforce boundaries","Axum + OIDC BFF","Trust, CSRF, current roles, typed commands; no input amount or clock")
+ Component(docs,"Financial offer and consent","Documents","Independent financial terms; immutable full material, private attribution, pending withdrawal")
+ Component(fin,"Periodic coordinator","Finance","Durable scoped intents; independent activation approval; run inquiry and owned exceptions")
+ Component(core,"Native financial capability","Core / PostgreSQL","Current authority + consent; ordered account locks; next period; exact immutable basis; balanced effect")
+}
+Container(worker,"bank-worker","Rust durable jobs","Wrapping due/intent discovery; bounded retries; native receipt completion")
+ContainerDb(db,"Owned module schemas","PostgreSQL","Core economic uniqueness/finality; Documents custody; Controls exact approval; Finance intents")
+Container(gl,"Existing GL workflow","Finance + persistent simulator","Unique sealed source export and authenticated original receipt")
+Rel(customer,http,"Review and explicitly accept / withdraw pending consent")
+Rel(maker,http,"Stage, publish, execute or stop")
+Rel(checker,http,"Review exact material and independently approve")
+Rel(http,docs,"Account / offer / original actor / key / digest")
+Rel(http,fin,"Consent / explicit counter account / exact approval digest")
+Rel(docs,db,"Atomic consent + request mapping + redacted outbox")
+Rel(fin,core,"Narrow activation and period commands")
+Rel(worker,fin,"Recover unscheduled intent and next due period")
+Rel(fin,db,"Retained scope, cursor, operation link and owned case")
+Rel(core,db,"Native finalization / financial journal / receipt + outbox")
+Rel(core,gl,"Original batch discovered; no replacement money")
+Rel(gl,db,"Retain original export / authenticated GL receipt")
+SHOW_LEGEND()
+@enduml

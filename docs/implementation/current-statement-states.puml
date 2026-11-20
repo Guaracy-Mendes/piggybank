@@ -1,0 +1,32 @@
+@startuml
+title UML states - statement version objects, retrieval references and legal holds
+state "Statement month" as M {
+ [*] --> NotReady : month open or periodic finality pending
+ NotReady --> NotReady : refusal recorded; nothing published
+ NotReady --> Published : readiness satisfied
+}
+state "Version object" as V {
+ [*] --> Current : first ready snapshot
+ Current --> Superseded : later snapshot differs
+ Current --> Disposed : retention ended, no active hold
+ Superseded --> Disposed : retention ended, no active hold
+ Disposed --> [*] : tombstone + evidence retained
+}
+note bottom of V
+Not ready months publish nothing.
+Closed-month totals never change between versions
+unless a backdated source fact is detected (SOURCE_CHANGED).
+end note
+state "Single-use reference" as L {
+ [*] --> Granted : owner or role recheck; 2 minutes
+ Granted --> Consumed : same actor, current authority, object digest
+ Granted --> Expired : clock passes expiry
+ Consumed --> [*] : reuse denied (ALREADY_USED)
+ Expired --> [*] : reuse denied (EXPIRED)
+}
+state "Legal hold" as H {
+ [*] --> Active : records officer + idempotency key
+ Active --> Released : different records approver
+ Released --> [*]
+}
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+title UML sequence - partner consent, partner-drafted payment and revocation while the payment is in flight (AT-21)
+actor "Security admin" as Admin
+actor "Security approver" as Approver
+participant "Partner app" as Partner
+participant "Issuer (partners realm)" as Issuer
+participant "bank-api" as API
+participant "Identity functions" as I
+participant "Controls" as C
+participant "Payments" as P
+actor Customer
+participant "bank-worker" as W
+Admin -> API : propose partner-budget (scopes, quota, loopback callback)
+API -> I : partner_propose -> PENDING_APPROVAL (signing secret sealed, shown once)
+Approver -> API : decision APPROVE (different person)
+API -> I : partner_decide -> ACTIVE
+Partner -> Issuer : client_credentials
+Issuer --> Partner : 30 s token (aud bank-partner, azp partner-budget)
+Partner -> API : POST /partner/v1/consents (version header, token)
+API -> I : registry ACTIVE? quota? consent_request -> AWAITING_AUTHORIZATION
+API --> Partner : consentId + bank authorization URL
+Customer -> API : open #/connected/{id}; choose own accounts; allow
+API -> I : consent_authorize -> ACTIVE; queue consent.authorized
+W -> Partner : signed callback (HMAC t.body)
+Partner -> API : quote + draft payment (Consent-Id)
+API -> I : consent_binding -> partner actor (customer subject, PARTNER trust)
+API -> P : create_intent (no challenge for partners)
+P -> C : authorize -> identity.consent_permits(live)
+Customer -> API : approve draft with action-bound step-up; confirm
+API -> P : confirm -> ACCEPTED, authorized_actor = customer
+Customer -> API : disconnect the app
+API -> I : consent_revoke -> REVOKED; queue consent.revoked
+Partner -> API : any consented call
+API --> Partner : 403 (not distinguished)
+W -> P : execute with the authorized customer actor
+P --> W : SETTLED once; intent keeps partner as initiator
+@enduml

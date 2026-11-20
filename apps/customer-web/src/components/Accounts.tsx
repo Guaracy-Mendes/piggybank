@@ -15,6 +15,7 @@ import {
 import type { Account } from "../types";
 import { navigate, stableKey, doneKey } from "../lib/navigation";
 import { PageTitle } from "../lib/display";
+import { PeriodicOffers } from "./PeriodicOffers";
 import { PeriodicDisclosures } from "./PeriodicDisclosures";
 
 export function BalanceCard({ account }: { account: Account }) {
@@ -100,12 +101,14 @@ export function AccountsView({
   accounts,
   selected,
   disclosureId,
+  offerId,
   refresh,
   notify,
 }: {
   accounts: Account[];
   selected?: string;
   disclosureId?: string;
+  offerId?: string;
   refresh: () => Promise<void>;
   notify: (text: string) => void;
 }) {
@@ -247,6 +250,13 @@ export function AccountsView({
               key={"periodic:" + account.id}
               accountId={account.id}
               selected={disclosureId}
+            />
+          )}
+          {(!offerId || selected === account.id) && (
+            <PeriodicOffers
+              key={"offers:" + account.id + ":" + (offerId ?? "")}
+              accountId={account.id}
+              selected={offerId}
             />
           )}
           <History key={account.id} account={account} />

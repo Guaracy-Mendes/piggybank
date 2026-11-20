@@ -3,7 +3,6 @@ use crate::{
     types::{Quote, QuoteRecord},
 };
 use anyhow::{Result, ensure};
-use bank_controls::entitlements::Action;
 use bank_core::payments::InternalInstruction;
 use bank_platform::domain::{AccountId, ActorContext, Money, PaymentDetails, fingerprint};
 use chrono::{Duration, NaiveDate, Utc};
@@ -18,8 +17,8 @@ impl Payments {
         amount: Money,
         date: NaiveDate,
     ) -> Result<Quote> {
-        self.authorize(actor, payer, Action::CreatePayment).await?;
         amount.require_positive()?;
+        self.authorize_amount(actor, payer, &amount).await?;
         ensure!(
             date == Utc::now().date_naive(),
             "Only immediate execution is enabled"
@@ -142,10 +141,11 @@ impl Payments {
         b: &crate::types::Beneficiary,
         payee: AccountId,
     ) -> Result<()> {
-        self.authorize(
+        // Re-checked at intent creation and confirmation: a revoked delegation or lowered authority applies at once.
+        self.authorize_amount(
             actor,
             q.instruction.details.payer_account_id,
-            Action::CreatePayment,
+            &q.instruction.details.amount,
         )
         .await?;
         ensure!(

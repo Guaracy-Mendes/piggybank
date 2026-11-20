@@ -73,7 +73,8 @@ impl CorrectionSource {
             CorrectionInputError
         );
         ensure!(
-            j.posting_kind == "SYNTHETIC_FUNDING"
+            ["SYNTHETIC_FUNDING", "PERIODIC_FEE", "PERIODIC_ACCRUAL"]
+                .contains(&j.posting_kind.as_str())
                 && j.original_batch_id.is_none()
                 && j.entries.len() == 2
                 && digest(&self.journal_fingerprint),
@@ -91,8 +92,21 @@ impl CorrectionSource {
                 .get(&entry.account_id.0)
                 .ok_or(CorrectionInputError)?;
             match kind.as_str() {
-                "CUSTOMER" if value > 0 => customer += 1,
-                "SETTLEMENT" if value < 0 => settlement += 1,
+                "CUSTOMER"
+                    if (j.posting_kind == "PERIODIC_FEE" && value < 0)
+                        || (j.posting_kind != "PERIODIC_FEE" && value > 0) =>
+                {
+                    customer += 1
+                }
+                "SETTLEMENT" if j.posting_kind == "SYNTHETIC_FUNDING" && value < 0 => {
+                    settlement += 1
+                }
+                "CONTROL"
+                    if (j.posting_kind == "PERIODIC_FEE" && value > 0)
+                        || (j.posting_kind == "PERIODIC_ACCRUAL" && value < 0) =>
+                {
+                    settlement += 1
+                }
                 _ => anyhow::bail!(CorrectionInputError),
             }
             total += i128::from(value);
@@ -112,7 +126,12 @@ impl CorrectionSource {
         );
         Ok(CorrectionDetails {
             format_version: 1,
-            kind: "FULL_SYNTHETIC_FUNDING_REVERSAL_V1".into(),
+            kind: if j.posting_kind == "SYNTHETIC_FUNDING" {
+                "FULL_SYNTHETIC_FUNDING_REVERSAL_V1"
+            } else {
+                "FULL_PERIODIC_REVERSAL_V1"
+            }
+            .into(),
             label: "SYNTHETIC".into(),
             execution_id: execution,
             original_batch_id: j.id,
@@ -141,7 +160,7 @@ pub struct CorrectionReceipt {
 }
 #[derive(Clone)]
 pub struct CorrectionCommands {
-    pool: PgPool,
+    pub(crate) pool: PgPool,
 }
 impl Core {
     pub fn finance_corrections(&self) -> CorrectionCommands {
@@ -153,6 +172,19 @@ impl Core {
 impl CorrectionCommands {
     pub async fn source(&self, id: Uuid) -> Result<CorrectionSource> {
         let batch = Core::new(self.pool.clone()).financial_batch(id).await?;
+        if ["PERIODIC_FEE", "PERIODIC_ACCRUAL"].contains(&batch.journal.posting_kind.as_str()) {
+            let id: Uuid = sqlx::query_scalar(
+                "SELECT finalization_id FROM core.periodic_postings WHERE batch_id=$1",
+            )
+            .bind(id)
+            .fetch_one(&self.pool)
+            .await?;
+            let _: serde_json::Value =
+                sqlx::query_scalar("SELECT core.periodic_period_receipt($1)")
+                    .bind(id)
+                    .fetch_one(&self.pool)
+                    .await?;
+        }
         let journal_fingerprint =
             sqlx::query_scalar("SELECT fingerprint FROM core.journal_batches WHERE id=$1")
                 .bind(id)

@@ -1,0 +1,66 @@
+@startuml
+title UML domain - monitoring, data quality and notifications
+hide methods
+class MonitoringRule {
+ code : RAPID_OUTFLOW / STRUCTURED_CREDITS
+ version : int
+ document : window, count, totals, kinds
+ label = SYNTHETIC_FIXTURE
+}
+class Evaluation {
+ (rule, batch, account) : once
+}
+class MonitoringAlert {
+ anchorOperation : UUID
+ triggerOperation : UUID
+ window : start..end
+ evidence : facts + origin events
+ source : STREAM / RETROSPECTIVE
+}
+class Disposition {
+ NO_FURTHER_ACTION / REFER_FINANCIAL_CRIME
+ maker <> checker
+}
+class Case {
+ kind : MONITORING / DATA
+ queue
+ state
+ nextAction
+}
+class QualityAlert {
+ checkCode
+ subject
+ state : OPEN / CLEARED
+ nextAction
+}
+class ProjectionRepair {
+ batchId
+ rowsInserted
+ originEvent
+}
+class Notification {
+ dedupeKey : unique
+ purpose : SECURITY / SERVICE / ACTIVITY / MARKETING
+ template
+ channel : SYNTHETIC_EMAIL / IN_APP
+ state : PENDING / DELIVERED / FAILED / SUPPRESSED
+}
+class DeliveryAttempt {
+ attempt : 1..6
+ outcome
+ subject / body : safe text
+}
+class OperationsSnapshot {
+ asOf
+ counts : one REPEATABLE READ snapshot
+ digest
+}
+MonitoringRule "1" -- "*" Evaluation
+MonitoringRule "1" -- "*" MonitoringAlert
+MonitoringAlert "1" -- "1" Case
+MonitoringAlert "1" -- "0..1" Disposition
+QualityAlert "1" -- "1" Case
+QualityAlert ..> ProjectionRepair : MISSING_FINANCIAL_EVENT
+Notification "1" -- "*" DeliveryAttempt
+QualityAlert ..> Notification : NOTIFICATION_FAILED
+@enduml

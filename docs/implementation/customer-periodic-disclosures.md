@@ -1,6 +1,8 @@
 # Customer periodic rule disclosures
 
-Date: 2026-11-12. WP-24 remains **in progress**. Customers can read the exact approved synthetic periodic rule material for an owned account. Reading does not accept terms, enroll an account, activate a policy or post money.
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
+Date: 2026-11-12. WP-24 was **in progress at this checkpoint**. Customers can read the exact approved synthetic periodic rule material for an owned account. Reading does not accept terms, enroll an account, activate a policy or post money.
 
 ## Material and ownership
 
@@ -38,3 +40,5 @@ See the [customer/operator runbook](../runbooks/customer-periodic-disclosures.md
 No migration is added: schema 52 is sufficient. A fresh release is required for the new code/UI. The package manifest now declares optional validated feature metadata; `customer-periodic-disclosures-v1` is derived from the implemented API inventory. Actual archive acceptance checks its embedded OpenAPI, customer bundle and channel guards when that feature is declared. Older schema-52 archives without it retain their original validation path and seals.
 
 This increment prepares material visibility. Durable document publication/retention where needed, explicit customer acceptance/enrollment, current financial activation, authoritative economic period finalization, posting jobs/counter-account mapping and periodic corrections remain open. A preview disclosure must never be treated as consent to a different active policy or as a native financial receipt.
+
+The subsequent [retained preview review increment](periodic-preview-reviews.md) adds explicit acknowledgment and an immutable copy of this exact material with private identity attribution. It preserves this V1 rendering contract and establishes historical review only. Financial consent/enrollment, legal/material terms publication where required, activation and posting remain open.

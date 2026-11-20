@@ -6,7 +6,7 @@ use anyhow::{Result, ensure};
 use bank_controls::entitlements::{Action, Entitlements};
 use bank_platform::domain::{AccountId, ActorContext, TrustContext, fingerprint};
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 #[derive(Debug)]
 pub struct DisclosureLimit;
@@ -16,8 +16,8 @@ impl std::fmt::Display for DisclosureLimit {
     }
 }
 impl std::error::Error for DisclosureLimit {}
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DisclosureMaterial {
     pub format_version: u8,
     pub source: String,
@@ -26,6 +26,19 @@ pub struct DisclosureMaterial {
     pub policy_digest: String,
     pub title: String,
     pub text: String,
+}
+impl DisclosureMaterial {
+    /// Retain the V1 algorithm for verification of independently archived material.
+    pub fn validate_v1(&self) -> Result<()> {
+        let expected = render(
+            self.account_id,
+            self.policy.clone(),
+            self.policy_digest.clone(),
+            Utc::now(),
+        )?;
+        ensure!(fingerprint(self)? == expected.digest, PeriodicInputError);
+        Ok(())
+    }
 }
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -155,7 +168,7 @@ fn render(
     })
 }
 impl Core {
-    async fn disclosure_product(
+    pub async fn periodic_account_product(
         &self,
         controls: &Entitlements,
         actor: &ActorContext,
@@ -182,7 +195,9 @@ impl Core {
         actor: &ActorContext,
         account: AccountId,
     ) -> Result<DisclosurePage> {
-        let product = self.disclosure_product(controls, actor, account).await?;
+        let product = self
+            .periodic_account_product(controls, actor, account)
+            .await?;
         let now = Utc::now();
         let ids:Vec<Uuid>=sqlx::query_scalar("SELECT id FROM core.periodic_policies WHERE product_version_id=$1 AND effective_until>$2 ORDER BY code,version,id LIMIT 101")
             .bind(product).bind(now.date_naive()).fetch_all(&self.pool).await?;
@@ -210,7 +225,9 @@ impl Core {
         account: AccountId,
         policy: Uuid,
     ) -> Result<PeriodicDisclosure> {
-        let product = self.disclosure_product(controls, actor, account).await?;
+        let product = self
+            .periodic_account_product(controls, actor, account)
+            .await?;
         let saved = self
             .periodic_policies()
             .get(policy)

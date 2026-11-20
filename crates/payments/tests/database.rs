@@ -2050,3 +2050,313 @@ async fn payment_create_replay_repairs_committed_intent_before_challenge_ack_wit
     );
     f.close().await
 }
+
+async fn rail_admin(base: &str, path: &str, body: serde_json::Value) -> Result<reqwest::Response> {
+    Ok(reqwest::Client::new()
+        .post(format!("{base}{path}"))
+        .header("X-Rail-Key", bank_rails::signing_key())
+        .json(&body)
+        .send()
+        .await?
+        .error_for_status()?)
+}
+fn forged_evidence(
+    provider: &str,
+    payment: &PaymentStatus,
+    instruction: &bank_core::payments::InternalInstruction,
+    status: bank_rails::RailStatus,
+    version: i64,
+    reason: &str,
+) -> Result<bank_platform::authenticity::SignedDocument> {
+    let settled = status == bank_rails::RailStatus::Settled;
+    let evidence = bank_rails::RailEvidence {
+        evidence_id: Uuid::new_v4(),
+        provider: provider.into(),
+        instruction_id: payment.id,
+        payment_id: payment.id,
+        input_digest: fingerprint(instruction)?,
+        amount: instruction.details.amount,
+        status,
+        version,
+        occurred_at: Utc::now(),
+        settlement_date: settled.then(|| Utc::now().date_naive()),
+        reason_code: reason.into(),
+    };
+    bank_platform::authenticity::SignedDocument::sign(
+        bank_rails::provider_key(provider).unwrap().as_bytes(),
+        &evidence,
+    )
+}
+async fn count(f: &Fixture, sql: &'static str, id: Uuid) -> Result<i64> {
+    Ok(sqlx::query_scalar(sql)
+        .bind(id)
+        .fetch_one(&f.db.migrator)
+        .await?)
+}
+#[tokio::test]
+async fn routing_falls_back_only_on_proven_nonexecution_books_once_and_policies_need_independent_shadowed_approval()
+-> Result<()> {
+    let mut f = Fixture::new().await?;
+    let listener = std::net::TcpListener::bind("127.0.0.1:0")?;
+    let address = listener.local_addr()?;
+    drop(listener);
+    let base = format!("http://{address}");
+    let server = rail_server(&f, address)?;
+    wait_rail(&base).await?;
+    f.p.rail_client = bank_rails::RailClient::new(&base)?;
+    let (maker, checker) = rail_policy(&f).await?;
+    const AT_A: &str = "SELECT count(*) FROM simulator.rail_instructions WHERE id=$1";
+    const AT_B: &str = "SELECT count(*) FROM simulator.rail_b_instructions WHERE id=$1";
+    const ROUTES: &str = "SELECT count(*) FROM core.external_routes WHERE operation_id=$1";
+    const BOOKED: &str = "SELECT count(*) FROM core.journal_batches WHERE operation_id=$1 AND posting_kind='EXTERNAL_PAYMENT'";
+
+    // 1. Signed capacity non-execution at A: same instruction re-routed to B, settled there, booked once.
+    let p1 = rail_draft(&f, 1000).await?;
+    let i1 = f.instruction(&p1).await?;
+    rail_admin(
+        &base,
+        "/admin/rail-scenarios",
+        json!({"instructionId":p1.id,"mode":"REJECT_CAPACITY"}),
+    )
+    .await?;
+    let before = f.p.core.balance(f.from).await?;
+    f.p.process(p1.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p1.id).await?.state, "SUBMITTING");
+    assert_eq!(count(&f, ROUTES, p1.id).await?, 2);
+    assert_eq!(
+        f.p.core.external_reservation(&i1).await?.unwrap().state,
+        "ACTIVE",
+        "hold kept across the re-route"
+    );
+    f.p.process(p1.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p1.id).await?.state, "SUBMITTED");
+    assert_eq!(
+        (count(&f, AT_A, p1.id).await?, count(&f, AT_B, p1.id).await?),
+        (1, 1)
+    );
+    let b_sent: serde_json::Value =
+        sqlx::query_scalar("SELECT instruction FROM simulator.rail_b_instructions WHERE id=$1")
+            .bind(p1.id)
+            .fetch_one(&f.db.migrator)
+            .await?;
+    let a_sent: serde_json::Value =
+        sqlx::query_scalar("SELECT instruction FROM simulator.rail_instructions WHERE id=$1")
+            .bind(p1.id)
+            .fetch_one(&f.db.migrator)
+            .await?;
+    assert_eq!(
+        a_sent, b_sent,
+        "the same economic instruction goes to each provider"
+    );
+    let settled: bank_platform::authenticity::SignedDocument = rail_admin(
+        &base,
+        "/admin/rail-b-events",
+        json!({"instructionId":p1.id,"status":"SETTLED"}),
+    )
+    .await?
+    .json()
+    .await?;
+    f.p.accept_rail_evidence(&settled).await?;
+    f.p.process(p1.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p1.id).await?.state, "SETTLED");
+    assert_eq!(count(&f, BOOKED, p1.id).await?, 1);
+    assert_eq!(
+        f.p.core.balance(f.from).await?.booked,
+        money(before.booked.minor_units() - p1.total.minor_units())
+    );
+    // 2. Provider A contradicting its own non-execution is quarantined; Core never books it.
+    let lie = forged_evidence(
+        bank_rails::PROVIDER,
+        &p1,
+        &i1,
+        bank_rails::RailStatus::Settled,
+        2,
+        "SIMULATED_RAIL_RESULT",
+    )?;
+    assert!(f.p.accept_rail_evidence(&lie).await.is_err());
+    assert_eq!(count(&f, "SELECT count(*) FROM payments.rail_quarantine WHERE payment_id=$1 AND reason_code='IMMUTABLE_PROVIDER_CONFLICT'", p1.id).await?, 1);
+    assert!(f.p.core.finalize_external(&i1, &lie).await.is_err());
+    assert_eq!(count(&f, BOOKED, p1.id).await?, 1);
+    // 3. Unknown outcome at A is not proof of non-execution: no fallback; inquiry resolves at A.
+    let p2 = rail_draft(&f, 1100).await?;
+    rail_admin(
+        &base,
+        "/admin/rail-scenarios",
+        json!({"instructionId":p2.id,"mode":"LOST_RESPONSE"}),
+    )
+    .await?;
+    f.p.process(p2.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p2.id).await?.state, "OUTCOME_UNKNOWN");
+    f.p.process(p2.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p2.id).await?.state, "SUBMITTED");
+    assert_eq!(
+        (
+            count(&f, AT_B, p2.id).await?,
+            count(&f, ROUTES, p2.id).await?
+        ),
+        (0, 1)
+    );
+    // 4. An ordinary rejection is final: no fallback, hold released; Core refuses a re-route on that evidence.
+    let p3 = rail_draft(&f, 1200).await?;
+    let i3 = f.instruction(&p3).await?;
+    rail_admin(
+        &base,
+        "/admin/rail-scenarios",
+        json!({"instructionId":p3.id,"mode":"REJECT"}),
+    )
+    .await?;
+    f.p.process(p3.id).await?;
+    let ordinary = forged_evidence(
+        bank_rails::PROVIDER,
+        &p3,
+        &i3,
+        bank_rails::RailStatus::Rejected,
+        1,
+        "SIMULATED_RAIL_RESULT",
+    )?;
+    assert!(
+        f.p.core
+            .route_external(&i3, bank_rails::PROVIDER_B, Some(&ordinary))
+            .await
+            .is_err()
+    );
+    f.p.process(p3.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p3.id).await?.state, "DECLINED");
+    assert_eq!(
+        (
+            count(&f, AT_B, p3.id).await?,
+            count(&f, BOOKED, p3.id).await?
+        ),
+        (0, 0)
+    );
+
+    // 5. Policy governance: independent approver, shadow evidence before activation, rollback without shadow.
+    let alias = actor("maker-alias", TrustContext::Workforce);
+    let maker_person = f.p.controls.person(&maker).await?;
+    f.p.controls.link_person(&alias, maker_person).await?;
+    sqlx::query("INSERT INTO controls.role_grants(id,person_id,role,valid_until) VALUES($1,$2,'payment_approver',now()+interval '1 day')").bind(Uuid::new_v4()).bind(maker_person.0).execute(&f.db.migrator).await?;
+    let weighted = json!({"strategy":"HEALTH_WEIGHTED","providers":["SYNTHETIC_RAIL_B","SYNTHETIC_RAIL"],"fallbackReasons":[],"maxAttempts":1,
+        "health":{"windowMinutes":60,"minSamples":1,"maxUnknownRate":0.5,"maxNonexecutionRate":0.5},"feesMinor":{"SYNTHETIC_RAIL":3,"SYNTHETIC_RAIL_B":2},"promotionMinDecisions":2});
+    let mut bad = weighted.clone();
+    bad["fallbackReasons"] = json!(["SIMULATED_RAIL_RESULT"]);
+    assert!(
+        f.p.propose_route_change(&maker, Some(&bad), None, "SHADOW")
+            .await
+            .is_err(),
+        "fallback only on Core non-execution reasons"
+    );
+    let mut extra = weighted.clone();
+    extra["skipStepUp"] = json!(true);
+    assert!(
+        f.p.propose_route_change(&maker, Some(&extra), None, "SHADOW")
+            .await
+            .is_err(),
+        "policies cannot touch approvals"
+    );
+    assert!(
+        f.p.propose_route_change(&checker, Some(&weighted), None, "SHADOW")
+            .await
+            .is_err(),
+        "proposer needs the operator role"
+    );
+    let early =
+        f.p.propose_route_change(&maker, Some(&weighted), None, "ACTIVE")
+            .await?;
+    let v2 = early["version"].as_i64().unwrap() as i32;
+    let early_id: Uuid = serde_json::from_value(early["changeId"].clone())?;
+    assert!(
+        f.p.decide_route_change(&alias, early_id, true)
+            .await
+            .is_err(),
+        "the proposer cannot approve"
+    );
+    assert!(
+        format!(
+            "{:#}",
+            f.p.decide_route_change(&checker, early_id, true)
+                .await
+                .unwrap_err()
+        )
+        .contains("Shadow evaluation required")
+    );
+    let shadow =
+        f.p.propose_route_change(&maker, None, Some(v2), "SHADOW")
+            .await?;
+    f.p.decide_route_change(
+        &checker,
+        serde_json::from_value(shadow["changeId"].clone())?,
+        true,
+    )
+    .await?;
+    for amount in [1300, 1400] {
+        let p = rail_draft(&f, amount).await?;
+        f.p.process(p.id).await?;
+        let shadowed: (i32, Option<i32>, Option<String>) = sqlx::query_as("SELECT policy_version,shadow_version,shadow_provider FROM payments.route_decisions WHERE payment_id=$1 AND attempt=1")
+            .bind(p.id).fetch_one(&f.db.migrator).await?;
+        assert_eq!((shadowed.0, shadowed.1), (1, Some(v2)));
+        assert!(shadowed.2.is_some());
+    }
+    let view = f.p.routing_view(&checker).await?;
+    assert_eq!(view["head"]["shadowVersion"], v2);
+    assert_eq!(view["shadow"]["decisions"], 2);
+    assert!(
+        view["shadow"]["baseline"]
+            .as_str()
+            .unwrap()
+            .starts_with("LOCAL_SIMULATOR_ONLY")
+    );
+    let promote =
+        f.p.propose_route_change(&maker, None, Some(v2), "ACTIVE")
+            .await?;
+    let applied =
+        f.p.decide_route_change(
+            &checker,
+            serde_json::from_value(promote["changeId"].clone())?,
+            true,
+        )
+        .await?;
+    assert_eq!(applied["head"]["active_version"], v2);
+    assert!(applied["head"]["shadow_version"].is_null());
+    // 6. An instruction decided under v2 keeps v2's rules (no fallback) after a rollback to v1.
+    let p4 = rail_draft(&f, 1500).await?;
+    let i4 = f.instruction(&p4).await?;
+    f.p.process(p4.id).await?;
+    let decided: (i32, String) = sqlx::query_as("SELECT policy_version,strategy FROM payments.route_decisions WHERE payment_id=$1 AND attempt=1").bind(p4.id).fetch_one(&f.db.migrator).await?;
+    assert_eq!(decided, (v2, "HEALTH_WEIGHTED".into()));
+    let rollback =
+        f.p.propose_route_change(&maker, None, Some(1), "ACTIVE")
+            .await?;
+    f.p.decide_route_change(
+        &checker,
+        serde_json::from_value(rollback["changeId"].clone())?,
+        true,
+    )
+    .await?;
+    assert_eq!(
+        f.p.routing_view(&checker).await?["head"]["activeVersion"],
+        1
+    );
+    let provider: String =
+        sqlx::query_scalar("SELECT provider FROM payments.rail_submissions WHERE payment_id=$1")
+            .bind(p4.id)
+            .fetch_one(&f.db.migrator)
+            .await?;
+    let capacity = forged_evidence(
+        &provider,
+        &p4,
+        &i4,
+        bank_rails::RailStatus::Rejected,
+        2,
+        "PROVIDER_CAPACITY_NOT_EXECUTED",
+    )?;
+    f.p.accept_rail_evidence(&capacity).await?;
+    f.p.process(p4.id).await?;
+    assert_eq!(f.p.detail(&f.alice, p4.id).await?.state, "DECLINED");
+    assert_eq!(
+        count(&f, ROUTES, p4.id).await?,
+        1,
+        "v2 allows no fallback, even after rollback to v1"
+    );
+    drop(server);
+    f.close().await
+}

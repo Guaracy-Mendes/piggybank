@@ -1,0 +1,53 @@
+@startuml
+title UML state machines - retained instruction state and financial finality
+state "Exact action review" as Review {
+ [*] --> Reviewed : retain full terms + digest
+ Reviewed --> Approved : matching fresh issuer proof
+ Reviewed --> Expired : native expiry
+ Approved --> Executed : original key / current ownership / atomic receipt
+ Approved --> Expired : execution deadline
+ Executed --> Executed : same original key returns receipt
+}
+state "Synthetic order" as Trade {
+ [*] --> Open : exact approved instruction + native reservation
+ Open --> Filled : approved price bound + native cash/share effect + fill receipt
+ Open --> Cancelled : owner cancels original open reservation
+ Open --> OrderExpired : due UTC expiry releases original reservation
+ Filled --> [*]
+ Cancelled --> [*]
+ OrderExpired --> [*]
+}
+state "Recurring mandate" as Schedule {
+ [*] --> Active : exact current retained consent
+ Active --> Paused : owner pauses
+ Paused --> Active : current UTC date; no paused-date catch-up
+ Active --> ScheduleCancelled : owner cancels
+ Paused --> ScheduleCancelled : owner cancels
+ Active --> Active : unique schedule/date run + native receipt + advance
+ Active --> Active : safe failure code + bounded retry; no fabricated completion
+ Active --> Replaced : fresh approved revision of unchanged reviewed basis
+ Paused --> Replaced : fresh approved revision; new version stays paused
+ Replaced --> [*] : original consent/runs retained; family continues in new version
+ ScheduleCancelled --> [*]
+}
+note right of Replaced
+One family/date effect across all versions.
+A run after review invalidates the revision.
+end note
+state "Shared withdrawal" as Group {
+ [*] --> Pending : current member + unlocked vault + original native hold
+ Pending --> Pending : one current member approves
+ Pending --> Posted : all active members approve + payout owner rechecked
+ Pending --> GroupCancelled : requester cancels original hold
+ Posted --> [*]
+ GroupCancelled --> [*]
+}
+note right of Filled
+A placed order is not a financial fill.
+Only native cash/share evidence establishes FILLED.
+end note
+note right of Executed
+A new request key cannot reuse a completed approval.
+Changing input under an original key is refused.
+end note
+@enduml

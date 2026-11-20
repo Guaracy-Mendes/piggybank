@@ -1,5 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+const apiTarget = process.env.BANK_API_PROXY_TARGET ?? "http://127.0.0.1:4180";
+const apiUrl = new URL(apiTarget);
+if (
+  apiUrl.protocol !== "http:" ||
+  apiUrl.hostname !== "127.0.0.1" ||
+  apiUrl.pathname !== "/" ||
+  apiUrl.username ||
+  apiUrl.password ||
+  apiUrl.search ||
+  apiUrl.hash
+)
+  throw new Error("The local portal requires a loopback API target.");
 export default defineConfig({
   plugins: [
     react(),
@@ -34,11 +46,11 @@ export default defineConfig({
   ],
   server: {
     host: "127.0.0.1",
-    port: 4300,
+    port: Number(process.env.BANK_CUSTOMER_WEB_PORT ?? 4300),
     strictPort: true,
     proxy: {
-      "/api": "http://127.0.0.1:4180",
-      "/auth/customer": "http://127.0.0.1:4180",
+      "/api": apiTarget,
+      "/auth/customer": apiTarget,
     },
   },
   build: { sourcemap: false },

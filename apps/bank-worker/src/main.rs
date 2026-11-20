@@ -172,6 +172,34 @@ async fn work(
                         }
                         Err(_) => operations.retry(&lease, "DEPENDENCY_PENDING", 2).await,
                     }
+                } else if lease.kind == "finance.periodic" {
+                    let id = lease
+                        .payload
+                        .get("runId")
+                        .cloned()
+                        .and_then(|v| serde_json::from_value::<Uuid>(v).ok());
+                    if let Some(id) = id {
+                        match finance.process_periodic_run(id).await {
+                            Ok(receipt) => {
+                                operations
+                                    .complete(
+                                        &lease,
+                                        Completion::Done(
+                                            serde_json::to_value(receipt)
+                                                .expect("Period receipt serializes"),
+                                        ),
+                                    )
+                                    .await
+                            }
+                            Err(_) => {
+                                operations
+                                    .retry(&lease, "NATIVE_PERIOD_REQUIRES_REVIEW", 3)
+                                    .await
+                            }
+                        }
+                    } else {
+                        operations.retry(&lease, "INVALID_PERIODIC_JOB", 30).await
+                    }
                 } else if lease.kind == "finance.export" {
                     let id = lease
                         .payload
@@ -482,6 +510,24 @@ async fn payment_work(
         if *stop.borrow() {
             return;
         }
+        // WP-36: seal queued batch entries into the outbound file once the daily cutoff passes.
+        match payments.batch_cutoff_due().await {
+            Ok(Some(file)) => {
+                tracing::info!(entries = %file["entryCount"], "batch window closed at cutoff")
+            }
+            Ok(None) => {}
+            Err(_) => tracing::warn!(
+                code = "BATCH_CUTOFF_PENDING",
+                "batch cutoff awaits recovery"
+            ),
+        }
+        // WP-35: release holds for ATM authorizations the network never completed.
+        if payments.atm_expire_due().await.is_err() {
+            tracing::warn!(
+                code = "ATM_EXPIRY_PENDING",
+                "ATM authorization expiry awaits recovery"
+            );
+        }
         if payments.recover().await.is_err() {
             tracing::warn!(
                 code = "PAYMENT_SCHEDULE_PENDING",
@@ -499,6 +545,22 @@ async fn finance_work(
         if *stop.borrow() {
             return;
         }
+        let consumer_result = match bank_platform::database::Module::Core.connect().await {
+            Ok(pool) => bank_core::Core::new(pool).consumer_tick().await.map(|_| ()),
+            Err(error) => Err(error),
+        };
+        if consumer_result.is_err() {
+            tracing::warn!(
+                code = "CONSUMER_RECOVERY_PENDING",
+                "consumer automation awaits native recovery"
+            );
+        }
+        if finance.forecast_tick().await.is_err() {
+            tracing::warn!(
+                code = "LIQUIDITY_FORECAST_PENDING",
+                "scheduled liquidity forecast awaits recovery"
+            );
+        }
         if finance.recover().await.is_err() {
             tracing::warn!(
                 code = "FINANCE_SCHEDULE_PENDING",
@@ -506,6 +568,104 @@ async fn finance_work(
             );
         }
         tokio::select! {_=stop.changed()=>return,_=tokio::time::sleep(Duration::from_secs(1))=>{}}
+    }
+}
+/// WP-26 operations loop: transaction monitoring and notifications every 5 s, data-quality scan every 30 s.
+/// WP-37: incremental warehouse ingestion every 30 s (rows younger than the 30 s safe lag wait for the next pass).
+async fn operations_work(
+    monitoring: bank_controls::monitoring::Monitoring,
+    alerts: bank_data::alerts::Alerts,
+    warehouse: bank_data::analytics::Warehouse,
+    mut stop: watch::Receiver<bool>,
+) {
+    let mut pass: u64 = 0;
+    loop {
+        if *stop.borrow() {
+            return;
+        }
+        if monitoring.page_tick().await.is_err() {
+            tracing::warn!(code = "PAGING_PENDING", "on-call paging awaits recovery");
+        }
+        if monitoring.tick(500).await.is_err() {
+            tracing::warn!(
+                code = "MONITORING_PENDING",
+                "transaction monitoring awaits recovery"
+            );
+        }
+        if alerts.derive(200).await.is_err() || alerts.deliver(200).await.is_err() {
+            tracing::warn!(
+                code = "NOTIFICATION_PENDING",
+                "notification work awaits recovery"
+            );
+        }
+        if pass.is_multiple_of(6) && alerts.quality_scan().await.is_err() {
+            tracing::warn!(
+                code = "DATA_QUALITY_PENDING",
+                "data-quality scan awaits recovery"
+            );
+        }
+        if pass.is_multiple_of(6) && warehouse.ingest_due(30.0).await.is_err() {
+            tracing::warn!(
+                code = "ANALYTICS_INGESTION_PENDING",
+                "warehouse ingestion awaits recovery"
+            );
+        }
+        pass += 1;
+        tokio::select! {_=stop.changed()=>return,_=tokio::time::sleep(Duration::from_secs(5))=>{}}
+    }
+}
+/// WP-25 statement cycle: the latest closed month per account, only once its finance basis is ready.
+async fn statement_work(
+    records: bank_documents::statements::Records,
+    mut stop: watch::Receiver<bool>,
+) {
+    loop {
+        if *stop.borrow() {
+            return;
+        }
+        match records.generate_due(100).await {
+            Ok(created) if created > 0 => {
+                tracing::info!(created, "period statements published")
+            }
+            Ok(_) => {}
+            Err(_) => tracing::warn!(
+                code = "STATEMENT_CYCLE_PENDING",
+                "statement cycle awaits recovery"
+            ),
+        }
+        tokio::select! {_=stop.changed()=>return,_=tokio::time::sleep(Duration::from_secs(60))=>{}}
+    }
+}
+/// WP-33 authenticated partner callbacks: drains due deliveries, then polls every 2 seconds.
+async fn partner_callback_work(
+    partners: bank_identity::consents::Partners,
+    mut stop: watch::Receiver<bool>,
+) {
+    let http = match reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+    {
+        Ok(client) => client,
+        Err(_) => return,
+    };
+    loop {
+        if *stop.borrow() {
+            return;
+        }
+        loop {
+            match partners.deliver_callback(&http).await {
+                Ok(true) => continue,
+                Ok(false) => break,
+                Err(_) => {
+                    tracing::warn!(
+                        code = "PARTNER_CALLBACK_PENDING",
+                        "partner callback delivery awaits recovery"
+                    );
+                    break;
+                }
+            }
+        }
+        tokio::select! {_=stop.changed()=>return,_=tokio::time::sleep(Duration::from_secs(2))=>{}}
     }
 }
 #[tokio::main]
@@ -531,6 +691,10 @@ async fn main() -> anyhow::Result<()> {
     }
     let platform = stores[0].pool.clone();
     let data = stores[8].clone();
+    let records = bank_documents::statements::Records::new(stores[7].pool.clone());
+    let monitoring = bank_controls::monitoring::Monitoring::new(stores[3].pool.clone());
+    let alerts = bank_data::alerts::Alerts::new(stores[8].pool.clone());
+    let warehouse = bank_data::analytics::Warehouse::new(stores[8].pool.clone());
     let checks = bank_controls::checks::Checks::new(stores[3].pool.clone())?;
     let journeys = bank_journeys::local().await?;
     let payments = bank_payments::local().await?;
@@ -546,6 +710,17 @@ async fn main() -> anyhow::Result<()> {
     tasks.spawn(payment_work(payments.clone(), receiver.clone()));
     tasks.spawn(finance_work(finance.clone(), receiver.clone()));
     tasks.spawn(control_work(checks, receiver.clone()));
+    tasks.spawn(statement_work(records, receiver.clone()));
+    tasks.spawn(partner_callback_work(
+        bank_identity::consents::Partners::new(Module::Identity.connect().await?),
+        receiver.clone(),
+    ));
+    tasks.spawn(operations_work(
+        monitoring,
+        alerts,
+        warehouse,
+        receiver.clone(),
+    ));
     tasks.spawn(relay(stores, js.clone(), receiver.clone()));
     tasks.spawn(work(
         Operations::new(platform),

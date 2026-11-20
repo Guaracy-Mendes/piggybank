@@ -1,5 +1,40 @@
 # Cloud deployment validation
 
+## Essential WP-24 completion, 2026-11-15
+
+The actual immutable `cloud-20261115-01` archive passed local packaged acceptance at schema 56. See [full native/browser evidence](../implementation/evidence/WP-24-complete.md) and the [accepted scope](../implementation/wp24-essential-scope.md).
+
+| Artifact | Recorded value |
+| --- | --- |
+| Archive bytes / schema | 84,788,023 / 56 |
+| Archive SHA256 | `b2bdb5d49570fe2c5ea1d6012d11a635f5acb6cead70f28aa7b4f9917ac66bd2` |
+| Images SHA256 | `943911e2d60cfd59d2acdfd22fb2b490d9528217d4f9a32771e0d58a3691f34e` |
+| Runtime image | `8dd69112028de54fb4b0950ab37c3bb7a82676f727ad976602a3275eb187aaa6` |
+| Web image | `26382eb5737402ab25a0101ab90404b90cfe58e80ef5f71e4e626693bbbf67b9` |
+| Manifest deployment files | 21 |
+
+Feature metadata includes `periodic-finance-r1-v1`. Actual migration, randomized installation credentials/issuer setup, independent approved fixture publication/repeated seed, API/worker/provider health, compiled financial screens, OpenAPI/channel guards and existing signed provider/group checks passed. The host suites separately exercised actual consent, activation, worker money, GL and correction/replay. Local native/browser checks do not constitute live AWS/GCP or production/provider qualification. Prior archives/checksums remain unchanged.
+
+## Retained preview review checkpoint, 2026-11-13
+
+The immutable `cloud-20261113-01` archive was built and accepted locally from its actual checksum-verified contents. Schema 53 adds exact retained preview material, attributable customer review, original request mappings and an atomic redacted outbox fact. Existing schema-52 archives remain unchanged.
+
+| Accepted artifact | Recorded value |
+| --- | --- |
+| Release / profile / platform | `cloud-20261113-01` / `synthetic-local` / `linux/amd64` |
+| Archive size | 84,460,279 bytes |
+| Archive SHA256 | `36511fff59a8dbf086b952470310e277cdc529bafb6a2046da7a95e543c93706` |
+| Schema / deployment manifest files | 53 / 21 |
+| Nested image archive SHA256 | `a843fd8a5f9b98d00b4fcbf84f15f0ccadd67c1dce92cc7faafde4bb33e646be` |
+| Runtime image content ID | `38efef34272e042335783f5b38ed025e38d1c993f2072dcd1a3cb94472b71ab2` |
+| Web image content ID | `818a42c262a9aa7e782016356742510f8c5640d25d9382d366ce04e58662f246` |
+
+The feature metadata declares both original customer disclosures and `customer-periodic-preview-reviews-v1`. Actual archived API, customer bundle and channel checks passed for the new GET/POST review route and explicit review/retained material controls. Randomized identity/credentials, migration, distinct fixture maker/checker bootstrap, API/worker/provider health, prior compiled portals/guards, both signed clearing namespaces, two closed signed groups, repeated seed and packaged funding CLI usage passed. Full authenticated review and lost-response recovery were exercised separately by host browsers and native cases; packaged smoke does not claim that whole workflow.
+
+Host validation passed 119 integration cases across nine targets (118 database-backed and one pure exact-total case), including 86 Finance cases; 19 library cases; thirteen payment/Finance browser flows plus three independent customer/staff/issuer regressions; focused preview-review native/browser checks; 114 implemented ingress patterns; foundation/identity/events/lifecycle HTTP acceptance; Rust/OpenAPI/client/web checks and both portal builds; six cloud checks; both Terraform format/validate/mock plans; and 53 rendered and syntax/XML-checked diagrams. All 53 persistent migration SHA384 checksums and earlier release seals were verified. See [checkpoint evidence](../implementation/evidence/WP-24-preview-reviews.md) and [runbook](../runbooks/periodic-preview-reviews.md). Actual logs use `.local/reviews-*`.
+
+Disposable fixtures were removed; developer dependencies and unrelated user files/services were retained. Both AWS/GCP runbooks/examples target this release. No live cloud apply, financial consent/enrollment, activation or periodic posting was performed. The retained record is `PREVIEW_REVIEW_ONLY`; financial terms/enrollment, activation, authoritative economic finalization, fee/accrual jobs and periodic corrections remain open in WP-24.
+
 ## Customer periodic disclosure checkpoint, 2026-11-12
 
 The immutable `cloud-20261112-02` archive was built and accepted locally from its exact checksum-verified contents. Schema remains 52; the validated `customer-periodic-disclosures-v1` manifest feature identifies this code/UI increment independently of schema. Earlier sealed releases retain their original checksums and acceptance path.

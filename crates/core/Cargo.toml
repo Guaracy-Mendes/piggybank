@@ -18,6 +18,8 @@ sqlx.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
+bank-identity.workspace = true
+reqwest.workspace = true
 bank-platform = { workspace = true, features = ["test-support"] }
 tokio.workspace = true
 

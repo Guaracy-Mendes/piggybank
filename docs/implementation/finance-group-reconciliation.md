@@ -1,5 +1,7 @@
 # Grouped clearing-file reconciliation
 
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
 This WP-24 increment matches a closed provider settlement snapshot across multiple bounded files. It supports outgoing payments and incoming/returned principal, preserving native money authority and the earlier single-file V1 formats. See the [operator runbook](../runbooks/finance-group-reconciliation.md), [provider contract](../../contracts/providers/finance/README.md), [C4 components](current-finance-components.puml), [domain UML](current-domain.puml) and [group sequence](current-finance-group-reconciliation.puml).
 
 ## Closed provider membership

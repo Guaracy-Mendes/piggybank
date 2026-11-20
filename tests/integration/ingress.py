@@ -41,7 +41,7 @@ def main():
         spec=json.loads((ROOT/"contracts/openapi/implemented.json").read_text())
         for path,methods in spec["paths"].items():
             for method in methods:
-                sample=re.sub(r'\{(?:id|challengeId|policyId)\}',str(uuid.uuid4()),path.replace("{trust}","customer"))
+                sample=re.sub(r'\{(?:id|challengeId|policyId|offerId)\}',str(uuid.uuid4()),path.replace("{trust}","customer"))
                 status,body,headers=call(4190,sample,method.upper())
                 assert str(status) in methods[method]["responses"],(path,method,status)
                 assert headers["Cache-Control"]=="no-store"

@@ -152,6 +152,7 @@ impl Cases {
         };
         let related:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM controls.cases c JOIN controls.case_queue_members m ON m.queue=c.queue WHERE c.id=$1 AND m.person_id=$2 AND m.capability=$3 AND m.revoked_at IS NULL)").bind(case).bind(person.0).bind(capability).fetch_one(&self.pool).await?;
         let authority = ResourceAuthority {
+            delegates: vec![],
             resource_id: case,
             owners: vec![],
             permitted_staff: if related { vec![person] } else { vec![] },

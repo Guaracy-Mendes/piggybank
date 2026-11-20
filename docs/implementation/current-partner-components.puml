@@ -1,0 +1,39 @@
+@startuml
+title C4-style component view - partner APIs, consent and delegated authority (WP-33)
+skinparam componentStyle rectangle
+actor "Partner application" as Partner
+actor Customer
+actor "Security staff" as Staff
+node "Issuer" {
+  [partners realm\nclient credentials, 30 s] as PR
+  [customers / workforce realms] as CR
+}
+node "bank-api" {
+  [Partner boundary\nversion -> token -> registry -> quota -> consent] as PB
+  [Customer consent & sharing routes] as CS
+  [Staff partner registry routes] as SR
+  [Ingress\nsafe envelope keeps Sunset/Deprecation/Retry-After] as IG
+}
+node "PostgreSQL" {
+  [identity.partner_clients\nconsents, history, quota, callbacks] as ID
+  [core.account_delegations\nreferences, history] as DL
+  [controls entitlements\nconsent_permits re-check] as EN
+  [payments.intents\nactor_context + authorized_actor] as PI
+}
+[bank-worker\nsigned callback delivery] as W
+Partner --> PR
+Partner --> IG
+IG --> PB
+Customer --> CS
+Staff --> SR
+PB --> ID
+PB --> EN
+PB --> PI
+CS --> ID
+CS --> DL
+SR --> ID
+EN --> ID : consent_permits
+EN --> DL : delegate authority
+W --> ID
+W --> Partner : HMAC callbacks (loopback only)
+@enduml

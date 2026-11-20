@@ -16,7 +16,7 @@ args=parser.parse_args()
 spec=json.loads(SPEC.read_text())
 paths=set()
 actual_methods={}
-for source in [ROOT/"crates/platform/src/health.rs",ROOT/"crates/identity/src/sessions.rs",ROOT/"apps/bank-api/src/main.rs",ROOT/"apps/bank-api/src/approvals.rs",ROOT/"apps/bank-api/src/operations.rs",ROOT/"apps/bank-api/src/providers.rs",ROOT/"apps/bank-api/src/cases.rs",ROOT/"apps/bank-api/src/journeys.rs",ROOT/"apps/bank-api/src/servicing.rs",ROOT/"apps/bank-api/src/administration.rs",ROOT/"apps/bank-api/src/payments.rs",ROOT/"apps/bank-api/src/finance.rs"]:
+for source in [ROOT/"crates/platform/src/health.rs",ROOT/"crates/identity/src/sessions.rs",ROOT/"apps/bank-api/src/main.rs",ROOT/"apps/bank-api/src/approvals.rs",ROOT/"apps/bank-api/src/operations.rs",ROOT/"apps/bank-api/src/providers.rs",ROOT/"apps/bank-api/src/cases.rs",ROOT/"apps/bank-api/src/journeys.rs",ROOT/"apps/bank-api/src/servicing.rs",ROOT/"apps/bank-api/src/administration.rs",ROOT/"apps/bank-api/src/payments.rs",ROOT/"apps/bank-api/src/finance.rs",ROOT/"apps/bank-api/src/periodic_offers.rs",ROOT/"apps/bank-api/src/consumer.rs",ROOT/"apps/bank-api/src/documents.rs",ROOT/"apps/bank-api/src/monitoring.rs",ROOT/"apps/bank-api/src/security.rs",ROOT/"apps/bank-api/src/metrics.rs",ROOT/"apps/bank-api/src/partners.rs",ROOT/"apps/bank-api/src/assisted.rs",ROOT/"apps/bank-api/src/atm.rs",ROOT/"apps/bank-api/src/batch.rs",ROOT/"apps/bank-api/src/analytics.rs",ROOT/"apps/bank-api/src/audiences.rs",ROOT/"apps/bank-api/src/routing.rs",ROOT/"apps/bank-api/src/liquidity.rs"]:
     content=source.read_text()
     paths.update(re.findall(r'\.route\(\s*"([^"\n]+)"',content))
     for match in re.finditer(r'\.route\(\s*"([^"\n]+)"\s*,',content):

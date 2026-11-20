@@ -1,0 +1,1919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiggyBank UI Kit — Bundle 5: Investments & Broker Suite (Screens 27–32)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            pb: {
+              bg: '#F6F9F8',
+              surface: '#FFFFFF',
+              border: '#E5EDE9',
+              sidebar: '#1E2D2F',
+              emerald: '#1D6E4E',
+              emeraldDark: '#16563D',
+              mint: '#E8F3EE',
+              gold: '#F5B841',
+              goldTint: '#FDF5E6',
+              bull: '#22A06B',
+              bear: '#E05252',
+              text: '#162426',
+              sub: '#647478',
+              muted: '#94A3A6',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #EEF3F1;
+      color: #162426;
+      -webkit-font-smoothing: antialiased;
+    }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .pb-card {
+      background: #FFFFFF;
+      border: 1px solid #E5EDE9;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(22, 36, 38, 0.03);
+    }
+    .ios-frame {
+      width: 375px;
+      height: 812px;
+      border-radius: 44px;
+      border: 10px solid #162426;
+      background: #F6F9F8;
+      box-shadow: 0 24px 60px rgba(22, 36, 38, 0.16), 0 0 0 2px #D4DFDA;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Custom range slider for Risk Profile */
+    input[type=range].pb-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range].pb-slider::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #E5EDE9;
+    }
+    input[type=range].pb-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #1D6E4E;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 6px rgba(29, 110, 78, 0.4);
+      margin-top: -7px;
+      cursor: pointer;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-toast { animation: fadeSlideUp 0.22s ease-out forwards; }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- ===================================================================== -->
+  <!-- TOP SHOWCASE CONTROL BAR                                              -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E5EDE9] shadow-sm">
+    <div class="max-w-[1480px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Badge -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#1D6E4E] flex items-center justify-center shadow-sm">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M19 11C19 7.68629 15.866 5 12 5C8.13401 5 5 7.68629 5 11C5 13.074 6.228 14.901 8.095 15.975L7.5 19H10L10.5 17H13.5L14 19H16.5L15.905 15.975C17.772 14.901 19 13.074 19 11Z" fill="#FFFFFF"/>
+            <circle cx="15" cy="9.5" r="1.2" fill="#1D6E4E"/>
+            <path d="M10.5 3.5H13.5" stroke="#F5B841" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-[15px] tracking-tight text-[#162426]">PiggyBank</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#1D6E4E]">UI Kit v2.5</span>
+          </div>
+          <h1 class="text-xs sm:text-sm font-semibold text-[#647478]">Bundle 5: Investments &amp; Broker Suite (Screens 27–32)</h1>
+        </div>
+      </div>
+
+      <!-- Screen Filter Tabs -->
+      <nav id="screenTabs" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+        <button data-filter="all" class="tab-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1D6E4E] text-white transition whitespace-nowrap">
+          All Screens Grid (6)
+        </button>
+        <button data-filter="27" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          27. Web Portfolio
+        </button>
+        <button data-filter="28" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          28. Web Trading Terminal
+        </button>
+        <button data-filter="29" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          29. Web Robo-Advisor &amp; ETFs
+        </button>
+        <button data-filter="30" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          30. Mobile Invest Home
+        </button>
+        <button data-filter="31" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          31. Mobile Stock Detail &amp; Buy
+        </button>
+        <button data-filter="32" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-[#647478] hover:bg-[#F6F9F8] transition whitespace-nowrap">
+          32. Mobile Watchlist &amp; Dividends
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN SHOWCASE CONTAINER                                               -->
+  <!-- ===================================================================== -->
+  <main class="max-w-[1480px] mx-auto px-4 sm:px-6 pt-8 space-y-12">
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 27 (WEB DESKTOP): INVESTMENTS PORTFOLIO & ASSET ALLOCATION   -->
+    <!-- =================================================================== -->
+    <section class="screen-wrapper" data-screen="27">
+      <!-- Showcase Card Meta Header -->
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[#1E2D2F] text-white text-xs font-bold tabular-nums">SCREEN 27</span>
+          <h2 class="text-base font-bold text-[#162426]">Web Desktop — Investments Portfolio &amp; Asset Allocation</h2>
+          <span class="hidden sm:inline-block text-xs font-medium text-[#647478] bg-white px-2.5 py-0.5 rounded-full border border-[#E5EDE9]">1440px Responsive Web</span>
+        </div>
+        <button onclick="copyScreenHTML('27', 'Web Portfolio & Asset Allocation')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold shadow-sm transition cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy HTML
+        </button>
+      </div>
+
+      <!-- Screen 27 Exportable Frame -->
+      <div id="screen-27-code" class="rounded-[24px] overflow-hidden border border-[#D8E3DE] shadow-xl bg-[#F6F9F8]">
+        <div class="flex flex-col lg:flex-row min-h-[760px]">
+          <!-- Dark Slate-Teal Sidebar (#1E2D2F) -->
+          <aside class="w-full lg:w-[240px] bg-[#1E2D2F] text-white flex flex-col justify-between p-5 shrink-0">
+            <div>
+              <!-- Brand Logo -->
+              <div class="flex items-center gap-2.5 px-2 mb-8">
+                <div class="w-8 h-8 rounded-xl bg-[#1D6E4E] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 11C19 7.686 15.866 5 12 5C8.134 5 5 7.686 5 11C5 13.074 6.228 14.901 8.095 15.975L7.5 19H10L10.5 17H13.5L14 19H16.5L15.905 15.975C17.772 14.901 19 13.074 19 11Z" fill="#FFF"/>
+                    <circle cx="15" cy="9.5" r="1.2" fill="#1D6E4E"/>
+                  </svg>
+                </div>
+                <span class="font-extrabold text-lg tracking-tight">PiggyBank</span>
+              </div>
+
+              <!-- Nav Links -->
+              <nav class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-1.5 text-sm">
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                  Dashboard
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h12"/></svg>
+                  Account
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 10l5-6 5 6M17 14l-5 6-5-6"/></svg>
+                  Transactions
+                </a>
+                <!-- Active Investments Item -->
+                <a href="javascript:void(0)" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-[#1D6E4E] text-white font-semibold shadow-sm">
+                  <span class="flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+                    Investments
+                  </span>
+                  <span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#F5B841] text-[#162426]">NEW</span>
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                  Savings
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                  Cards
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                  Analytics
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 transition font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                  Settings
+                </a>
+              </nav>
+            </div>
+
+            <!-- SIPC Insured Brokerage Footer Card -->
+            <div class="hidden lg:block mt-8 p-3.5 rounded-2xl bg-white/5 border border-white/10">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="w-2 h-2 rounded-full bg-[#22A06B]"></span>
+                <span class="text-xs font-bold text-white">PiggyBank Securities</span>
+              </div>
+              <p class="text-[11px] text-[#94A3A6] leading-relaxed">Member FINRA / SIPC. Instant zero-fee transfers from Checking.</p>
+            </div>
+          </aside>
+
+          <!-- Main Workspace (#F6F9F8) -->
+          <div class="flex-1 p-5 sm:p-7 space-y-6">
+            <!-- Workspace Header -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="text-xl sm:text-2xl font-extrabold text-[#162426] tracking-tight">Investment Portfolio</h3>
+                  <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#E8F3EE] text-[#1D6E4E]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#22A06B] animate-pulse"></span> Market Open
+                  </span>
+                </div>
+                <p class="text-xs text-[#647478] mt-0.5">Individual Brokerage Account •••• 8841 • Buying Power: <strong class="text-[#162426] tabular-nums">$12,415.72</strong></p>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button onclick="showToast('Portfolio automatically rebalanced to target weights!')" class="px-4 py-2 rounded-xl bg-white hover:bg-[#E8F3EE] text-[#162426] border border-[#E5EDE9] text-xs font-bold transition cursor-pointer">
+                  Rebalance
+                </button>
+                <button onclick="showToast('Instant deposit modal opened ($12,415.72 available)')" class="px-4 py-2 rounded-xl bg-[#1D6E4E] hover:bg-[#16563D] text-white text-xs font-bold shadow-sm transition cursor-pointer">
+                  + Deposit Funds
+                </button>
+              </div>
+            </div>
+
+            <!-- Top Row: Hero Portfolio Value Chart + Asset Allocation Donut -->
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <!-- Hero Portfolio Card (2 cols) -->
+              <div class="pb-card p-6 xl:col-span-2 flex flex-col justify-between">
+                <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+                  <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-[#647478]">Total Portfolio Value</span>
+                    <div class="flex items-baseline gap-3 mt-1">
+                      <span id="s27-value" class="text-3xl sm:text-4xl font-extrabold text-[#162426] tabular-nums">$68,940.25</span>
+                      <span id="s27-delta" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#E8F3EE] text-[#22A06B] tabular-nums">
+                        ▲ +$4,120.80 (+6.36%) All-Time
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Timeframe Switcher -->
+                  <div id="s27-timeframes" class="inline-flex bg-[#F6F9F8] p-1 rounded-xl border border-[#E5EDE9]">
+                    <button data-tf="1D" class="s27-tf px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] transition cursor-pointer">1D</button>
+                    <button data-tf="1W" class="s27-tf px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] transition cursor-pointer">1W</button>
+                    <button data-tf="1M" class="s27-tf px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] transition cursor-pointer">1M</button>
+                    <button data-tf="1Y" class="s27-tf px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] transition cursor-pointer">1Y</button>
+                    <button data-tf="ALL" class="s27-tf active px-2.5 py-1 rounded-lg text-xs font-bold bg-[#1D6E4E] text-white shadow-xs transition cursor-pointer">ALL</button>
+                  </div>
+                </div>
+
+                <!-- Smooth Emerald Area Performance SVG -->
+                <div class="relative w-full h-[210px] mt-2">
+                  <svg id="s27-chart" viewBox="0 0 680 200" class="w-full h-full overflow-visible" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="emeraldAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.24"/>
+                        <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0.0"/>
+                      </linearGradient>
+                    </defs>
+                    <!-- Subtle Horizontal Grid Lines -->
+                    <line x1="0" y1="40" x2="680" y2="40" stroke="#E5EDE9" stroke-dasharray="4 4"/>
+                    <line x1="0" y1="95" x2="680" y2="95" stroke="#E5EDE9" stroke-dasharray="4 4"/>
+                    <line x1="0" y1="150" x2="680" y2="150" stroke="#E5EDE9" stroke-dasharray="4 4"/>
+                    <!-- Area & Line -->
+                    <path id="s27-area" d="M0,165 C75,155 120,130 190,138 C260,145 310,95 385,88 C460,82 520,52 590,42 C630,36 655,24 680,18 L680,195 L0,195 Z" fill="url(#emeraldAreaGrad)"/>
+                    <path id="s27-line" d="M0,165 C75,155 120,130 190,138 C260,145 310,95 385,88 C460,82 520,52 590,42 C630,36 655,24 680,18" fill="none" stroke="#1D6E4E" stroke-width="3" stroke-linecap="round"/>
+                    <!-- End Point Pulse -->
+                    <circle id="s27-dot-outer" cx="680" cy="18" r="8" fill="#1D6E4E" fill-opacity="0.2"/>
+                    <circle id="s27-dot" cx="680" cy="18" r="4.5" fill="#1D6E4E" stroke="#FFFFFF" stroke-width="2"/>
+                  </svg>
+                  <div class="flex justify-between text-[11px] font-medium text-[#94A3A6] mt-1 tabular-nums">
+                    <span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Asset Allocation Donut Card -->
+              <div class="pb-card p-6 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-bold text-[#162426]">Asset Allocation</h4>
+                  <span class="text-xs font-semibold text-[#1D6E4E] bg-[#E8F3EE] px-2 py-0.5 rounded-md">4 Classes</span>
+                </div>
+
+                <!-- Interactive SVG Donut -->
+                <div class="relative flex items-center justify-center my-3">
+                  <svg width="164" height="164" viewBox="0 0 164 164" class="-rotate-90">
+                    <circle cx="82" cy="82" r="62" fill="none" stroke="#E5EDE9" stroke-width="18"/>
+                    <!-- US Equities 52% (#1D6E4E) -> 389.56 * 0.52 = 202.57 -->
+                    <circle cx="82" cy="82" r="62" fill="none" stroke="#1D6E4E" stroke-width="18" stroke-dasharray="202.57 389.56" stroke-dashoffset="0"/>
+                    <!-- ETFs 26% (#38A169) -> 101.28 -->
+                    <circle cx="82" cy="82" r="62" fill="none" stroke="#38A169" stroke-width="18" stroke-dasharray="101.28 389.56" stroke-dashoffset="-202.57"/>
+                    <!-- Treasury Bonds 14% (#F5B841) -> 54.54 -->
+                    <circle cx="82" cy="82" r="62" fill="none" stroke="#F5B841" stroke-width="18" stroke-dasharray="54.54 389.56" stroke-dashoffset="-303.85"/>
+                    <!-- Crypto & Cash 8% (#647478) -> 31.16 -->
+                    <circle cx="82" cy="82" r="62" fill="none" stroke="#647478" stroke-width="18" stroke-dasharray="31.16 389.56" stroke-dashoffset="-358.39"/>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[11px] font-semibold text-[#647478]">Invested</span>
+                    <span class="text-base font-extrabold text-[#162426] tabular-nums">$68.9k</span>
+                  </div>
+                </div>
+
+                <!-- Legend Breakdown -->
+                <div class="space-y-2 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-2 font-medium text-[#162426]"><span class="w-2.5 h-2.5 rounded-full bg-[#1D6E4E]"></span>US Equities</span>
+                    <span class="font-bold tabular-nums text-[#162426]">52% <span class="text-[#94A3A6] font-normal">($35,849)</span></span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-2 font-medium text-[#162426]"><span class="w-2.5 h-2.5 rounded-full bg-[#38A169]"></span>ETFs &amp; Index</span>
+                    <span class="font-bold tabular-nums text-[#162426]">26% <span class="text-[#94A3A6] font-normal">($17,924)</span></span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-2 font-medium text-[#162426]"><span class="w-2.5 h-2.5 rounded-full bg-[#F5B841]"></span>Treasury Bonds</span>
+                    <span class="font-bold tabular-nums text-[#162426]">14% <span class="text-[#94A3A6] font-normal">($9,652)</span></span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="flex items-center gap-2 font-medium text-[#162426]"><span class="w-2.5 h-2.5 rounded-full bg-[#647478]"></span>Crypto &amp; Cash</span>
+                    <span class="font-bold tabular-nums text-[#162426]">8% <span class="text-[#94A3A6] font-normal">($5,515)</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Holdings Table Card -->
+            <div class="pb-card p-6">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div>
+                  <h4 class="text-base font-bold text-[#162426]">Your Holdings</h4>
+                  <p class="text-xs text-[#647478]">Real-time valuations &amp; unrealized returns</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="relative">
+                    <input id="s27-search" type="text" placeholder="Filter ticker or name..." class="pl-8 pr-3 py-1.5 rounded-xl bg-[#F6F9F8] border border-[#E5EDE9] text-xs font-medium text-[#162426] focus:outline-none focus:border-[#1D6E4E]" />
+                    <svg class="w-3.5 h-3.5 text-[#94A3A6] absolute left-2.5 top-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-[#E5EDE9] text-[11px] font-bold uppercase tracking-wider text-[#94A3A6]">
+                      <th class="pb-3">Asset</th>
+                      <th class="pb-3 text-right">Shares</th>
+                      <th class="pb-3 text-right">Avg Cost</th>
+                      <th class="pb-3 text-right">Current Price</th>
+                      <th class="pb-3 text-center">7D Trend</th>
+                      <th class="pb-3 text-right">Total Value</th>
+                      <th class="pb-3 text-right">Total Return</th>
+                    </tr>
+                  </thead>
+                  <tbody id="s27-holdings-body" class="divide-y divide-[#E5EDE9] text-xs">
+                    <tr class="holding-row hover:bg-[#F6F9F8]/80 transition" data-ticker="AAPL Apple Inc.">
+                      <td class="py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-xl bg-[#162426] text-white font-extrabold flex items-center justify-center text-[11px]">AAPL</div>
+                          <div>
+                            <div class="font-bold text-[#162426]">Apple Inc.</div>
+                            <div class="text-[11px] text-[#94A3A6]">US Equities</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 text-right font-semibold tabular-nums">65.00</td>
+                      <td class="py-3.5 text-right text-[#647478] tabular-nums">$188.40</td>
+                      <td class="py-3.5 text-right font-bold tabular-nums">$234.80</td>
+                      <td class="py-3.5"><svg class="w-16 h-6 mx-auto" viewBox="0 0 64 24"><path d="M2,18 L16,15 L30,17 L46,9 L62,5" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg></td>
+                      <td class="py-3.5 text-right font-extrabold tabular-nums">$15,262.00</td>
+                      <td class="py-3.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold tabular-nums">+$3,016.00 (+24.6%)</span></td>
+                    </tr>
+                    <tr class="holding-row hover:bg-[#F6F9F8]/80 transition" data-ticker="VOO Vanguard S&P 500 ETF">
+                      <td class="py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-xl bg-[#1D6E4E] text-white font-extrabold flex items-center justify-center text-[11px]">VOO</div>
+                          <div>
+                            <div class="font-bold text-[#162426]">Vanguard S&amp;P 500 ETF</div>
+                            <div class="text-[11px] text-[#94A3A6]">Index ETF</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 text-right font-semibold tabular-nums">34.50</td>
+                      <td class="py-3.5 text-right text-[#647478] tabular-nums">$462.10</td>
+                      <td class="py-3.5 text-right font-bold tabular-nums">$519.55</td>
+                      <td class="py-3.5"><svg class="w-16 h-6 mx-auto" viewBox="0 0 64 24"><path d="M2,19 L18,16 L34,12 L48,10 L62,4" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg></td>
+                      <td class="py-3.5 text-right font-extrabold tabular-nums">$17,924.48</td>
+                      <td class="py-3.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold tabular-nums">+$1,982.03 (+12.4%)</span></td>
+                    </tr>
+                    <tr class="holding-row hover:bg-[#F6F9F8]/80 transition" data-ticker="NVDA NVIDIA Corp.">
+                      <td class="py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-xl bg-[#22A06B] text-white font-extrabold flex items-center justify-center text-[11px]">NVDA</div>
+                          <div>
+                            <div class="font-bold text-[#162426]">NVIDIA Corp.</div>
+                            <div class="text-[11px] text-[#94A3A6]">Semiconductors</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 text-right font-semibold tabular-nums">88.00</td>
+                      <td class="py-3.5 text-right text-[#647478] tabular-nums">$114.20</td>
+                      <td class="py-3.5 text-right font-bold tabular-nums">$148.60</td>
+                      <td class="py-3.5"><svg class="w-16 h-6 mx-auto" viewBox="0 0 64 24"><path d="M2,20 L15,17 L28,11 L45,8 L62,3" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg></td>
+                      <td class="py-3.5 text-right font-extrabold tabular-nums">$13,076.80</td>
+                      <td class="py-3.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold tabular-nums">+$3,027.20 (+30.1%)</span></td>
+                    </tr>
+                    <tr class="holding-row hover:bg-[#F6F9F8]/80 transition" data-ticker="MSFT Microsoft Corp.">
+                      <td class="py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-xl bg-[#1E2D2F] text-white font-extrabold flex items-center justify-center text-[11px]">MSFT</div>
+                          <div>
+                            <div class="font-bold text-[#162426]">Microsoft Corp.</div>
+                            <div class="text-[11px] text-[#94A3A6]">Cloud &amp; AI</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 text-right font-semibold tabular-nums">29.50</td>
+                      <td class="py-3.5 text-right text-[#647478] tabular-nums">$448.00</td>
+                      <td class="py-3.5 text-right font-bold tabular-nums">$441.52</td>
+                      <td class="py-3.5"><svg class="w-16 h-6 mx-auto" viewBox="0 0 64 24"><path d="M2,7 L18,9 L32,14 L48,13 L62,18" fill="none" stroke="#E05252" stroke-width="2" stroke-linecap="round"/></svg></td>
+                      <td class="py-3.5 text-right font-extrabold tabular-nums">$13,024.84</td>
+                      <td class="py-3.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#FDECEC] text-[#E05252] font-bold tabular-nums">-$191.16 (-1.45%)</span></td>
+                    </tr>
+                    <tr class="holding-row hover:bg-[#F6F9F8]/80 transition" data-ticker="US10Y US 10-Year Treasury">
+                      <td class="py-3.5">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-xl bg-[#FDF5E6] text-[#B7791F] border border-[#F5B841]/40 font-extrabold flex items-center justify-center text-[10px]">US10Y</div>
+                          <div>
+                            <div class="font-bold text-[#162426]">US 10-Year Treasury Note</div>
+                            <div class="text-[11px] text-[#94A3A6]">Fixed Income • 4.35% APY</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 text-right font-semibold tabular-nums">96.52</td>
+                      <td class="py-3.5 text-right text-[#647478] tabular-nums">$99.10</td>
+                      <td class="py-3.5 text-right font-bold tabular-nums">$100.00</td>
+                      <td class="py-3.5"><svg class="w-16 h-6 mx-auto" viewBox="0 0 64 24"><path d="M2,14 L18,13 L34,13 L48,11 L62,10" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg></td>
+                      <td class="py-3.5 text-right font-extrabold tabular-nums">$9,652.13</td>
+                      <td class="py-3.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold tabular-nums">+$86.87 (+0.91%)</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 28 (WEB DESKTOP): LIVE STOCK & ETF TRADING TERMINAL          -->
+    <!-- =================================================================== -->
+    <section class="screen-wrapper" data-screen="28">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[#1E2D2F] text-white text-xs font-bold tabular-nums">SCREEN 28</span>
+          <h2 class="text-base font-bold text-[#162426]">Web Desktop — Live Stock &amp; ETF Trading Terminal</h2>
+          <span class="hidden sm:inline-block text-xs font-medium text-[#647478] bg-white px-2.5 py-0.5 rounded-full border border-[#E5EDE9]">Light Sidebar Brokerage</span>
+        </div>
+        <button onclick="copyScreenHTML('28', 'Live Stock & ETF Trading Terminal')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold shadow-sm transition cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy HTML
+        </button>
+      </div>
+
+      <!-- Screen 28 Exportable Frame -->
+      <div id="screen-28-code" class="rounded-[24px] overflow-hidden border border-[#D8E3DE] shadow-xl bg-[#F6F9F8]">
+        <div class="flex flex-col lg:flex-row min-h-[740px]">
+          <!-- Clean Light Sidebar (#FFFFFF) -->
+          <aside class="w-full lg:w-[225px] bg-white border-b lg:border-b-0 lg:border-r border-[#E5EDE9] p-5 flex flex-col justify-between shrink-0">
+            <div>
+              <div class="flex items-center gap-2.5 px-2 mb-7">
+                <div class="w-8 h-8 rounded-xl bg-[#1D6E4E] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 11C19 7.686 15.866 5 12 5C8.134 5 5 7.686 5 11C5 13.074 6.228 14.901 8.095 15.975L7.5 19H10L10.5 17H13.5L14 19H16.5L15.905 15.975C17.772 14.901 19 13.074 19 11Z" fill="#FFF"/></svg>
+                </div>
+                <div>
+                  <span class="font-extrabold text-base text-[#162426] block leading-none">PiggyBank</span>
+                  <span class="text-[10px] font-bold text-[#1D6E4E] uppercase tracking-wider">Pro Broker</span>
+                </div>
+              </div>
+
+              <div class="text-[10px] font-bold uppercase tracking-wider text-[#94A3A6] px-3 mb-2">Watchlist Quick-Switch</div>
+              <div class="space-y-1.5">
+                <button onclick="selectTerminalTicker('NVDA', 'NVIDIA Corp.', 148.60, '+3.42%', true)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-[#E8F3EE] text-[#162426] font-bold text-xs transition cursor-pointer">
+                  <div class="text-left">
+                    <div>NVDA</div>
+                    <div class="text-[10px] text-[#647478] font-medium">NVIDIA Corp.</div>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <div>$148.60</div>
+                    <div class="text-[10px] text-[#22A06B]">+3.42%</div>
+                  </div>
+                </button>
+                <button onclick="selectTerminalTicker('AAPL', 'Apple Inc.', 234.80, '+2.15%', true)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F6F9F8] text-[#162426] font-bold text-xs transition cursor-pointer">
+                  <div class="text-left">
+                    <div>AAPL</div>
+                    <div class="text-[10px] text-[#647478] font-medium">Apple Inc.</div>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <div>$234.80</div>
+                    <div class="text-[10px] text-[#22A06B]">+2.15%</div>
+                  </div>
+                </button>
+                <button onclick="selectTerminalTicker('VOO', 'Vanguard S&P 500', 519.55, '+0.88%', true)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F6F9F8] text-[#162426] font-bold text-xs transition cursor-pointer">
+                  <div class="text-left">
+                    <div>VOO</div>
+                    <div class="text-[10px] text-[#647478] font-medium">S&amp;P 500 ETF</div>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <div>$519.55</div>
+                    <div class="text-[10px] text-[#22A06B]">+0.88%</div>
+                  </div>
+                </button>
+                <button onclick="selectTerminalTicker('TSLA', 'Tesla Inc.', 268.40, '-1.45%', false)" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F6F9F8] text-[#162426] font-bold text-xs transition cursor-pointer">
+                  <div class="text-left">
+                    <div>TSLA</div>
+                    <div class="text-[10px] text-[#647478] font-medium">Tesla Inc.</div>
+                  </div>
+                  <div class="text-right tabular-nums">
+                    <div>$268.40</div>
+                    <div class="text-[10px] text-[#E05252]">-1.45%</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="hidden lg:block p-3.5 rounded-2xl bg-[#F6F9F8] border border-[#E5EDE9]">
+              <div class="text-[11px] font-bold text-[#162426]">Zero-Commission Trades</div>
+              <p class="text-[11px] text-[#647478] mt-1">Fractional shares starting at $1.00 with real-time execution.</p>
+            </div>
+          </aside>
+
+          <!-- Terminal Main Grid -->
+          <div class="flex-1 p-5 sm:p-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Left / Center Column (Chart + Market Stats + Open Orders) -->
+            <div class="xl:col-span-2 space-y-5">
+              <!-- Asset Header + Chart Card -->
+              <div class="pb-card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#E5EDE9]">
+                  <div class="flex items-center gap-3.5">
+                    <div id="s28-badge" class="w-11 h-11 rounded-2xl bg-[#1D6E4E] text-white font-extrabold flex items-center justify-center text-sm shadow-xs">NVDA</div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <h3 id="s28-name" class="text-lg font-extrabold text-[#162426]">NVIDIA Corp.</h3>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-[#F6F9F8] text-[#647478] border border-[#E5EDE9]">NASDAQ</span>
+                      </div>
+                      <div class="flex items-baseline gap-2.5 mt-0.5">
+                        <span id="s28-price" class="text-2xl font-extrabold text-[#162426] tabular-nums">$148.60</span>
+                        <span id="s28-change" class="text-xs font-bold px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] tabular-nums">▲ +$4.92 (+3.42%) Today</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Chart Type & Timeframe Controls -->
+                  <div class="flex flex-wrap items-center gap-2">
+                    <div class="inline-flex bg-[#F6F9F8] p-1 rounded-xl border border-[#E5EDE9]">
+                      <button id="btn-candle" onclick="toggleTerminalChart('candle')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#162426] shadow-xs cursor-pointer">Candles</button>
+                      <button id="btn-area" onclick="toggleTerminalChart('area')" class="px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] cursor-pointer">Area</button>
+                    </div>
+                    <div class="inline-flex bg-[#F6F9F8] p-1 rounded-xl border border-[#E5EDE9]">
+                      <button onclick="setTerminalTf(this)" class="s28-tf px-2 py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">15m</button>
+                      <button onclick="setTerminalTf(this)" class="s28-tf px-2 py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">1H</button>
+                      <button onclick="setTerminalTf(this)" class="s28-tf px-2 py-1 rounded-lg text-xs font-bold bg-[#1D6E4E] text-white cursor-pointer">1D</button>
+                      <button onclick="setTerminalTf(this)" class="s28-tf px-2 py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">1W</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interactive Candlestick / Area SVG Canvas -->
+                <div class="mt-4 h-[230px] w-full relative">
+                  <!-- Candlestick View -->
+                  <svg id="s28-svg-candle" viewBox="0 0 640 210" class="w-full h-full">
+                    <line x1="0" y1="35" x2="640" y2="35" stroke="#E5EDE9" stroke-dasharray="3 3"/>
+                    <line x1="0" y1="95" x2="640" y2="95" stroke="#E5EDE9" stroke-dasharray="3 3"/>
+                    <line x1="0" y1="155" x2="640" y2="155" stroke="#E5EDE9" stroke-dasharray="3 3"/>
+                    <!-- Candlesticks (Bullish #22A06B, Bearish #E05252) -->
+                    <g stroke-width="2">
+                      <!-- C1 -->
+                      <line x1="35" y1="130" x2="35" y2="180" stroke="#22A06B"/><rect x="27" y="142" width="16" height="26" rx="3" fill="#22A06B"/>
+                      <!-- C2 -->
+                      <line x1="85" y1="118" x2="85" y2="162" stroke="#22A06B"/><rect x="77" y="126" width="16" height="24" rx="3" fill="#22A06B"/>
+                      <!-- C3 -->
+                      <line x1="135" y1="122" x2="135" y2="168" stroke="#E05252"/><rect x="127" y="130" width="16" height="22" rx="3" fill="#E05252"/>
+                      <!-- C4 -->
+                      <line x1="185" y1="100" x2="185" y2="148" stroke="#22A06B"/><rect x="177" y="108" width="16" height="28" rx="3" fill="#22A06B"/>
+                      <!-- C5 -->
+                      <line x1="235" y1="84" x2="235" y2="128" stroke="#22A06B"/><rect x="227" y="92" width="16" height="24" rx="3" fill="#22A06B"/>
+                      <!-- C6 -->
+                      <line x1="285" y1="90" x2="285" y2="136" stroke="#E05252"/><rect x="277" y="96" width="16" height="26" rx="3" fill="#E05252"/>
+                      <!-- C7 -->
+                      <line x1="335" y1="76" x2="335" y2="122" stroke="#22A06B"/><rect x="327" y="84" width="16" height="26" rx="3" fill="#22A06B"/>
+                      <!-- C8 -->
+                      <line x1="385" y1="62" x2="385" y2="105" stroke="#22A06B"/><rect x="377" y="70" width="16" height="24" rx="3" fill="#22A06B"/>
+                      <!-- C9 -->
+                      <line x1="435" y1="68" x2="435" y2="108" stroke="#E05252"/><rect x="427" y="74" width="16" height="20" rx="3" fill="#E05252"/>
+                      <!-- C10 -->
+                      <line x1="485" y1="45" x2="485" y2="90" stroke="#22A06B"/><rect x="477" y="52" width="16" height="28" rx="3" fill="#22A06B"/>
+                      <!-- C11 -->
+                      <line x1="535" y1="34" x2="535" y2="74" stroke="#22A06B"/><rect x="527" y="40" width="16" height="22" rx="3" fill="#22A06B"/>
+                      <!-- C12 -->
+                      <line x1="585" y1="20" x2="585" y2="60" stroke="#22A06B"/><rect x="577" y="26" width="16" height="24" rx="3" fill="#22A06B"/>
+                    </g>
+                    <!-- Current Price Dashed Line -->
+                    <line x1="0" y1="28" x2="640" y2="28" stroke="#1D6E4E" stroke-width="1.2" stroke-dasharray="4 4"/>
+                  </svg>
+
+                  <!-- Area Chart View (Hidden by default) -->
+                  <svg id="s28-svg-area" viewBox="0 0 640 210" class="w-full h-full hidden">
+                    <defs>
+                      <linearGradient id="termAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#22A06B" stop-opacity="0.28"/>
+                        <stop offset="100%" stop-color="#22A06B" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M20,165 L85,140 L135,148 L185,118 L235,100 L285,114 L335,92 L385,78 L435,88 L485,60 L535,48 L595,28 L595,195 L20,195 Z" fill="url(#termAreaGrad)"/>
+                    <path d="M20,165 L85,140 L135,148 L185,118 L235,100 L285,114 L335,92 L385,78 L435,88 L485,60 L535,48 L595,28" fill="none" stroke="#22A06B" stroke-width="3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <!-- Key Market Stats Strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 mt-2 border-t border-[#E5EDE9] text-xs">
+                  <div class="p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <span class="text-[#647478] block text-[11px]">Market Cap</span>
+                    <span class="font-extrabold text-[#162426] tabular-nums">$3.64T</span>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <span class="text-[#647478] block text-[11px]">P/E Ratio (TTM)</span>
+                    <span class="font-extrabold text-[#162426] tabular-nums">54.2x</span>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <span class="text-[#647478] block text-[11px]">52W High / Low</span>
+                    <span class="font-extrabold text-[#162426] tabular-nums">$152.89 / $75.60</span>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <span class="text-[#647478] block text-[11px]">Dividend Yield</span>
+                    <span class="font-extrabold text-[#162426] tabular-nums">0.03% ($0.04)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Open & Recent Orders Card -->
+              <div class="pb-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="text-sm font-bold text-[#162426]">Recent &amp; Open Orders</h4>
+                  <span class="text-xs font-semibold text-[#647478]">2 Active</span>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead>
+                      <tr class="text-[11px] font-bold uppercase text-[#94A3A6] border-b border-[#E5EDE9]">
+                        <th class="pb-2">Symbol</th>
+                        <th class="pb-2">Side / Type</th>
+                        <th class="pb-2 text-right">Amount / Shares</th>
+                        <th class="pb-2 text-right">Limit / Fill</th>
+                        <th class="pb-2 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="s28-orders-list" class="divide-y divide-[#E5EDE9]">
+                      <tr>
+                        <td class="py-2.5 font-extrabold text-[#162426]">NVDA</td>
+                        <td class="py-2.5"><span class="px-2 py-0.5 rounded bg-[#E8F3EE] text-[#1D6E4E] font-bold">Buy Limit</span></td>
+                        <td class="py-2.5 text-right tabular-nums font-semibold">10.00 sh</td>
+                        <td class="py-2.5 text-right tabular-nums">$142.00</td>
+                        <td class="py-2.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#FDF5E6] text-[#B7791F] font-bold">Working</span></td>
+                      </tr>
+                      <tr>
+                        <td class="py-2.5 font-extrabold text-[#162426]">VOO</td>
+                        <td class="py-2.5"><span class="px-2 py-0.5 rounded bg-[#E8F3EE] text-[#1D6E4E] font-bold">Fractional Buy</span></td>
+                        <td class="py-2.5 text-right tabular-nums font-semibold">$500.00 (0.96 sh)</td>
+                        <td class="py-2.5 text-right tabular-nums">$519.55</td>
+                        <td class="py-2.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold">Filled</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Interactive Order Ticket Card -->
+            <div class="pb-card p-6 flex flex-col justify-between">
+              <div class="space-y-4">
+                <!-- Buy / Sell Switcher -->
+                <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#F6F9F8] border border-[#E5EDE9]">
+                  <button id="s28-tab-buy" onclick="setOrderSide('buy')" class="py-2 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white shadow-xs transition cursor-pointer">Buy <span class="s28-sym">NVDA</span></button>
+                  <button id="s28-tab-sell" onclick="setOrderSide('sell')" class="py-2 rounded-lg text-xs font-extrabold text-[#647478] hover:text-[#162426] transition cursor-pointer">Sell <span class="s28-sym">NVDA</span></button>
+                </div>
+
+                <!-- Order Type -->
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-[#647478] mb-1.5">Order Type</label>
+                  <select id="s28-order-type" onchange="recalcOrder()" class="w-full px-3.5 py-2.5 rounded-xl bg-[#F6F9F8] border border-[#E5EDE9] text-xs font-bold text-[#162426] focus:outline-none focus:border-[#1D6E4E]">
+                    <option value="fractional">Fractional Dollar Invest</option>
+                    <option value="market">Market Order (Shares)</option>
+                    <option value="limit">Limit Order</option>
+                  </select>
+                </div>
+
+                <!-- Amount Input -->
+                <div>
+                  <div class="flex justify-between items-center mb-1.5">
+                    <label id="s28-input-label" class="text-[11px] font-bold uppercase tracking-wider text-[#647478]">Investment Amount ($)</label>
+                    <div class="flex gap-1">
+                      <button type="button" onclick="setQuickDollar(100)" class="px-2 py-0.5 rounded bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[11px] font-bold text-[#1D6E4E] cursor-pointer">$100</button>
+                      <button type="button" onclick="setQuickDollar(500)" class="px-2 py-0.5 rounded bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[11px] font-bold text-[#1D6E4E] cursor-pointer">$500</button>
+                      <button type="button" onclick="setQuickDollar(1000)" class="px-2 py-0.5 rounded bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[11px] font-bold text-[#1D6E4E] cursor-pointer">$1k</button>
+                    </div>
+                  </div>
+                  <div class="relative">
+                    <span id="s28-prefix" class="absolute left-3.5 top-3 text-sm font-extrabold text-[#162426]">$</span>
+                    <input id="s28-amount" type="number" value="500" min="1" step="any" oninput="recalcOrder()" class="w-full pl-8 pr-4 py-2.5 rounded-xl bg-white border-2 border-[#1D6E4E]/30 focus:border-[#1D6E4E] text-base font-extrabold text-[#162426] tabular-nums focus:outline-none"/>
+                  </div>
+                </div>
+
+                <!-- Summary Breakdown -->
+                <div class="p-4 rounded-2xl bg-[#F6F9F8] border border-[#E5EDE9] space-y-2.5 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-[#647478]">Market Price</span>
+                    <span id="s28-mkt-price" class="font-bold text-[#162426] tabular-nums">$148.60</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-[#647478]">Estimated Shares</span>
+                    <span id="s28-est-shares" class="font-extrabold text-[#162426] tabular-nums">3.36474 sh</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-[#647478]">Brokerage Commission</span>
+                    <span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#1D6E4E] font-extrabold text-[11px] tabular-nums">$0.00 FREE</span>
+                  </div>
+                  <div class="pt-2 border-t border-[#E5EDE9] flex justify-between text-sm">
+                    <span class="font-bold text-[#162426]">Estimated Total</span>
+                    <span id="s28-est-total" class="font-extrabold text-[#1D6E4E] tabular-nums">$500.00</span>
+                  </div>
+                </div>
+
+                <!-- Buying Power Pill -->
+                <div class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-[#FDF5E6] border border-[#F5B841]/30 text-xs">
+                  <span class="font-semibold text-[#162426]">PiggyBank Checking</span>
+                  <span class="font-extrabold text-[#162426] tabular-nums">$12,415.72</span>
+                </div>
+              </div>
+
+              <!-- Submit CTA -->
+              <div class="mt-6">
+                <button id="s28-submit-btn" onclick="submitTerminalOrder()" class="w-full py-3.5 rounded-xl bg-[#1D6E4E] hover:bg-[#16563D] text-white font-extrabold text-sm shadow-md transition cursor-pointer">
+                  Place Buy Order • $500.00
+                </button>
+                <p class="text-[11px] text-center text-[#94A3A6] mt-2">Instant execution • SIPC protected up to $500,000</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 29 (WEB DESKTOP): AUTOMATED WEALTH, BUNDLES & DIVIDENDS      -->
+    <!-- =================================================================== -->
+    <section class="screen-wrapper" data-screen="29">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[#1E2D2F] text-white text-xs font-bold tabular-nums">SCREEN 29</span>
+          <h2 class="text-base font-bold text-[#162426]">Web Desktop — Automated Wealth, Smart Bundles &amp; Dividend Calendar</h2>
+        </div>
+        <button onclick="copyScreenHTML('29', 'Automated Wealth, Smart Bundles & Dividends')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold shadow-sm transition cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy HTML
+        </button>
+      </div>
+
+      <!-- Screen 29 Exportable Frame -->
+      <div id="screen-29-code" class="rounded-[24px] overflow-hidden border border-[#D8E3DE] shadow-xl bg-[#F6F9F8]">
+        <div class="flex flex-col lg:flex-row min-h-[750px]">
+          <!-- Dark Slate-Teal Sidebar (#1E2D2F) -->
+          <aside class="w-full lg:w-[235px] bg-[#1E2D2F] text-white p-5 flex flex-col justify-between shrink-0">
+            <div>
+              <div class="flex items-center gap-2.5 px-2 mb-8">
+                <div class="w-8 h-8 rounded-xl bg-[#1D6E4E] flex items-center justify-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 11C19 7.686 15.866 5 12 5C8.134 5 5 7.686 5 11C5 13.074 6.228 14.901 8.095 15.975L7.5 19H10L10.5 17H13.5L14 19H16.5L15.905 15.975C17.772 14.901 19 13.074 19 11Z" fill="#FFF"/></svg>
+                </div>
+                <span class="font-extrabold text-lg tracking-tight">PiggyBank</span>
+              </div>
+
+              <nav class="space-y-1.5 text-sm">
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 font-medium">Portfolio Overview</a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 font-medium">Trading Terminal</a>
+                <a href="javascript:void(0)" class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-[#1D6E4E] text-white font-semibold">
+                  <span>Robo-Advisor</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/20">AUTO</span>
+                </a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 font-medium">Dividend Vault</a>
+                <a href="javascript:void(0)" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#94A3A6] hover:text-white hover:bg-white/5 font-medium">Tax Documents</a>
+              </nav>
+            </div>
+
+            <div class="hidden lg:block p-4 rounded-2xl bg-[#1D6E4E]/25 border border-[#1D6E4E]/50">
+              <span class="text-[11px] font-bold text-[#F5B841] uppercase tracking-wider">Spare Change Active</span>
+              <p class="text-xs text-white/90 mt-1">2x Round-Ups enabled on your PiggyBank Debit Card.</p>
+            </div>
+          </aside>
+
+          <!-- Main Robo-Advisor Content -->
+          <div class="flex-1 p-5 sm:p-7 space-y-6">
+            <!-- Hero Banner with Custom 3D-style PiggyBank Wealth SVG Illustration -->
+            <div class="pb-card p-6 bg-gradient-to-r from-[#FFFFFF] via-[#FFFFFF] to-[#E8F3EE]/70 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div class="flex-1 space-y-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E8F3EE] text-[#1D6E4E] text-xs font-bold">
+                  <span class="w-2 h-2 rounded-full bg-[#22A06B]"></span>
+                  Auto-Invest &amp; Smart Round-Ups Active • +$340.00 invested this month
+                </div>
+                <h3 class="text-2xl font-extrabold text-[#162426] tracking-tight">Automated Wealth Autopilot</h3>
+                <p class="text-xs sm:text-sm text-[#647478] max-w-xl">Adjust your target risk tolerance below. PiggyBank automatically rebalances your ETF weights and reinvests dividends with zero advisory fees.</p>
+
+                <!-- Interactive Risk Profile Slider -->
+                <div class="pt-2 max-w-md">
+                  <div class="flex items-center justify-between text-xs font-bold mb-1.5">
+                    <span class="text-[#647478]">Risk Profile:</span>
+                    <span id="s29-risk-label" class="px-2.5 py-0.5 rounded-full bg-[#1D6E4E] text-white">Growth (80% Stocks / 20% Bonds)</span>
+                  </div>
+                  <input id="s29-risk-slider" type="range" min="1" max="4" value="3" oninput="updateRiskProfile(this.value)" class="pb-slider"/>
+                  <div class="flex justify-between text-[11px] font-semibold text-[#94A3A6] mt-1">
+                    <span>Conservative</span>
+                    <span>Balanced</span>
+                    <span>Growth</span>
+                    <span>Aggressive</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Custom 3D-Style PiggyBank Wealth SVG (Glasses + Gold Coin Bars + Mint Leaves) -->
+              <div class="shrink-0">
+                <svg width="210" height="165" viewBox="0 0 210 165" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="pgBody" x1="25" y1="40" x2="125" y2="145" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#288E66"/>
+                      <stop offset="100%" stop-color="#144D36"/>
+                    </linearGradient>
+                    <linearGradient id="goldCoin" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#FFD470"/>
+                      <stop offset="100%" stop-color="#E59A18"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Botanical Mint Leaves Background -->
+                  <path d="M148 135C148 105 172 82 198 85C195 112 175 135 148 135Z" fill="#B7DFC9"/>
+                  <path d="M135 138C125 112 135 82 158 72C165 98 156 125 135 138Z" fill="#7AC29C"/>
+                  <!-- Growing Gold Coin Bar Stacks -->
+                  <g>
+                    <!-- Stack 1 -->
+                    <rect x="122" y="114" width="22" height="30" rx="5" fill="url(#goldCoin)"/>
+                    <ellipse cx="133" cy="114" rx="11" ry="4" fill="#FFE39E"/>
+                    <!-- Stack 2 -->
+                    <rect x="148" y="92" width="22" height="52" rx="5" fill="url(#goldCoin)"/>
+                    <ellipse cx="159" cy="92" rx="11" ry="4" fill="#FFE39E"/>
+                    <!-- Stack 3 -->
+                    <rect x="174" y="66" width="22" height="78" rx="5" fill="url(#goldCoin)"/>
+                    <ellipse cx="185" cy="66" rx="11" ry="4" fill="#FFE39E"/>
+                    <!-- Floating Gold Coin -->
+                    <circle cx="185" cy="44" r="11" fill="url(#goldCoin)" stroke="#FFF" stroke-width="2"/>
+                    <text x="181" y="48" fill="#7A4B00" font-size="11" font-weight="800">$</text>
+                  </g>
+                  <!-- PiggyBank 3D Body -->
+                  <ellipse cx="74" cy="144" rx="54" ry="8" fill="#162426" fill-opacity="0.08"/>
+                  <rect x="44" y="122" width="14" height="20" rx="6" fill="#144D36"/>
+                  <rect x="88" y="122" width="14" height="20" rx="6" fill="#144D36"/>
+                  <ellipse cx="74" cy="96" rx="52" ry="40" fill="url(#pgBody)"/>
+                  <!-- Piggy Ear -->
+                  <path d="M48 64C42 46 58 42 66 58Z" fill="#1D6E4E"/>
+                  <!-- Coin Slot on Back -->
+                  <rect x="64" y="59" width="22" height="5" rx="2.5" fill="#0E3827"/>
+                  <!-- Dropping Coin -->
+                  <circle cx="75" cy="42" r="10" fill="url(#goldCoin)" stroke="#FFF" stroke-width="1.5"/>
+                  <!-- Snout -->
+                  <ellipse cx="24" cy="98" rx="11" ry="15" fill="#32A879"/>
+                  <circle cx="21" cy="94" r="2" fill="#144D36"/>
+                  <circle cx="21" cy="102" r="2" fill="#144D36"/>
+                  <!-- Smart Glasses -->
+                  <circle cx="48" cy="88" r="10" fill="#FFFFFF" fill-opacity="0.2" stroke="#F5B841" stroke-width="2.5"/>
+                  <circle cx="72" cy="88" r="10" fill="#FFFFFF" fill-opacity="0.2" stroke="#F5B841" stroke-width="2.5"/>
+                  <line x1="58" y1="88" x2="62" y2="88" stroke="#F5B841" stroke-width="2.5"/>
+                  <circle cx="48" cy="88" r="2.5" fill="#FFFFFF"/>
+                  <circle cx="72" cy="88" r="2.5" fill="#FFFFFF"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Curated Thematic ETF Bundles Grid (3 Cards) -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-base font-bold text-[#162426]">Curated Thematic ETF Bundles</h4>
+                <span class="text-xs font-semibold text-[#647478]">Fractional auto-allocation</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Bundle 1 -->
+                <div class="pb-card p-5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="px-2.5 py-1 rounded-lg bg-[#E8F3EE] text-[#1D6E4E] text-[11px] font-extrabold">+18.4% 1Y</span>
+                      <span class="text-[11px] font-semibold text-[#94A3A6] tabular-nums">ER: 0.03%</span>
+                    </div>
+                    <h5 class="text-sm font-extrabold text-[#162426]">S&amp;P 500 Core Wealth</h5>
+                    <p class="text-xs text-[#647478] mt-1 leading-relaxed">Broad exposure to 500 leading US large-cap companies via VOO &amp; IVV.</p>
+                  </div>
+                  <div class="pt-4 mt-4 border-t border-[#E5EDE9] flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#162426] tabular-nums">$150/wk active</span>
+                    <button onclick="toggleBundleBtn(this, 'S&P 500 Core Wealth')" class="px-3 py-1.5 rounded-xl bg-[#1D6E4E] text-white text-xs font-bold transition cursor-pointer">✓ Active</button>
+                  </div>
+                </div>
+
+                <!-- Bundle 2 -->
+                <div class="pb-card p-5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="px-2.5 py-1 rounded-lg bg-[#E8F3EE] text-[#22A06B] text-[11px] font-extrabold">+24.9% 1Y</span>
+                      <span class="text-[11px] font-semibold text-[#94A3A6] tabular-nums">ER: 0.12%</span>
+                    </div>
+                    <h5 class="text-sm font-extrabold text-[#162426]">Clean Energy &amp; AI Tech</h5>
+                    <p class="text-xs text-[#647478] mt-1 leading-relaxed">High-growth semiconductors, cloud infrastructure, and grid renewables.</p>
+                  </div>
+                  <div class="pt-4 mt-4 border-t border-[#E5EDE9] flex items-center justify-between">
+                    <span class="text-xs font-medium text-[#647478]">Min. $10/wk</span>
+                    <button onclick="toggleBundleBtn(this, 'Clean Energy & AI Tech')" class="px-3 py-1.5 rounded-xl bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold transition cursor-pointer">+ Auto-Invest</button>
+                  </div>
+                </div>
+
+                <!-- Bundle 3 -->
+                <div class="pb-card p-5 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="px-2.5 py-1 rounded-lg bg-[#FDF5E6] text-[#B7791F] text-[11px] font-extrabold">+11.2% 1Y • 3.8% Yield</span>
+                      <span class="text-[11px] font-semibold text-[#94A3A6] tabular-nums">ER: 0.06%</span>
+                    </div>
+                    <h5 class="text-sm font-extrabold text-[#162426]">High-Yield Dividend Aristocrats</h5>
+                    <p class="text-xs text-[#647478] mt-1 leading-relaxed">25+ year consecutive dividend growers featuring SCHD, JNJ, and PG.</p>
+                  </div>
+                  <div class="pt-4 mt-4 border-t border-[#E5EDE9] flex items-center justify-between">
+                    <span class="text-xs font-medium text-[#647478]">Monthly DRIP</span>
+                    <button onclick="toggleBundleBtn(this, 'High-Yield Dividend Aristocrats')" class="px-3 py-1.5 rounded-xl bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold transition cursor-pointer">+ Auto-Invest</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dividend Income Tracker & Upcoming Payouts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Monthly Dividend Bar Chart -->
+              <div class="pb-card p-5 lg:col-span-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                  <div>
+                    <h4 class="text-sm font-bold text-[#162426]">Projected Dividend Income</h4>
+                    <p class="text-xs text-[#647478]">Annual Yield: <strong class="text-[#1D6E4E] tabular-nums">$1,840.00 / yr</strong> ($153.33/mo avg)</p>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full bg-[#E8F3EE] text-[#1D6E4E] text-xs font-bold">DRIP Auto-Reinvest ON</span>
+                </div>
+                <div class="grid grid-cols-12 items-end gap-2 h-32 pt-4 px-1">
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-10"></div><span class="text-[10px] text-[#94A3A6]">Jan</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-12"></div><span class="text-[10px] text-[#94A3A6]">Feb</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#1D6E4E] rounded-t-md h-24"></div><span class="text-[10px] font-bold text-[#162426]">Mar</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-11"></div><span class="text-[10px] text-[#94A3A6]">Apr</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-14"></div><span class="text-[10px] text-[#94A3A6]">May</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#1D6E4E] rounded-t-md h-24"></div><span class="text-[10px] font-bold text-[#162426]">Jun</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-12"></div><span class="text-[10px] text-[#94A3A6]">Jul</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-13"></div><span class="text-[10px] text-[#94A3A6]">Aug</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#1D6E4E] rounded-t-md h-28"></div><span class="text-[10px] font-bold text-[#162426]">Sep</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#E8F3EE] rounded-t-md h-12"></div><span class="text-[10px] text-[#94A3A6]">Oct</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#F5B841] rounded-t-md h-16"></div><span class="text-[10px] font-extrabold text-[#162426]">Nov</span></div>
+                  <div class="flex flex-col items-center gap-1"><div class="w-full bg-[#1D6E4E] rounded-t-md h-28"></div><span class="text-[10px] font-bold text-[#162426]">Dec</span></div>
+                </div>
+              </div>
+
+              <!-- Upcoming Payouts List -->
+              <div class="pb-card p-5 flex flex-col justify-between">
+                <h4 class="text-sm font-bold text-[#162426] mb-3">Upcoming Payouts</h4>
+                <div class="space-y-3 text-xs">
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <div class="flex items-center gap-2.5">
+                      <span class="w-8 h-8 rounded-lg bg-[#1D6E4E] text-white font-extrabold flex items-center justify-center text-[11px]">JNJ</span>
+                      <div>
+                        <div class="font-bold text-[#162426]">Johnson &amp; Johnson</div>
+                        <div class="text-[11px] text-[#647478]">Nov 24 • Ex-Div Nov 12</div>
+                      </div>
+                    </div>
+                    <span class="font-extrabold text-[#22A06B] tabular-nums">+$48.20</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <div class="flex items-center gap-2.5">
+                      <span class="w-8 h-8 rounded-lg bg-[#1E2D2F] text-white font-extrabold flex items-center justify-center text-[11px]">VOO</span>
+                      <div>
+                        <div class="font-bold text-[#162426]">Vanguard S&amp;P 500</div>
+                        <div class="text-[11px] text-[#647478]">Dec 18 • Quarterly</div>
+                      </div>
+                    </div>
+                    <span class="font-extrabold text-[#22A06B] tabular-nums">+$62.45</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F9F8]">
+                    <div class="flex items-center gap-2.5">
+                      <span class="w-8 h-8 rounded-lg bg-[#F5B841] text-[#162426] font-extrabold flex items-center justify-center text-[11px]">SCHD</span>
+                      <div>
+                        <div class="font-bold text-[#162426]">Schwab US Dividend</div>
+                        <div class="text-[11px] text-[#647478]">Dec 22 • Quarterly</div>
+                      </div>
+                    </div>
+                    <span class="font-extrabold text-[#22A06B] tabular-nums">+$43.55</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =================================================================== -->
+    <!-- MOBILE SCREENS SHOWCASE ROW (SCREENS 30, 31, 32 — 375x812px iOS)    -->
+    <!-- =================================================================== -->
+    <div id="mobile-screens-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-8 justify-items-center pt-4">
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 30 (MOBILE): MOBILE INVESTMENTS HOME & MARKET MOVERS       -->
+      <!-- ================================================================= -->
+      <section class="screen-wrapper flex flex-col items-center" data-screen="30">
+        <div class="w-[375px] flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-[#1E2D2F] text-white text-[11px] font-bold">SCREEN 30</span>
+            <h3 class="text-xs font-bold text-[#162426]">Mobile Invest Home</h3>
+          </div>
+          <button onclick="copyScreenHTML('30', 'Mobile Investments Home')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-[11px] font-bold shadow-xs cursor-pointer">
+            Copy HTML
+          </button>
+        </div>
+
+        <!-- iOS Device Frame (375x812) -->
+        <div id="screen-30-code" class="ios-frame">
+          <!-- Deep Emerald Header (#1D6E4E) -->
+          <div class="bg-[#1D6E4E] text-white pt-4 pb-7 px-5 relative shrink-0">
+            <!-- iOS Status Bar -->
+            <div class="flex items-center justify-between text-[11px] font-bold mb-4 opacity-90">
+              <span>9:41</span>
+              <div class="w-24 h-5 bg-[#162426] rounded-full"></div>
+              <span>5G • 100%</span>
+            </div>
+
+            <!-- Top Row -->
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="text-xs font-medium text-white/75 block">Total Portfolio</span>
+                <div class="text-[28px] font-extrabold tracking-tight tabular-nums leading-tight">$68,940.25</div>
+                <span class="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full bg-white/15 text-[#A7F3D0] text-[11px] font-bold tabular-nums">
+                  ▲ +$842.15 (+1.24%) Today
+                </span>
+              </div>
+
+              <!-- 3D-Style Mini SVG Wealth Illustration -->
+              <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+                <circle cx="36" cy="36" r="32" fill="#FFFFFF" fill-opacity="0.1"/>
+                <rect x="20" y="38" width="8" height="18" rx="2" fill="#F5B841"/>
+                <rect x="32" y="28" width="8" height="28" rx="2" fill="#FFD470"/>
+                <rect x="44" y="18" width="8" height="38" rx="2" fill="#FFFFFF"/>
+                <path d="M18 32L32 20L40 24L52 12" stroke="#A7F3D0" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Circular Quick-Action Buttons -->
+            <div class="grid grid-cols-4 gap-2 pt-3 text-center">
+              <button onclick="showToast('Quick Buy drawer opened')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
+                <span class="w-11 h-11 rounded-full bg-white text-[#1D6E4E] flex items-center justify-center shadow-sm group-hover:scale-105 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                </span>
+                <span class="text-[11px] font-bold">Buy</span>
+              </button>
+              <button onclick="showToast('Instant Deposit from Checking')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
+                <span class="w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center group-hover:bg-white/25 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>
+                </span>
+                <span class="text-[11px] font-semibold">Deposit</span>
+              </button>
+              <button onclick="showToast('Auto-Invest ($150/wk) Active')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
+                <span class="w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center group-hover:bg-white/25 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+                </span>
+                <span class="text-[11px] font-semibold">Auto-Invest</span>
+              </button>
+              <button onclick="showToast('More Brokerage Tools')" class="flex flex-col items-center gap-1.5 cursor-pointer group">
+                <span class="w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center group-hover:bg-white/25 transition">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+                </span>
+                <span class="text-[11px] font-semibold">More</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom White Sheet -->
+          <div class="flex-1 bg-[#F6F9F8] -mt-3 rounded-t-[24px] p-4 overflow-y-auto no-scrollbar space-y-4">
+            <!-- Top Movers Horizontal Pills -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-extrabold text-[#162426]">Top Movers</h4>
+                <span class="text-[11px] font-bold text-[#1D6E4E]">Live</span>
+              </div>
+              <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <div class="shrink-0 px-3 py-2 rounded-xl bg-white border border-[#E5EDE9] flex items-center gap-2 shadow-2xs">
+                  <span class="text-xs font-extrabold text-[#162426]">NVDA</span>
+                  <span class="text-[11px] font-bold text-[#22A06B] bg-[#E8F3EE] px-1.5 py-0.5 rounded tabular-nums">+3.42%</span>
+                </div>
+                <div class="shrink-0 px-3 py-2 rounded-xl bg-white border border-[#E5EDE9] flex items-center gap-2 shadow-2xs">
+                  <span class="text-xs font-extrabold text-[#162426]">AAPL</span>
+                  <span class="text-[11px] font-bold text-[#22A06B] bg-[#E8F3EE] px-1.5 py-0.5 rounded tabular-nums">+1.18%</span>
+                </div>
+                <div class="shrink-0 px-3 py-2 rounded-xl bg-white border border-[#E5EDE9] flex items-center gap-2 shadow-2xs">
+                  <span class="text-xs font-extrabold text-[#162426]">TSLA</span>
+                  <span class="text-[11px] font-bold text-[#E05252] bg-[#FDECEC] px-1.5 py-0.5 rounded tabular-nums">-1.45%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Your Positions List -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-extrabold text-[#162426]">Your Positions</h4>
+                <span class="text-[11px] font-semibold text-[#647478]">5 Assets</span>
+              </div>
+              <div class="space-y-2">
+                <!-- Position 1 -->
+                <div class="p-3 rounded-2xl bg-white border border-[#E5EDE9] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#162426] text-white font-extrabold text-[11px] flex items-center justify-center">AAPL</div>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Apple Inc.</div>
+                      <div class="text-[10px] text-[#647478] tabular-nums">65.0 shares</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,16 L14,12 L26,14 L38,6 L46,4" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$15,262.00</div>
+                    <div class="text-[10px] font-bold text-[#22A06B]">+2.15%</div>
+                  </div>
+                </div>
+
+                <!-- Position 2 -->
+                <div class="p-3 rounded-2xl bg-white border border-[#E5EDE9] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#1D6E4E] text-white font-extrabold text-[11px] flex items-center justify-center">VOO</div>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Vanguard S&amp;P</div>
+                      <div class="text-[10px] text-[#647478] tabular-nums">34.5 shares</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,15 L15,13 L28,9 L46,3" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$17,924.48</div>
+                    <div class="text-[10px] font-bold text-[#22A06B]">+0.88%</div>
+                  </div>
+                </div>
+
+                <!-- Position 3 -->
+                <div class="p-3 rounded-2xl bg-white border border-[#E5EDE9] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#22A06B] text-white font-extrabold text-[11px] flex items-center justify-center">NVDA</div>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">NVIDIA Corp.</div>
+                      <div class="text-[10px] text-[#647478] tabular-nums">88.0 shares</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,17 L14,14 L26,8 L46,2" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$13,076.80</div>
+                    <div class="text-[10px] font-bold text-[#22A06B]">+3.42%</div>
+                  </div>
+                </div>
+
+                <!-- Position 4 -->
+                <div class="p-3 rounded-2xl bg-white border border-[#E5EDE9] flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-[#1E2D2F] text-white font-extrabold text-[11px] flex items-center justify-center">MSFT</div>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Microsoft</div>
+                      <div class="text-[10px] text-[#647478] tabular-nums">29.5 shares</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,5 L16,7 L30,13 L46,16" fill="none" stroke="#E05252" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$13,024.84</div>
+                    <div class="text-[10px] font-bold text-[#E05252]">-1.45%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5-Icon PiggyBank Mobile Bottom Nav Bar -->
+          <nav class="bg-white border-t border-[#E5EDE9] px-4 py-2.5 flex items-center justify-around shrink-0">
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/></svg>
+              <span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+              <span class="text-[10px] font-semibold">Cards</span>
+            </button>
+            <!-- Active Invest Tab -->
+            <button class="flex flex-col items-center gap-0.5 text-[#1D6E4E]">
+              <div class="w-9 h-7 rounded-xl bg-[#E8F3EE] flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+              </div>
+              <span class="text-[10px] font-extrabold">Invest</span>
+            </button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              <span class="text-[10px] font-semibold">Savings</span>
+            </button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 14.5-4 16 0"/></svg>
+              <span class="text-[10px] font-semibold">Profile</span>
+            </button>
+          </nav>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 31 (MOBILE): MOBILE ASSET DETAIL & QUICK FRACTIONAL BUY    -->
+      <!-- ================================================================= -->
+      <section class="screen-wrapper flex flex-col items-center" data-screen="31">
+        <div class="w-[375px] flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-[#1E2D2F] text-white text-[11px] font-bold">SCREEN 31</span>
+            <h3 class="text-xs font-bold text-[#162426]">Mobile Stock Detail &amp; Buy</h3>
+          </div>
+          <button onclick="copyScreenHTML('31', 'Mobile Stock Detail & Quick Fractional Buy')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-[11px] font-bold shadow-xs cursor-pointer">
+            Copy HTML
+          </button>
+        </div>
+
+        <!-- iOS Device Frame (375x812) -->
+        <div id="screen-31-code" class="ios-frame bg-white">
+          <!-- Status Bar -->
+          <div class="flex items-center justify-between text-[11px] font-bold px-5 pt-4 pb-2 text-[#162426]">
+            <span>9:41</span>
+            <div class="w-24 h-5 bg-[#162426] rounded-full"></div>
+            <span>5G • 100%</span>
+          </div>
+
+          <!-- Top Nav Header -->
+          <div class="flex items-center justify-between px-4 py-2">
+            <button onclick="showToast('Returned to Invest Home')" class="w-9 h-9 rounded-full bg-[#F6F9F8] flex items-center justify-center text-[#162426] cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="px-3 py-1 rounded-full bg-[#F6F9F8] border border-[#E5EDE9] text-xs font-extrabold text-[#162426]">
+              AAPL • Apple Inc.
+            </div>
+            <button id="s31-star-btn" onclick="toggleMobileStar()" class="w-9 h-9 rounded-full bg-[#FDF5E6] text-[#F5B841] flex items-center justify-center cursor-pointer">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+          </div>
+
+          <!-- Scrollable Detail Content -->
+          <div class="flex-1 px-5 overflow-y-auto no-scrollbar space-y-4">
+            <!-- Price Header -->
+            <div class="pt-1">
+              <div id="s31-price" class="text-[32px] font-extrabold text-[#162426] tracking-tight tabular-nums leading-none">$234.80</div>
+              <div id="s31-delta" class="inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-[#22A06B] tabular-nums">
+                ▲ +$4.94 (+2.15%) Today
+              </div>
+            </div>
+
+            <!-- Interactive SVG Price Chart -->
+            <div class="h-[145px] w-full">
+              <svg viewBox="0 0 320 130" class="w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="mobAaplGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#22A06B" stop-opacity="0.22"/>
+                    <stop offset="100%" stop-color="#22A06B" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path id="s31-area" d="M0,105 C45,98 75,78 120,84 C165,90 205,52 250,42 C280,35 300,22 320,16 L320,125 L0,125 Z" fill="url(#mobAaplGrad)"/>
+                <path id="s31-line" d="M0,105 C45,98 75,78 120,84 C165,90 205,52 250,42 C280,35 300,22 320,16" fill="none" stroke="#22A06B" stroke-width="2.8" stroke-linecap="round"/>
+                <circle id="s31-dot" cx="320" cy="16" r="4.5" fill="#22A06B" stroke="#FFF" stroke-width="2"/>
+              </svg>
+            </div>
+
+            <!-- Touchable Timeframe Pills -->
+            <div class="grid grid-cols-4 gap-1.5 bg-[#F6F9F8] p-1 rounded-xl border border-[#E5EDE9]">
+              <button onclick="updateMobileChart('1D', this)" class="s31-tf py-1 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white cursor-pointer">1D</button>
+              <button onclick="updateMobileChart('1W', this)" class="s31-tf py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">1W</button>
+              <button onclick="updateMobileChart('1M', this)" class="s31-tf py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">1M</button>
+              <button onclick="updateMobileChart('1Y', this)" class="s31-tf py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">1Y</button>
+            </div>
+
+            <!-- Position Summary Card -->
+            <div class="p-3.5 rounded-2xl bg-[#F6F9F8] border border-[#E5EDE9]">
+              <div class="text-[11px] font-bold uppercase tracking-wider text-[#647478] mb-1">Your AAPL Position</div>
+              <div class="flex items-center justify-between text-xs font-extrabold text-[#162426] tabular-nums">
+                <span>18.5 Shares</span>
+                <span>$4,343.80 Equity</span>
+                <span class="text-[#22A06B]">+$612.40</span>
+              </div>
+            </div>
+
+            <!-- Analyst Consensus Bar -->
+            <div class="p-3.5 rounded-2xl bg-white border border-[#E5EDE9]">
+              <div class="flex items-center justify-between text-xs mb-2">
+                <span class="font-bold text-[#162426]">Analyst Consensus</span>
+                <span class="font-extrabold text-[#1D6E4E]">78% Strong Buy</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-[#E5EDE9] overflow-hidden flex">
+                <div class="bg-[#1D6E4E] h-full" style="width: 78%"></div>
+                <div class="bg-[#F5B841] h-full" style="width: 16%"></div>
+                <div class="bg-[#E05252] h-full" style="width: 6%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-semibold text-[#94A3A6] mt-1.5">
+                <span>Buy 78%</span>
+                <span>Hold 16%</span>
+                <span>Sell 6%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Fractional Buy Bottom Sheet -->
+          <div class="bg-[#F6F9F8] border-t border-[#E5EDE9] p-4 rounded-t-[24px] shrink-0 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-[#162426]">Quick Fractional Buy</span>
+              <span id="s31-est-sh" class="text-[11px] font-bold text-[#1D6E4E] tabular-nums">≈ 0.4259 AAPL shares</span>
+            </div>
+
+            <!-- Preset Chips -->
+            <div class="grid grid-cols-3 gap-2">
+              <button onclick="selectMobBuyPreset(25, this)" class="s31-chip py-2 rounded-xl bg-white border border-[#E5EDE9] text-xs font-extrabold text-[#162426] tabular-nums cursor-pointer">$25</button>
+              <button onclick="selectMobBuyPreset(100, this)" class="s31-chip py-2 rounded-xl bg-[#E8F3EE] border-2 border-[#1D6E4E] text-xs font-extrabold text-[#1D6E4E] tabular-nums cursor-pointer">$100</button>
+              <button onclick="selectMobBuyPreset(500, this)" class="s31-chip py-2 rounded-xl bg-white border border-[#E5EDE9] text-xs font-extrabold text-[#162426] tabular-nums cursor-pointer">$500</button>
+            </div>
+
+            <button id="s31-buy-cta" onclick="executeMobBuy()" class="w-full py-3.5 rounded-2xl bg-[#1D6E4E] hover:bg-[#16563D] text-white font-extrabold text-xs shadow-md transition cursor-pointer">
+              Tap to Buy $100.00 of AAPL
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 32 (MOBILE): MOBILE WATCHLIST, ALERTS & DIVIDEND VAULT     -->
+      <!-- ================================================================= -->
+      <section class="screen-wrapper flex flex-col items-center" data-screen="32">
+        <div class="w-[375px] flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md bg-[#1E2D2F] text-white text-[11px] font-bold">SCREEN 32</span>
+            <h3 class="text-xs font-bold text-[#162426]">Mobile Watchlist &amp; Dividends</h3>
+          </div>
+          <button onclick="copyScreenHTML('32', 'Mobile Watchlist, Price Alerts & Dividend Vault')" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-[11px] font-bold shadow-xs cursor-pointer">
+            Copy HTML
+          </button>
+        </div>
+
+        <!-- iOS Device Frame (375x812) -->
+        <div id="screen-32-code" class="ios-frame">
+          <!-- Status Bar -->
+          <div class="flex items-center justify-between text-[11px] font-bold px-5 pt-4 pb-2 text-[#162426]">
+            <span>9:41</span>
+            <div class="w-24 h-5 bg-[#162426] rounded-full"></div>
+            <span>5G • 100%</span>
+          </div>
+
+          <div class="px-4 pt-1 pb-3">
+            <h3 class="text-lg font-extrabold text-[#162426] mb-2.5">Watchlist &amp; Income</h3>
+
+            <!-- Segmented Top Tab Control -->
+            <div class="grid grid-cols-3 gap-1 p-1 rounded-xl bg-white border border-[#E5EDE9]">
+              <button onclick="switchS32Tab('watchlist', this)" class="s32-seg py-1.5 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white cursor-pointer">Watchlist</button>
+              <button onclick="switchS32Tab('alerts', this)" class="s32-seg py-1.5 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">Alerts</button>
+              <button onclick="switchS32Tab('dividends', this)" class="s32-seg py-1.5 rounded-lg text-xs font-bold text-[#647478] cursor-pointer">Dividends</button>
+            </div>
+          </div>
+
+          <!-- Scrollable Content -->
+          <div class="flex-1 px-4 overflow-y-auto no-scrollbar space-y-3.5 pb-4">
+            <!-- Dividend Auto-Reinvest (DRIP) Toggle Card -->
+            <div class="p-3.5 rounded-2xl bg-gradient-to-r from-[#1E2D2F] to-[#1D6E4E] text-white flex items-center justify-between shadow-sm">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#F5B841] text-[#162426]">DRIP ON</span>
+                  <span class="text-xs font-bold">Auto-Reinvest</span>
+                </div>
+                <div class="text-base font-extrabold mt-1 tabular-nums">$154.20 <span class="text-[11px] font-normal text-white/80">Monthly Est.</span></div>
+              </div>
+              <button id="s32-drip-toggle" onclick="toggleDripSwitch()" class="w-12 h-7 rounded-full bg-[#22A06B] p-1 flex items-center justify-end transition cursor-pointer">
+                <span class="w-5 h-5 rounded-full bg-white shadow"></span>
+              </button>
+            </div>
+
+            <!-- Recurring Auto-Invest Schedule Card -->
+            <div class="p-3 rounded-2xl bg-[#E8F3EE] border border-[#1D6E4E]/20 flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-[#1D6E4E] text-white flex items-center justify-center font-extrabold text-xs">↻</div>
+                <div>
+                  <div class="text-xs font-extrabold text-[#162426]">Recurring Auto-Invest</div>
+                  <div class="text-[11px] font-semibold text-[#1D6E4E]">Every Friday • $150 into VOO</div>
+                </div>
+              </div>
+              <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white text-[#1D6E4E]">ACTIVE</span>
+            </div>
+
+            <!-- Searchable Watchlist Header + Inline Add Alert Toggle -->
+            <div class="flex items-center justify-between gap-2">
+              <input id="s32-search" type="text" placeholder="Search watchlist..." oninput="filterS32Watchlist(this.value)" class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-[#E5EDE9] text-xs font-medium focus:outline-none focus:border-[#1D6E4E]"/>
+              <button onclick="toggleNewAlertBox()" class="px-3 py-1.5 rounded-xl bg-[#1D6E4E] text-white text-xs font-bold shrink-0 cursor-pointer">+ Add Alert</button>
+            </div>
+
+            <!-- Collapsible Inline Add Alert Form -->
+            <div id="s32-alert-box" class="hidden p-3 rounded-2xl bg-white border border-[#1D6E4E]/30 space-y-2">
+              <div class="text-[11px] font-extrabold text-[#162426]">New Target Price Alert</div>
+              <div class="flex gap-2">
+                <input id="s32-new-sym" type="text" placeholder="Ticker (e.g. AMD)" class="w-1/2 px-2.5 py-1.5 rounded-lg bg-[#F6F9F8] border border-[#E5EDE9] text-xs font-bold uppercase"/>
+                <input id="s32-new-target" type="number" placeholder="Target $" class="w-1/2 px-2.5 py-1.5 rounded-lg bg-[#F6F9F8] border border-[#E5EDE9] text-xs font-bold"/>
+              </div>
+              <button onclick="addCustomMobileAlert()" class="w-full py-1.5 rounded-lg bg-[#1D6E4E] text-white text-xs font-bold cursor-pointer">Save Price Alert</button>
+            </div>
+
+            <!-- Watchlist Items with Target Alert Pills -->
+            <div id="s32-watchlist-items" class="space-y-2.5">
+              <!-- Item 1 -->
+              <div class="s32-item p-3 rounded-2xl bg-white border border-[#E5EDE9] space-y-2" data-name="MSFT Microsoft">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-[#1E2D2F] text-white font-extrabold text-[10px] flex items-center justify-center">MSFT</span>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Microsoft</div>
+                      <div class="text-[10px] text-[#647478]">NASDAQ</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,15 L16,11 L30,13 L46,5" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$441.52</div>
+                    <div class="text-[10px] font-bold text-[#22A06B]">+0.64%</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#F6F9F8]">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FDF5E6] text-[#B7791F] text-[10px] font-bold tabular-nums">
+                    🔔 Alert @ $495.00
+                  </span>
+                  <span class="text-[10px] font-semibold text-[#94A3A6]">12.1% away</span>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="s32-item p-3 rounded-2xl bg-white border border-[#E5EDE9] space-y-2" data-name="SCHD Schwab Dividend ETF">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-[#1D6E4E] text-white font-extrabold text-[10px] flex items-center justify-center">SCHD</span>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Schwab Dividend</div>
+                      <div class="text-[10px] text-[#647478]">3.48% Yield</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,16 L16,14 L30,10 L46,6" fill="none" stroke="#22A06B" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$84.90</div>
+                    <div class="text-[10px] font-bold text-[#22A06B]">+0.92%</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#F6F9F8]">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#1D6E4E] text-[10px] font-bold tabular-nums">
+                    🔔 Alert @ $80.00 (Buy Dip)
+                  </span>
+                  <span class="text-[10px] font-semibold text-[#94A3A6]">5.7% below</span>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="s32-item p-3 rounded-2xl bg-white border border-[#E5EDE9] space-y-2" data-name="AMZN Amazon">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-xl bg-[#162426] text-white font-extrabold text-[10px] flex items-center justify-center">AMZN</span>
+                    <div>
+                      <div class="text-xs font-extrabold text-[#162426]">Amazon.com</div>
+                      <div class="text-[10px] text-[#647478]">NASDAQ</div>
+                    </div>
+                  </div>
+                  <svg class="w-12 h-5" viewBox="0 0 48 20"><path d="M2,8 L18,10 L32,14 L46,16" fill="none" stroke="#E05252" stroke-width="2" stroke-linecap="round"/></svg>
+                  <div class="text-right tabular-nums">
+                    <div class="text-xs font-extrabold text-[#162426]">$208.15</div>
+                    <div class="text-[10px] font-bold text-[#E05252]">-0.58%</div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-1.5 border-t border-[#F6F9F8]">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FDF5E6] text-[#B7791F] text-[10px] font-bold tabular-nums">
+                    🔔 Alert @ $225.00
+                  </span>
+                  <span class="text-[10px] font-semibold text-[#94A3A6]">8.1% away</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile Bottom Nav -->
+          <nav class="bg-white border-t border-[#E5EDE9] px-4 py-2.5 flex items-center justify-around shrink-0">
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]"><span class="text-[10px] font-semibold">Home</span></button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]"><span class="text-[10px] font-semibold">Cards</span></button>
+            <button class="flex flex-col items-center gap-0.5 text-[#1D6E4E]"><span class="text-[10px] font-extrabold">Invest</span></button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]"><span class="text-[10px] font-semibold">Savings</span></button>
+            <button class="flex flex-col items-center gap-0.5 text-[#94A3A6]"><span class="text-[10px] font-semibold">Profile</span></button>
+          </nav>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- INTERACTIVE JAVASCRIPT LOGIC                                          -->
+  <!-- ===================================================================== -->
+  <script>
+    // 1. Toast Helper
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'animate-toast pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#1E2D2F] text-white text-xs font-bold shadow-xl border border-white/10';
+      toast.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#22A06B]"></span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.25s';
+        setTimeout(() => toast.remove(), 260);
+      }, 2800);
+    }
+
+    // 2. Copy Standalone HTML Wrapper
+    function copyScreenHTML(screenNum, title) {
+      const el = document.getElementById(`screen-${screenNum}-code`);
+      if (!el) return;
+      const wrapped = `<!-- BEGIN SCREEN ${screenNum}: ${title} -->\n${el.outerHTML}\n<!-- END SCREEN ${screenNum} -->`;
+      const textarea = document.createElement('textarea');
+      textarea.value = wrapped;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Copied Screen ${screenNum} HTML to clipboard!`);
+      } catch (err) {
+        showToast('Unable to copy HTML.');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // 3. Top Control Bar Filter Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('bg-[#1D6E4E]', 'text-white', 'font-bold');
+          b.classList.add('text-[#647478]', 'font-semibold');
+        });
+        btn.classList.add('bg-[#1D6E4E]', 'text-white', 'font-bold');
+        btn.classList.remove('text-[#647478]', 'font-semibold');
+
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.screen-wrapper').forEach(sec => {
+          if (filter === 'all' || sec.dataset.screen === filter) {
+            sec.classList.remove('hidden');
+          } else {
+            sec.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // 4. Screen 27: Portfolio Timeframe Switcher & Holdings Filter
+    const s27Data = {
+      '1D': {
+        val: '$68,940.25',
+        delta: '▲ +$842.15 (+1.24%) Today',
+        line: 'M0,130 C95,122 160,104 240,108 C320,112 410,74 495,62 C570,52 630,36 680,28',
+        area: 'M0,130 C95,122 160,104 240,108 C320,112 410,74 495,62 C570,52 630,36 680,28 L680,195 L0,195 Z',
+        cy: 28
+      },
+      '1W': {
+        val: '$68,940.25',
+        delta: '▲ +$1,590.40 (+2.36%) Past Week',
+        line: 'M0,145 C110,138 190,110 280,96 C370,82 460,88 550,54 C610,36 650,28 680,22',
+        area: 'M0,145 C110,138 190,110 280,96 C370,82 460,88 550,54 C610,36 650,28 680,22 L680,195 L0,195 Z',
+        cy: 22
+      },
+      '1M': {
+        val: '$68,940.25',
+        delta: '▲ +$2,410.12 (+3.62%) Past Month',
+        line: 'M0,155 C90,140 175,146 265,115 C355,84 445,76 540,48 C610,32 650,26 680,20',
+        area: 'M0,155 C90,140 175,146 265,115 C355,84 445,76 540,48 C610,32 650,26 680,20 L680,195 L0,195 Z',
+        cy: 20
+      },
+      '1Y': {
+        val: '$68,940.25',
+        delta: '▲ +$9,840.60 (+16.65%) Past Year',
+        line: 'M0,175 C95,160 180,142 275,120 C370,98 465,68 565,40 C620,28 655,20 680,14',
+        area: 'M0,175 C95,160 180,142 275,120 C370,98 465,68 565,40 C620,28 655,20 680,14 L680,195 L0,195 Z',
+        cy: 14
+      },
+      'ALL': {
+        val: '$68,940.25',
+        delta: '▲ +$4,120.80 (+6.36%) All-Time',
+        line: 'M0,165 C75,155 120,130 190,138 C260,145 310,95 385,88 C460,82 520,52 590,42 C630,36 655,24 680,18',
+        area: 'M0,165 C75,155 120,130 190,138 C260,145 310,95 385,88 C460,82 520,52 590,42 C630,36 655,24 680,18 L680,195 L0,195 Z',
+        cy: 18
+      }
+    };
+
+    document.querySelectorAll('.s27-tf').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.s27-tf').forEach(b => {
+          b.classList.remove('bg-[#1D6E4E]', 'text-white');
+          b.classList.add('text-[#647478]');
+        });
+        btn.classList.add('bg-[#1D6E4E]', 'text-white');
+        btn.classList.remove('text-[#647478]');
+
+        const d = s27Data[btn.dataset.tf];
+        document.getElementById('s27-delta').textContent = d.delta;
+        document.getElementById('s27-line').setAttribute('d', d.line);
+        document.getElementById('s27-area').setAttribute('d', d.area);
+        document.getElementById('s27-dot').setAttribute('cy', d.cy);
+        document.getElementById('s27-dot-outer').setAttribute('cy', d.cy);
+      });
+    });
+
+    document.getElementById('s27-search').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('.holding-row').forEach(row => {
+        row.style.display = row.dataset.ticker.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    // 5. Screen 28: Trading Terminal Interactive Calculator
+    let terminalState = { ticker: 'NVDA', price: 148.60, side: 'buy' };
+
+    function selectTerminalTicker(sym, name, price, pct, isBull) {
+      terminalState.ticker = sym;
+      terminalState.price = price;
+      document.getElementById('s28-badge').textContent = sym;
+      document.getElementById('s28-name').textContent = name;
+      document.getElementById('s28-price').textContent = `$${price.toFixed(2)}`;
+      const chEl = document.getElementById('s28-change');
+      chEl.textContent = `${isBull ? '▲' : '▼'} (${pct}) Today`;
+      chEl.className = `text-xs font-bold px-2 py-0.5 rounded-full tabular-nums ${isBull ? 'bg-[#E8F3EE] text-[#22A06B]' : 'bg-[#FDECEC] text-[#E05252]'}`;
+      document.querySelectorAll('.s28-sym').forEach(el => el.textContent = sym);
+      document.getElementById('s28-mkt-price').textContent = `$${price.toFixed(2)}`;
+      recalcOrder();
+    }
+
+    function toggleTerminalChart(type) {
+      const candle = document.getElementById('s28-svg-candle');
+      const area = document.getElementById('s28-svg-area');
+      const btnC = document.getElementById('btn-candle');
+      const btnA = document.getElementById('btn-area');
+      if (type === 'candle') {
+        candle.classList.remove('hidden');
+        area.classList.add('hidden');
+        btnC.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#162426] shadow-xs cursor-pointer';
+        btnA.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] cursor-pointer';
+      } else {
+        candle.classList.add('hidden');
+        area.classList.remove('hidden');
+        btnA.className = 'px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-[#162426] shadow-xs cursor-pointer';
+        btnC.className = 'px-2.5 py-1 rounded-lg text-xs font-bold text-[#647478] hover:text-[#162426] cursor-pointer';
+      }
+    }
+
+    function setTerminalTf(el) {
+      document.querySelectorAll('.s28-tf').forEach(b => {
+        b.classList.remove('bg-[#1D6E4E]', 'text-white');
+        b.classList.add('text-[#647478]');
+      });
+      el.classList.add('bg-[#1D6E4E]', 'text-white');
+      el.classList.remove('text-[#647478]');
+    }
+
+    function setOrderSide(side) {
+      terminalState.side = side;
+      const buyTab = document.getElementById('s28-tab-buy');
+      const sellTab = document.getElementById('s28-tab-sell');
+      const submitBtn = document.getElementById('s28-submit-btn');
+      if (side === 'buy') {
+        buyTab.className = 'py-2 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white shadow-xs transition cursor-pointer';
+        sellTab.className = 'py-2 rounded-lg text-xs font-extrabold text-[#647478] hover:text-[#162426] transition cursor-pointer';
+        submitBtn.className = 'w-full py-3.5 rounded-xl bg-[#1D6E4E] hover:bg-[#16563D] text-white font-extrabold text-sm shadow-md transition cursor-pointer';
+      } else {
+        sellTab.className = 'py-2 rounded-lg text-xs font-extrabold bg-[#E05252] text-white shadow-xs transition cursor-pointer';
+        buyTab.className = 'py-2 rounded-lg text-xs font-extrabold text-[#647478] hover:text-[#162426] transition cursor-pointer';
+        submitBtn.className = 'w-full py-3.5 rounded-xl bg-[#E05252] hover:opacity-95 text-white font-extrabold text-sm shadow-md transition cursor-pointer';
+      }
+      recalcOrder();
+    }
+
+    function setQuickDollar(val) {
+      document.getElementById('s28-order-type').value = 'fractional';
+      document.getElementById('s28-amount').value = val;
+      recalcOrder();
+    }
+
+    function recalcOrder() {
+      const type = document.getElementById('s28-order-type').value;
+      const raw = parseFloat(document.getElementById('s28-amount').value) || 0;
+      const prefix = document.getElementById('s28-prefix');
+      const label = document.getElementById('s28-input-label');
+
+      let shares = 0;
+      let total = 0;
+
+      if (type === 'fractional') {
+        prefix.textContent = '$';
+        label.textContent = 'Investment Amount ($)';
+        total = raw;
+        shares = raw / terminalState.price;
+      } else {
+        prefix.textContent = '#';
+        label.textContent = 'Quantity (Shares)';
+        shares = raw;
+        total = raw * terminalState.price;
+      }
+
+      document.getElementById('s28-est-shares').textContent = `${shares.toFixed(5)} sh`;
+      document.getElementById('s28-est-total').textContent = `$${total.toFixed(2)}`;
+      const actionWord = terminalState.side === 'buy' ? 'Buy' : 'Sell';
+      document.getElementById('s28-submit-btn').textContent = `Place ${actionWord} Order • $${total.toFixed(2)}`;
+    }
+
+    function submitTerminalOrder() {
+      const total = document.getElementById('s28-est-total').textContent;
+      const shares = document.getElementById('s28-est-shares').textContent;
+      const side = terminalState.side.toUpperCase();
+      showToast(`${side} Order Filled: ${shares} of ${terminalState.ticker} (${total})`);
+
+      const tbody = document.getElementById('s28-orders-list');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="py-2.5 font-extrabold text-[#162426]">${terminalState.ticker}</td>
+        <td class="py-2.5"><span class="px-2 py-0.5 rounded ${side === 'BUY' ? 'bg-[#E8F3EE] text-[#1D6E4E]' : 'bg-[#FDECEC] text-[#E05252]'} font-bold">${side === 'BUY' ? 'Market Buy' : 'Market Sell'}</span></td>
+        <td class="py-2.5 text-right tabular-nums font-semibold">${total} (${shares})</td>
+        <td class="py-2.5 text-right tabular-nums">$${terminalState.price.toFixed(2)}</td>
+        <td class="py-2.5 text-right"><span class="px-2 py-0.5 rounded-full bg-[#E8F3EE] text-[#22A06B] font-bold">Filled</span></td>
+      `;
+      tbody.prepend(tr);
+    }
+
+    // 6. Screen 29: Risk Slider & Bundle Toggle
+    function updateRiskProfile(val) {
+      const profiles = {
+        '1': 'Conservative (30% Stocks / 70% Bonds)',
+        '2': 'Balanced (60% Stocks / 40% Bonds)',
+        '3': 'Growth (80% Stocks / 20% Bonds)',
+        '4': 'Aggressive (95% Stocks / 5% Bonds)'
+      };
+      document.getElementById('s29-risk-label').textContent = profiles[val];
+    }
+
+    function toggleBundleBtn(btn, bundleName) {
+      const isActive = btn.textContent.includes('Active');
+      if (isActive) {
+        btn.textContent = '+ Auto-Invest';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-[#F6F9F8] hover:bg-[#E8F3EE] text-[#1D6E4E] border border-[#E5EDE9] text-xs font-bold transition cursor-pointer';
+        showToast(`Paused auto-invest for ${bundleName}`);
+      } else {
+        btn.textContent = '✓ Active';
+        btn.className = 'px-3 py-1.5 rounded-xl bg-[#1D6E4E] text-white text-xs font-bold transition cursor-pointer';
+        showToast(`Enabled weekly Auto-Invest for ${bundleName}!`);
+      }
+    }
+
+    // 7. Screen 31: Mobile Asset Detail & Quick Fractional Buy
+    let mobPresetAmount = 100;
+    function toggleMobileStar() {
+      const btn = document.getElementById('s31-star-btn');
+      const active = btn.classList.contains('bg-[#FDF5E6]');
+      if (active) {
+        btn.className = 'w-9 h-9 rounded-full bg-[#F6F9F8] text-[#94A3A6] flex items-center justify-center cursor-pointer';
+        showToast('Removed AAPL from Watchlist');
+      } else {
+        btn.className = 'w-9 h-9 rounded-full bg-[#FDF5E6] text-[#F5B841] flex items-center justify-center cursor-pointer';
+        showToast('Added AAPL to Watchlist');
+      }
+    }
+
+    function updateMobileChart(tf, btn) {
+      document.querySelectorAll('.s31-tf').forEach(b => {
+        b.className = 's31-tf py-1 rounded-lg text-xs font-bold text-[#647478] cursor-pointer';
+      });
+      btn.className = 's31-tf py-1 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white cursor-pointer';
+
+      const paths = {
+        '1D': { d: 'M0,105 C45,98 75,78 120,84 C165,90 205,52 250,42 C280,35 300,22 320,16', delta: '▲ +$4.94 (+2.15%) Today', cy: 16 },
+        '1W': { d: 'M0,95 C50,82 95,92 145,68 C195,44 255,38 320,24', delta: '▲ +$9.12 (+4.04%) Past Week', cy: 24 },
+        '1M': { d: 'M0,112 C65,100 125,75 185,66 C245,56 285,30 320,18', delta: '▲ +$16.40 (+7.51%) Past Month', cy: 18 },
+        '1Y': { d: 'M0,118 C75,108 140,86 210,58 C265,36 295,22 320,12', delta: '▲ +$46.40 (+24.63%) Past Year', cy: 12 }
+      };
+      const item = paths[tf];
+      document.getElementById('s31-line').setAttribute('d', item.d);
+      document.getElementById('s31-area').setAttribute('d', `${item.d} L320,125 L0,125 Z`);
+      document.getElementById('s31-dot').setAttribute('cy', item.cy);
+      document.getElementById('s31-delta').textContent = item.delta;
+    }
+
+    function selectMobBuyPreset(amount, btn) {
+      mobPresetAmount = amount;
+      document.querySelectorAll('.s31-chip').forEach(c => {
+        c.className = 's31-chip py-2 rounded-xl bg-white border border-[#E5EDE9] text-xs font-extrabold text-[#162426] tabular-nums cursor-pointer';
+      });
+      btn.className = 's31-chip py-2 rounded-xl bg-[#E8F3EE] border-2 border-[#1D6E4E] text-xs font-extrabold text-[#1D6E4E] tabular-nums cursor-pointer';
+      const sh = (amount / 234.80).toFixed(4);
+      document.getElementById('s31-est-sh').textContent = `≈ ${sh} AAPL shares`;
+      document.getElementById('s31-buy-cta').textContent = `Tap to Buy $${amount.toFixed(2)} of AAPL`;
+    }
+
+    function executeMobBuy() {
+      const sh = (mobPresetAmount / 234.80).toFixed(4);
+      showToast(`Purchased $${mobPresetAmount.toFixed(2)} (${sh} sh) of AAPL!`);
+    }
+
+    // 8. Screen 32: Watchlist, DRIP & Alerts
+    function switchS32Tab(tab, btn) {
+      document.querySelectorAll('.s32-seg').forEach(b => {
+        b.className = 's32-seg py-1.5 rounded-lg text-xs font-bold text-[#647478] cursor-pointer';
+      });
+      btn.className = 's32-seg py-1.5 rounded-lg text-xs font-extrabold bg-[#1D6E4E] text-white cursor-pointer';
+      showToast(`Switched mobile view to ${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+    }
+
+    function toggleDripSwitch() {
+      const btn = document.getElementById('s32-drip-toggle');
+      const isOn = btn.classList.contains('justify-end');
+      if (isOn) {
+        btn.className = 'w-12 h-7 rounded-full bg-white/25 p-1 flex items-center justify-start transition cursor-pointer';
+        showToast('DRIP Auto-Reinvest paused');
+      } else {
+        btn.className = 'w-12 h-7 rounded-full bg-[#22A06B] p-1 flex items-center justify-end transition cursor-pointer';
+        showToast('DRIP Auto-Reinvest enabled!');
+      }
+    }
+
+    function filterS32Watchlist(q) {
+      const query = q.toLowerCase();
+      document.querySelectorAll('.s32-item').forEach(el => {
+        el.style.display = el.dataset.name.toLowerCase().includes(query) ? '' : 'none';
+      });
+    }
+
+    function toggleNewAlertBox() {
+      document.getElementById('s32-alert-box').classList.toggle('hidden');
+    }
+
+    function addCustomMobileAlert() {
+      const sym = (document.getElementById('s32-new-sym').value || 'AMD').toUpperCase();
+      const target = parseFloat(document.getElementById('s32-new-target').value || '165').toFixed(2);
+      const list = document.getElementById('s32-watchlist-items');
+      const card = document.createElement('div');
+      card.className = 's32-item p-3 rounded-2xl bg-white border border-[#E5EDE9] space-y-2';
+      card.dataset.name = sym;
+      card.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-[#1D6E4E] text-white font-extrabold text-[10px] flex items-center justify-center">${sym}</span>
+            <div>
+              <div class="text-xs font-extrabold text-[#162426]">${sym}</div>
+              <div class="text-[10px] text-[#647478]">Custom Alert</div>
+            </div>
+          </div>
+          <div class="text-right tabular-nums">
+            <div class="text-xs font-extrabold text-[#162426]">$${(parseFloat(target) * 0.94).toFixed(2)}</div>
+            <div class="text-[10px] font-bold text-[#22A06B]">+1.10%</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-1.5 border-t border-[#F6F9F8]">
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FDF5E6] text-[#B7791F] text-[10px] font-bold tabular-nums">🔔 Alert @ $${target}</span>
+          <span class="text-[10px] font-semibold text-[#1D6E4E]">Active</span>
+        </div>
+      `;
+      list.prepend(card);
+      document.getElementById('s32-alert-box').classList.add('hidden');
+      showToast(`Price alert set for ${sym} @ $${target}`);
+    }
+  </script>
+</body>
+</html>

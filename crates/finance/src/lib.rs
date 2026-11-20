@@ -1,5 +1,6 @@
 //! Finance observes Core sources, exports GL and coordinates exact approved synthetic funding corrections.
 pub mod audit;
+pub mod automation;
 pub mod basis;
 pub mod chart;
 pub mod client;
@@ -7,9 +8,11 @@ pub mod corrections;
 pub mod credit_reconciliation;
 pub mod credit_settlement;
 mod exports;
+pub mod forecasting;
 pub mod group_reconciliation;
 pub mod liquidity;
 pub mod periodic;
+pub mod periodic_execution;
 pub mod protocol;
 pub mod reconciliation;
 mod recovery;
@@ -35,6 +38,7 @@ pub struct Finance {
     pub core: Arc<dyn FinanceRecords>,
     pub periodic: bank_core::accruals::PolicyRegistry,
     pub bases: bank_core::accruals::basis::BasisRecords,
+    pub periodic_commands: bank_core::accruals::execution::PeriodicCommands,
     pub corrections: bank_core::corrections::CorrectionCommands,
     pub payments: bank_payments::finance::FinanceReader,
     pub controls: Entitlements,
@@ -58,6 +62,7 @@ pub async fn local() -> anyhow::Result<Arc<Finance>> {
         core: Arc::new(Core::new(Module::Core.connect().await?)),
         periodic: Core::new(Module::Core.connect().await?).periodic_policies(),
         bases: Core::new(Module::Core.connect().await?).periodic_bases(),
+        periodic_commands: Core::new(Module::Core.connect().await?).periodic_commands(),
         corrections: Core::new(Module::Core.connect().await?).finance_corrections(),
         payments: bank_payments::finance::FinanceReader::new(Module::Payments.connect().await?),
         controls: Entitlements::new(Module::Controls.connect().await?),

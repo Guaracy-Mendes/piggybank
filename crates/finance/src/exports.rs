@@ -544,6 +544,7 @@ impl Finance {
         self.recover_periodic_policies().await?;
         self.recover_basis_audit().await?;
         self.recover_corrections().await?;
+        self.recover_periodic_execution().await?;
         self.relay_audit().await
     }
 }

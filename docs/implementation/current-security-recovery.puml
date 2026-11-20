@@ -1,0 +1,25 @@
+@startuml
+title UML sequence - account recovery with ownership verification, risk and independent approval
+actor Customer
+actor Support
+actor Approver
+participant "bank-api" as API
+participant "Controls functions" as C
+participant "Issuer (bank-identity-admin)" as Issuer
+participant "Data notifications" as N
+Customer -> API : Sign out everywhere (authenticated session)
+API -> C : request_recovery(LOST_DEVICE, AUTHENTICATED_SESSION)
+C -> C : risk = contact change 7d / open monitoring alert / recovery 30d
+C --> API : APPROVED (HIGH risk opens a review case)
+API -> Issuer : logout all user sessions (secret read from file)
+API -> API : delete server-held browser sessions
+API -> C : complete_recovery -> EXECUTED
+C -> N : SECURITY notice "Your devices were signed out"
+Support -> API : staff recovery(person, CREDENTIAL_RESET, VERIFIED_CONTACT)
+API -> C : request_recovery -> PENDING_APPROVAL + SECURITY case
+Approver -> API : decision(approve, reason)
+API -> C : decide_recovery (approver != requester != customer)
+API -> Issuer : logout + required action UPDATE_PASSWORD
+API -> C : complete_recovery -> EXECUTED
+note right of Issuer : staff never see or set the password;\nthe next login stops at the password update
+@enduml

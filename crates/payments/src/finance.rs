@@ -58,7 +58,7 @@ impl FinanceReader {
             .map(|r| r.get::<Uuid, _>("id"))
             .collect::<Vec<_>>();
         // At most one immutable final receipt per payment version is stored by Payments.
-        let receipts=sqlx::query("SELECT payment_id,document FROM payments.rail_receipts WHERE payment_id=ANY($1) AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED') ORDER BY payment_id,provider_version,evidence_id LIMIT 2001").bind(&found).fetch_all(&mut *tx).await?;
+        let receipts=sqlx::query("SELECT payment_id,document FROM payments.rail_receipts WHERE payment_id=ANY($1) AND route_attempt=(SELECT route_attempt FROM payments.rail_submissions WHERE payment_id=payments.rail_receipts.payment_id) AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED') ORDER BY payment_id,provider_version,evidence_id LIMIT 2001").bind(&found).fetch_all(&mut *tx).await?;
         ensure!(receipts.len() <= 2000, SnapshotLimitExceeded);
         let mut grouped = std::collections::BTreeMap::<Uuid, Vec<Value>>::new();
         for row in receipts {

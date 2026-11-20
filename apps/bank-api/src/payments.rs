@@ -367,8 +367,14 @@ async fn rail_callback(
     State(s): State<App>,
     Json(packet): Json<bank_platform::authenticity::SignedDocument>,
 ) -> Result<StatusCode, StatusCode> {
+    // WP-39: each provider signs with its own key (evidence without a provider is the original provider's).
+    let key = match bank_rails::evidence_provider(&packet) {
+        Some(provider) => bank_rails::provider_key(provider).ok_or(StatusCode::UNAUTHORIZED)?,
+        None if packet.body.get("provider").is_none() => bank_rails::signing_key(),
+        None => return Err(StatusCode::UNAUTHORIZED),
+    };
     packet
-        .verify(bank_rails::signing_key().as_bytes())
+        .verify(key.as_bytes())
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
     s.1.accept_rail_evidence(&packet)
         .await

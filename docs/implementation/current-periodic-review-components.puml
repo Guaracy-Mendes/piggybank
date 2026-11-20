@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - retained customer preview review and original native proof
+Container_Ext(customer,"Current account owner","Customer portal","Explicit unchecked acknowledgment; saved URL; native historical material")
+Container_Boundary(api,"bank-api") {
+ Component(http,"Customer review boundary","Axum / BFF","GET/POST; customer identity; Origin/CSRF; exact digest and request UUID")
+ Component(authority,"Current owner authorization","Controls / Core","Canonical identity + account read; native post-lock OWNER recheck")
+ Component(renderer,"Retained V1 native renderer","Core","Independent policy integrity and exact account/product/material binding")
+ Component(documents,"Preview review capability","Documents","Immutable material, attributable review, original request mappings; no money authority")
+}
+ContainerDb_Ext(db,"PostgreSQL","Owned Core / Controls / Documents schemas","Atomic receipt + scoped request + redacted outbox fact; frozen private attribution")
+Container_Ext(events,"Durable event publisher","Documents outbox / JetStream","Original receipt event identity; no financial consumer implied")
+Rel(customer,http,"Read exact material; explicitly acknowledge its digest")
+Rel(http,authority,"Authenticate and authorize current owner")
+Rel(http,documents,"Original actor/key/account/policy/digest; no caller material")
+Rel(documents,renderer,"First review: derive full native V1 material and verify displayed digest")
+Rel(documents,db,"Lock request and person/account/policy; recheck owner; commit exact immutable receipt and event")
+Rel(db,events,"Publish redacted original receipt fact")
+Rel(documents,customer,"Original receipt/time/hash and retained text, including after live source damage")
+SHOW_LEGEND()
+@enduml

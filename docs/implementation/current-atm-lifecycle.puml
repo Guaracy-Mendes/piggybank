@@ -1,0 +1,18 @@
+@startuml
+title UML state - ATM authorization lifecycle with bounded financial effects (WP-35)
+[*] --> PENDING : AUTHORIZATION (row keyed by network message id)
+PENDING --> APPROVED : Core hold (operation = authorization id)
+PENDING --> DECLINED : limit / restricted / insufficient funds
+APPROVED --> COMPLETED : COMPLETION -> core.atm_withdrawal\n(UNIQUE operation+kind: posts once)
+APPROVED --> REVERSED : REVERSAL -> hold released
+APPROVED --> EXPIRED : network timeout (120 s) -> worker releases hold
+COMPLETED --> COMPLETED : late REVERSAL -> flagged for review\n(never auto-posted; reconciliation item)
+DECLINED --> [*]
+REVERSED --> [*]
+EXPIRED --> [*]
+note right of PENDING
+  duplicate message id -> stored signed response
+  same id, different content -> 409
+  unsupported operation -> DECLINED, no row effect
+end note
+@enduml

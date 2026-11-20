@@ -1,0 +1,56 @@
+@startuml
+title UML sequence - exact consent to one periodic financial effect
+actor Owner
+actor Maker
+actor Checker
+participant Documents
+participant Controls
+participant Finance
+participant Worker
+participant "Native Core" as Core
+database "Owned PostgreSQL stores" as DB
+participant "GL simulator" as GL
+Maker -> Documents : stage offer(exact published calculation policy, key)
+Documents -> DB : derive financial terms V1; retain material + digest
+Checker -> Controls : approve PERIODIC_OFFER(exact terms digest)
+Maker -> Documents : publish original approved offer
+Documents -> DB : immutable publication proof
+Owner -> Documents : accept(account, offer, displayed digest, explicit true, key)
+Documents -> DB : lock scope / account; recheck current sole owner
+Documents -> DB : atomic full consent + key + redacted outbox
+Documents --> Owner : original PENDING_ACTIVATION receipt
+alt withdrawal wins the account/offer lock
+ Owner -> Documents : withdraw(original consent digest)
+ Documents -> DB : immutable withdrawal + native activation guard
+else activation wins with independent exact approval
+ Maker -> Finance : stage(consent ID, explicit GL counter account)
+ Checker -> Controls : approve PERIODIC_ACTIVATION(exact consent/details digest)
+ Maker -> Core : execute original approved activation
+ Core -> DB : serialize account/offer; current maker/checker/owner/material/mapping
+ Core -> DB : immutable activation; first future whole period
+ Core --> Owner : ACTIVE through verified enrollment inquiry
+ loop fair wrapping recovery scan
+  Worker -> Finance : discover next closed UTC due period
+  Finance -> DB : commit scoped intent, then link durable job
+ end
+ Worker -> Core : finalize and post(activation, next period)
+ Core -> DB : ordered financial account locks; native clock + source prefix
+ Core -> DB : unique immutable finalization; close account-period watermark
+ alt zero accrual
+  Core -> DB : posted zero receipt; no journal
+ else positive amount
+  Core -> DB : verify exact math/source; holds/availability/restrictions
+  Core -> DB : balanced original journal + unique receipt + outbox atomically
+ end
+ Core --> Worker : verified native financial receipt
+ Worker -> Finance : complete operation using that proof
+ Finance -> GL : sealed original source batch
+ GL --> Finance : authenticated unique booking receipt
+ Maker -> Finance : propose exact original periodic reversal + reason
+ Checker -> Controls : approve FINANCE_CORRECTION(exact source/legs/digest)
+ Maker -> Core : execute correction
+ Core -> DB : verify original period proof; new linked reversal
+ note over Core,DB : Original journals and finalized basis never change.
+end
+note over Worker,Core : Retries/concurrent jobs recover the same native receipt.
+@enduml

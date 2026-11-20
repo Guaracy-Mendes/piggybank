@@ -54,6 +54,7 @@ async fn authority_maker_checker_and_action_proofs_hold() -> anyhow::Result<()> 
     }
     let account = AccountId::new();
     let authority = ResourceAuthority {
+        delegates: vec![],
         resource_id: account.0,
         owners: vec![customer_person],
         permitted_staff: vec![],
@@ -84,6 +85,21 @@ async fn authority_maker_checker_and_action_proofs_hold() -> anyhow::Result<()> 
             .authorize(&customer, Action::ManageRoles, None, Uuid::new_v4())
             .await?
     );
+    // CF-01: authorization decisions are chained in the fixed shard set, never the legacy single stream.
+    let (sharded, legacy): (i64, i64) = sqlx::query_as(
+        "SELECT count(*) FILTER (WHERE stream LIKE 'authorization-%'),count(*) FILTER (WHERE stream='authorization') FROM controls.audit_events",
+    )
+    .fetch_one(&controls)
+    .await?;
+    assert!(
+        sharded >= 3 && legacy == 0,
+        "{sharded} sharded, {legacy} legacy"
+    );
+    assert!(
+        bank_controls::audit::AuditLog::new(controls.clone())
+            .verify_sharded("authorization")
+            .await?
+    );
     let proposal = service
         .propose_role(
             &maker,
@@ -104,6 +120,7 @@ async fn authority_maker_checker_and_action_proofs_hold() -> anyhow::Result<()> 
         .approve_role(&checker, proposal, Uuid::new_v4())
         .await?;
     let staff_authority = ResourceAuthority {
+        delegates: vec![],
         resource_id: account.0,
         owners: vec![customer_person],
         permitted_staff: vec![checker_person],
@@ -251,6 +268,7 @@ async fn authority_maker_checker_and_action_proofs_hold() -> anyhow::Result<()> 
         )
         .await?;
     let restricted = ResourceAuthority {
+        delegates: vec![],
         resource_id: account.0,
         owners: vec![customer_person],
         permitted_staff: vec![],
@@ -537,8 +555,19 @@ async fn distinct_signed_controls_pending_conflicts_expiry_and_provider_restart(
     );
     assert!(
         bank_controls::audit::AuditLog::new(pool.clone())
-            .verify("controls")
+            .verify_sharded("controls")
             .await?
+    );
+    let sharded: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM controls.audit_events WHERE stream=$1 AND payload->>'correlationId'=$2",
+    )
+    .bind(bank_controls::audit::control_stream(lost.resource_id))
+    .bind(lost.resource_id.to_string())
+    .fetch_one(&pool)
+    .await?;
+    assert!(
+        sharded > 0,
+        "control audit must land in the resource's shard"
     );
     drop(server);
     pool.close().await;

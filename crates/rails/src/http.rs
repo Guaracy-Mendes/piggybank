@@ -1,4 +1,7 @@
-use crate::{RailInstruction, RecipientEvidence, VerifiedEvidence, signing_key};
+use crate::{
+    PROVIDER, PROVIDER_B, RailInstruction, RecipientEvidence, VerifiedEvidence, provider_key,
+    signing_key,
+};
 use anyhow::{Result, ensure};
 use bank_platform::authenticity::SignedDocument;
 use std::time::Duration;
@@ -6,6 +9,8 @@ use std::time::Duration;
 pub struct RailClient {
     base: String,
     key: String,
+    prefix: &'static str,
+    provider: &'static str,
     http: reqwest::Client,
 }
 impl RailClient {
@@ -33,11 +38,31 @@ impl RailClient {
         Ok(Self {
             base: base.trim_end_matches('/').to_owned(),
             key: signing_key(),
+            prefix: "/rails",
+            provider: PROVIDER,
             http: reqwest::Client::builder()
                 .timeout(Duration::from_millis(1500))
                 .redirect(reqwest::redirect::Policy::none())
                 .build()?,
         })
+    }
+    /// The same simulator base serves each provider under its own path with its own key.
+    pub fn with_provider(&self, provider: &str) -> Result<Self> {
+        let (prefix, provider) = match provider {
+            PROVIDER => ("/rails", PROVIDER),
+            PROVIDER_B => ("/rails-b", PROVIDER_B),
+            _ => anyhow::bail!("Unknown rail provider"),
+        };
+        Ok(Self {
+            base: self.base.clone(),
+            key: provider_key(provider).expect("known provider key"),
+            prefix,
+            provider,
+            http: self.http.clone(),
+        })
+    }
+    pub fn provider(&self) -> &'static str {
+        self.provider
     }
     pub async fn verify_recipient(&self, reference: &str) -> Result<RecipientEvidence> {
         ensure!(
@@ -61,7 +86,7 @@ impl RailClient {
         let packet = SignedDocument::sign(self.key.as_bytes(), instruction)?;
         let response = self
             .http
-            .post(format!("{}/rails/instructions", self.base))
+            .post(format!("{}{}/instructions", self.base, self.prefix))
             .json(&packet)
             .send()
             .await?;
@@ -72,7 +97,7 @@ impl RailClient {
         let packet = SignedDocument::sign(self.key.as_bytes(), instruction)?;
         let response = self
             .http
-            .post(format!("{}/rails/cancellation", self.base))
+            .post(format!("{}{}/cancellation", self.base, self.prefix))
             .json(&packet)
             .send()
             .await?;
@@ -82,7 +107,7 @@ impl RailClient {
         let packet = SignedDocument::sign(self.key.as_bytes(), instruction)?;
         let response = self
             .http
-            .post(format!("{}/rails/inquiry", self.base))
+            .post(format!("{}{}/inquiry", self.base, self.prefix))
             .json(&packet)
             .send()
             .await?;

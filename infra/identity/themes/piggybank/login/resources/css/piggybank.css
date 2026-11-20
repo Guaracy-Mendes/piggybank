@@ -1,0 +1,24 @@
+.pb-intro {
+  margin: 0 0 1rem;
+}
+.pb-strength {
+  margin-top: 0.5rem;
+}
+.pb-strength meter {
+  width: 100%;
+  height: 0.6rem;
+}
+.pb-strength ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+}
+.pb-strength li::before {
+  content: "\2717\00a0";
+}
+.pb-strength li[data-met="true"]::before {
+  content: "\2713\00a0";
+}
+.pb-strength li[data-met="true"] {
+  font-weight: 600;
+}

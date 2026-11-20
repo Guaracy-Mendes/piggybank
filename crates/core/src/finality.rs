@@ -45,7 +45,14 @@ impl Core {
             instruction.details.rail == "SIMULATED",
             "External rail required"
         );
-        packet.verify_integrity(bank_rails::signing_key().as_bytes())?;
+        // WP-39: each provider signs with its own key; SQL accepts only the current route's provider.
+        let provider = bank_rails::evidence_provider(packet)
+            .ok_or_else(|| anyhow::anyhow!("Unknown rail provider"))?;
+        packet.verify_integrity(
+            bank_rails::provider_key(provider)
+                .expect("known provider key")
+                .as_bytes(),
+        )?;
         let e: RailEvidence = serde_json::from_value(packet.body.clone())?;
         e.validate_binding(
             instruction.operation_id,
@@ -82,5 +89,49 @@ impl Core {
         };
         tx.commit().await?;
         Ok(result)
+    }
+    /// WP-39: record the first route (idempotent; returns any existing route) or, with the current provider's signed
+    /// non-execution evidence, re-route to another provider. Returns the current provider and attempt.
+    pub async fn route_external(
+        &self,
+        instruction: &InternalInstruction,
+        provider: &str,
+        nonexecution: Option<&SignedDocument>,
+    ) -> Result<(String, i32)> {
+        ensure!(
+            instruction.details.rail == "SIMULATED",
+            "External rail required"
+        );
+        let mut digest = None;
+        if let Some(packet) = nonexecution {
+            let named = bank_rails::evidence_provider(packet)
+                .ok_or_else(|| anyhow::anyhow!("Unknown rail provider"))?;
+            packet.verify_integrity(
+                bank_rails::provider_key(named)
+                    .expect("known provider key")
+                    .as_bytes(),
+            )?;
+            let e: RailEvidence = serde_json::from_value(packet.body.clone())?;
+            e.validate_binding(
+                instruction.operation_id,
+                &fingerprint(instruction)?,
+                instruction.details.amount,
+                instruction.details.requested_date,
+            )?;
+            ensure!(
+                e.status == RailStatus::Rejected,
+                "Non-execution evidence required"
+            );
+            digest = Some(fingerprint(&e)?);
+        }
+        let row = sqlx::query("SELECT * FROM core.route_external($1,$2,$3,$4,$5)")
+            .bind(instruction.operation_id)
+            .bind(fingerprint(instruction)?)
+            .bind(provider)
+            .bind(nonexecution.map(serde_json::to_value).transpose()?)
+            .bind(digest)
+            .fetch_one(&self.pool)
+            .await?;
+        Ok((row.get("provider"), row.get("attempt")))
     }
 }

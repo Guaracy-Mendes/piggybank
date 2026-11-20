@@ -1,0 +1,40 @@
+@startuml
+title UML sequence - readiness-gated statement, single-use retrieval, correction and permitted disposal
+actor Owner
+actor "Records officer" as Officer
+actor "Records approver" as Approver
+participant "bank-api" as API
+participant "Documents functions" as Docs
+database "Core journal" as Core
+Owner -> API : POST accounts/{id}/statements {periodStart}
+API -> Docs : generate(actor, person, account, month)
+Docs -> Docs : advisory lock (account, month)
+Docs -> Core : lock account FOR SHARE (wait for in-flight posters)
+Docs -> Docs : readiness: month ended in Core UTC clock;\nenrolled policies finalized through month end
+alt not ready
+ Docs -> Docs : access evidence NOT_READY
+ Docs --> API : NOT_READY + reasons (nothing published)
+else ready
+ Docs -> Core : entries in [start,end) (<=1000), opening, closing,\nlater linked corrections
+ Docs -> Docs : closing = opening + movements, else refuse
+ alt same snapshot digest as latest version
+  Docs --> API : existing version (replay)
+ else new or changed snapshot
+  Docs -> Docs : version n+1 supersedes n (INITIAL / LINKED_CORRECTION / SOURCE_CHANGED)\nmetadata + object + evidence in one transaction
+  Docs --> API : READY version
+ end
+end
+Owner -> API : POST statements/{id}/links
+API -> Docs : link -> random token, digest stored, 2 minutes
+Owner -> API : GET downloads/{token}?format=pdf
+API -> Docs : redeem: same actor, unused, unexpired, current owner, object digest
+Docs -> Docs : consume link; access evidence GRANTED
+Owner -> API : GET downloads/{token} again
+Docs --> API : DENIED ALREADY_USED (410), recorded
+Officer -> API : place legal hold (key)
+Officer -> API : request disposal
+Docs --> API : RESTRICTED_RETENTION or RESTRICTED_LEGAL_HOLD (recorded)
+Approver -> API : release hold (placer cannot release)
+Officer -> API : request disposal after retention
+Docs -> Docs : disposal evidence, then delete object;\nversion row stays as tombstone
+@enduml

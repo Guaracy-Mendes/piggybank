@@ -12,10 +12,29 @@ mod http;
 pub use credit::{CreditEvidence, CreditKind};
 pub use http::RailClient;
 pub const PROVIDER: &str = "SYNTHETIC_RAIL";
+/// WP-39: a second, interchangeable simulated provider for the same rail (template for routing).
+pub const PROVIDER_B: &str = "SYNTHETIC_RAIL_B";
+pub const PROVIDERS: [&str; 2] = [PROVIDER, PROVIDER_B];
 pub const RAIL: &str = "SIMULATED";
 pub fn signing_key() -> String {
     std::env::var("BANK_RAIL_SIGNING_KEY")
         .unwrap_or_else(|_| "synthetic-rail-authentication-key-only-2026".into())
+}
+/// Each provider authenticates with its own key; unknown providers have none.
+pub fn provider_key(provider: &str) -> Option<String> {
+    match provider {
+        PROVIDER => Some(signing_key()),
+        PROVIDER_B => Some(
+            std::env::var("BANK_RAIL_B_SIGNING_KEY")
+                .unwrap_or_else(|_| "synthetic-rail-b-authentication-key-only-2026".into()),
+        ),
+        _ => None,
+    }
+}
+/// The provider named in a signed evidence body, if it is a known provider.
+pub fn evidence_provider(document: &SignedDocument) -> Option<&'static str> {
+    let named = document.body.get("provider")?.as_str()?;
+    PROVIDERS.into_iter().find(|p| *p == named)
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -92,7 +111,7 @@ impl RailEvidence {
         requested_date: NaiveDate,
     ) -> Result<()> {
         ensure!(
-            self.provider == PROVIDER
+            provider_key(&self.provider).is_some()
                 && self.instruction_id == instruction_id
                 && self.payment_id == instruction_id
                 && self.input_digest == input_digest
@@ -160,6 +179,10 @@ impl VerifiedEvidence {
     ) -> Result<Self> {
         document.verify(key.as_bytes())?;
         let evidence: RailEvidence = serde_json::from_value(document.body.clone())?;
+        ensure!(
+            provider_key(&evidence.provider).as_deref() == Some(key),
+            "Evidence must be signed by the provider it names"
+        );
         evidence.validate_for(instruction)?;
         let digest = fingerprint(&evidence)?;
         Ok(Self {

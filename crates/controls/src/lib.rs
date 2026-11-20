@@ -1,8 +1,11 @@
 pub mod administration;
+pub mod assisted;
 pub mod audit;
 pub mod cases;
 pub mod checks;
 pub mod entitlements;
 pub mod evidence;
 pub mod governance;
+pub mod monitoring;
 pub mod payments;
+pub mod security;

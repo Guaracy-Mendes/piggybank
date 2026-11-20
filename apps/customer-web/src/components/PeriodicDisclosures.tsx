@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { PeriodicReview } from "./PeriodicReview";
 import {
   Alert,
   Badge,
@@ -96,8 +97,9 @@ export function PeriodicDisclosures({
         </button>
       </div>
       <p>
-        These approved synthetic rules are previews. You are not enrolled by
-        reading them, and no fee debit or interest credit is enabled.
+        Reading these calculation previews does not enroll you or authorize a
+        fee or interest credit. Financial enrollment requires separate terms,
+        your explicit acceptance and activation.
       </p>
       {error && <Alert>{error}</Alert>}
       {page && !page.items.length && (
@@ -169,6 +171,20 @@ export function PeriodicDisclosures({
             </details>
           </article>
         )}
+      {selected && (
+        <PeriodicReview
+          key={accountId + ":" + selected}
+          accountId={accountId}
+          policyId={selected}
+          disclosure={
+            detail &&
+            detail.material.accountId === accountId &&
+            detail.material.policy.id === selected
+              ? detail
+              : undefined
+          }
+        />
+      )}
     </section>
   );
 }

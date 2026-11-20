@@ -80,6 +80,8 @@ def seed():
     os.environ.update(load_env(STATE / '.env'))
     os.environ.update(load_env(STATE / 'runtime.env'))
     os.environ['BANK_REALM_DIR'] = str(HERE / 'identity')
+    # The cloud template keeps customer self-registration off; it is a local synthetic feature (UI-02).
+    os.environ.setdefault('BANK_CUSTOMER_REGISTRATION', 'disabled')
     spec = importlib.util.spec_from_file_location('identity_provision', HERE / 'identity_provision.py')
     identity = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(identity)
@@ -87,8 +89,8 @@ def seed():
     token = identity.admin_token()
     issuer = os.environ['BANK_ISSUER_BASE'] + '/realms/workforce'
     subjects = {}
-    roles = {'reviewer': ['product_admin', 'case_reviewer', 'finance_adjuster', 'account_support', 'payment_inquiry', 'payment_operator'],
-             'approver': ['product_approver', 'case_approver', 'finance_approver', 'security_approver', 'payment_approver'],
+    roles = {'reviewer': ['product_admin', 'case_reviewer', 'finance_adjuster', 'account_support', 'payment_inquiry', 'payment_operator', 'records_officer', 'data_steward'],
+             'approver': ['product_approver', 'case_approver', 'finance_approver', 'security_approver', 'payment_approver', 'records_approver'],
              'security': ['security_admin', 'operations_replay']}
     for username, grants in roles.items():
         subject = str(uuid.UUID(identity.call(token, 'workforce/users?exact=true&username=' + username)[0]['id']))

@@ -1,0 +1,12 @@
+@startuml
+title UML state - synthetic batch credit entry (SIM_BATCH, WP-36)
+[*] --> DRAFT : common rules + approval challenge
+DRAFT --> QUEUED : step-up proof consumed;\nCore hold (operation = entry id)
+DRAFT --> CANCELLED
+QUEUED --> CANCELLED : hold released
+QUEUED --> SUBMITTED : window close (cutoff or operator)\nimmutable outbound file
+SUBMITTED --> REJECTED : acknowledgement rejection -> hold released
+SUBMITTED --> SETTLED : settlement -> one BATCH_CREDIT
+SETTLED --> RETURNED : return in window -> one BATCH_RETURN\nlinked to the credit
+SETTLED --> SETTLED : late return -> flagged for review (no posting)
+@enduml

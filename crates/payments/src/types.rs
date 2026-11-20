@@ -63,7 +63,10 @@ pub struct PaymentStatus {
 }
 pub(crate) struct Intent {
     pub id: Uuid,
+    /// Effective actor for execution: the authorizing customer when one is recorded, else the initiator.
     pub actor: ActorContext,
+    /// Who drafted the intent (a partner client for partner-initiated payments). Immutable evidence.
+    pub initiator: ActorContext,
     pub quote_id: Uuid,
     pub challenge: Option<Uuid>,
     pub state: String,

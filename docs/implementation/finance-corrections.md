@@ -1,6 +1,8 @@
 # Controlled synthetic funding corrections
 
-Date: 2026-11-10. WP-24 remains **in progress**. This increment adds an independently approved **financial command** for full reversal of original synthetic funding journals. It does not enable periodic customer charges, change payment settlement or reverse incoming/return movements.
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
+Date: 2026-11-10. WP-24 was **in progress at this checkpoint**. This increment adds an independently approved **financial command** for full reversal of original synthetic funding journals. It does not enable periodic customer charges, change payment settlement or reverse incoming/return movements.
 
 ## Ownership and financial boundary
 

@@ -1,0 +1,52 @@
+@startuml
+title UML domain - retained preview information and private attribution
+class PublishedPeriodicPolicy <<Core immutable>> {
+ id : UUID
+ productVersionId : UUID
+ policyDigest : SHA256
+ activation : PREVIEW_ONLY
+}
+class DisclosureMaterialV1 <<Core retained renderer>> {
+ accountId : UUID
+ fullPolicyAndCalendar : JSON
+ policyDigest : SHA256
+ exactTitleAndText : UTF8
+ materialDigest : SHA256
+}
+class PreviewReview <<Documents immutable>> {
+ id : UUID
+ kind : PREVIEW_REVIEW_ONLY
+ accountId / policyId : UUID
+ originalMaterial : DisclosureMaterialV1
+ reviewedAt : server UTC
+ statement : fixed review-only text
+ attributionDigest / receiptDigest : SHA256
+}
+class PrivateAttribution <<Documents private>> {
+ canonicalPersonId : UUID
+ originalActorContext : JSON
+}
+class ReviewRequest <<Documents immutable>> {
+ issuer / subject / clientId : identity scope
+ requestKey : UUID
+ expectedDigest : SHA256
+ accountId / policyId / personId : exact scope
+ reviewId : original receipt
+}
+class RedactedReviewFact <<Documents outbox>> {
+ eventId / aggregateId : review UUID
+ aggregateVersion : 1
+ reviewId / accountId / policyId : UUID
+ materialDigest : SHA256
+}
+PublishedPeriodicPolicy "1" -- "many" DisclosureMaterialV1 : exact product and policy version
+PreviewReview "1" *-- "1" DisclosureMaterialV1 : retained full historical material
+PreviewReview "1" *-- "1" PrivateAttribution : independently sealed original attribution
+ReviewRequest "many" --> "1" PreviewReview : same-person aliases and keys recover original
+PreviewReview "1" --> "1" RedactedReviewFact : atomic single original fact
+note bottom of PreviewReview
+Unique canonical person/account/native policy.
+Not enrollment, financial acceptance, activation or a journal receipt.
+Historical reads verify retained proof independently of live policy.
+end note
+@enduml

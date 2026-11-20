@@ -1,5 +1,7 @@
 # Outgoing payment reconciliation
 
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
 This WP-24 increment matches original internal and SIMULATED outgoing instructions, independently authenticated clearing files, Core accounting receipts, frozen journal legs and authenticated GL bookings. It preserves the existing V1 journal/report digests. Finance has read-only Core and Payments ports; reconciliation creates observations, audit intents and owned Finance cases without posting money, changing holds, sending rail instructions or replaying GL exports.
 
 The [operator runbook](../runbooks/finance-reconciliation.md) covers reproducible local use. See the [C4 components](current-finance-components.puml), [matching sequence](current-finance-reconciliation.puml) and [provider contract](../../contracts/providers/finance/README.md).

@@ -62,7 +62,11 @@ impl Payments {
         Ok(record(&row))
     }
     pub async fn beneficiaries(&self, actor: &ActorContext) -> Result<Vec<Beneficiary>> {
-        ensure!(actor.trust == TrustContext::Customer, "Customer required");
+        // A consented partner (payments:initiate) may list, never add or revoke, the customer's verified recipients.
+        ensure!(
+            matches!(actor.trust, TrustContext::Customer | TrustContext::Partner),
+            "Customer required"
+        );
         Ok(sqlx::query("SELECT * FROM payments.beneficiaries WHERE issuer=$1 AND subject=$2 ORDER BY verified_at DESC,id LIMIT 100").bind(&actor.issuer).bind(&actor.subject).fetch_all(&self.pool).await?.iter().map(record).collect())
     }
     pub async fn revoke_beneficiary(&self, actor: &ActorContext, id: Uuid) -> Result<()> {

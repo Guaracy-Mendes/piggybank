@@ -7,8 +7,14 @@ mod basis;
 mod corrections;
 #[path = "cases/disclosures.rs"]
 mod disclosures;
+#[path = "cases/enrollment.rs"]
+mod enrollment;
+#[path = "cases/liquidity.rs"]
+mod liquidity;
 #[path = "cases/periodic.rs"]
 mod periodic;
+#[path = "cases/periodic_execution.rs"]
+mod periodic_execution;
 #[path = "cases/reconciliation.rs"]
 mod reconciliation;
 #[path = "cases/revisions.rs"]
@@ -126,6 +132,7 @@ impl Fixture {
             core: Arc::new(core.clone()),
             periodic: core.periodic_policies(),
             bases: core.periodic_bases(),
+            periodic_commands: core.periodic_commands(),
             corrections: core.finance_corrections(),
             payments: bank_payments::finance::FinanceReader::new(
                 db.module(Module::Payments).await?,

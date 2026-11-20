@@ -4,6 +4,7 @@ import { ErrorBoundary, SessionProvider } from "@piggybank/web-core";
 import { Root } from "./App";
 import "@piggybank/web-core/style.css";
 import "./style.css";
+import "@piggybank/web-core/official.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

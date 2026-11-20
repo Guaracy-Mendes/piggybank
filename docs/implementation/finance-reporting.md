@@ -1,5 +1,7 @@
 # Finance observation snapshots and liquidity
 
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
 This WP-24 increment adds immutable period reports and an independent synthetic liquidity feed to the existing [GL export slice](finance-execution.md). It implements Core/GL controls and owned snapshot observations. A subsequent [controlled revision workflow](finance-revisions.md) links independently approved replacements without changing either artifact. Full instruction/provider/fee reconciliation and periodic fee/accrual automation remain open within WP-24.
 
 ## Snapshot contract and consistency

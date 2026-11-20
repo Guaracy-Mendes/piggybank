@@ -6,10 +6,15 @@ use bank_rails::{RailEvidence, RailInstruction, RailStatus, VerifiedEvidence};
 use uuid::Uuid;
 impl Payments {
     pub async fn accept_rail_evidence(&self, packet: &SignedDocument) -> Result<()> {
-        packet.verify(bank_rails::signing_key().as_bytes())?;
         if packet.body.get("eventType").is_some() {
+            packet.verify(bank_rails::signing_key().as_bytes())?;
             return self.accept_credit_evidence(packet).await;
         }
+        // WP-39: evidence is verified with the key of the provider it names.
+        let provider = bank_rails::evidence_provider(packet)
+            .ok_or_else(|| anyhow::anyhow!("Unknown rail provider"))?;
+        let key = bank_rails::provider_key(provider).expect("known provider key");
+        packet.verify(key.as_bytes())?;
         let evidence: RailEvidence = match serde_json::from_value(packet.body.clone()) {
             Ok(e) => e,
             Err(e) => {
@@ -34,11 +39,7 @@ impl Payments {
             anyhow::bail!("Unknown provider work");
         };
         let instruction: RailInstruction = serde_json::from_value(work)?;
-        let verified = match VerifiedEvidence::verify(
-            packet.clone(),
-            &bank_rails::signing_key(),
-            &instruction,
-        ) {
+        let verified = match VerifiedEvidence::verify(packet.clone(), &key, &instruction) {
             Ok(v) => v,
             Err(e) => {
                 self.quarantine_rail(Some(evidence.payment_id), packet, "EVIDENCE_SCOPE_CONFLICT")
@@ -56,6 +57,11 @@ impl Payments {
         let state = self
             .record_rail_evidence(&mut tx, intent.id, &verified)
             .await?;
+        if state == "STALE" {
+            // A repeat from a provider this payment was re-routed away from: already evidenced, no effect.
+            tx.commit().await?;
+            return Ok(());
+        }
         if state != "CONFLICT" && evidence.status != RailStatus::NotFound {
             self.transition(
                 &mut tx,
@@ -64,6 +70,8 @@ impl Payments {
                 state,
                 if state == "RECONCILING" {
                     "FINAL_EVIDENCE_REQUIRES_CORE"
+                } else if state == "SUBMITTING" {
+                    "PROVIDER_NONEXECUTION_REROUTED"
                 } else {
                     "PROVIDER_ACKNOWLEDGED"
                 },
@@ -136,7 +144,7 @@ impl Payments {
         );
         let mut finality = self.core.external_finality(&q.instruction).await?;
         if finality.is_none() {
-            let packet:Option<serde_json::Value>=sqlx::query_scalar("SELECT document FROM payments.rail_receipts WHERE payment_id=$1 AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED') ORDER BY provider_version DESC LIMIT 1").bind(id).fetch_optional(&self.pool).await?;
+            let packet:Option<serde_json::Value>=sqlx::query_scalar("SELECT document FROM payments.rail_receipts WHERE payment_id=$1 AND route_attempt=(SELECT route_attempt FROM payments.rail_submissions WHERE payment_id=payments.rail_receipts.payment_id) AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED') ORDER BY provider_version DESC LIMIT 1").bind(id).fetch_optional(&self.pool).await?;
             let Some(packet) = packet else {
                 return Ok(None);
             };

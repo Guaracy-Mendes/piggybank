@@ -368,7 +368,7 @@ impl Payments {
                     .await?
                     .is_some_and(|r| r.submitted)
             {
-                let final_version:Option<i64>=sqlx::query_scalar("SELECT max(provider_version) FROM payments.rail_receipts WHERE payment_id=$1 AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED')").bind(id).fetch_one(&self.pool).await?;
+                let final_version:Option<i64>=sqlx::query_scalar("SELECT max(provider_version) FROM payments.rail_receipts WHERE payment_id=$1 AND route_attempt=(SELECT route_attempt FROM payments.rail_submissions WHERE payment_id=payments.rail_receipts.payment_id) AND document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED')").bind(id).fetch_one(&self.pool).await?;
                 if let Some(version) = final_version {
                     self.operations
                         .resume_review(

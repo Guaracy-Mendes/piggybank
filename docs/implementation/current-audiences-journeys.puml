@@ -1,0 +1,30 @@
+@startuml
+title UML sequence - consented audience, partner advice and withdrawal (WP-38)
+actor "Data steward" as staff
+participant "Staff API" as api
+database "analytics (Data role)" as an
+participant "SIM_JOURNEY\n(local partner role)" as partner
+actor Customer as cust
+
+staff -> api : build savings_starter v1
+api -> an : signals at fact cut;\nexclude no consent / restricted
+an --> api : members (pseudonymous tokens),\nbank-rule insights
+staff -> api : export to SIM_JOURNEY
+api -> an : purpose permitted for partner?\nconsent re-checked per member
+partner -> an : signed GET export
+an --> partner : tokens only\n(withdrawn since export withheld)
+partner -> an : signed recommendation
+alt allowlisted advice, member permits marketing
+  an --> partner : ACCEPTED (advisory insight)
+else extra fields / unlisted code or route / markup
+  an --> partner : REJECTED + reason (recorded)
+else member withdrew
+  an --> partner : SUPPRESSED (recorded)
+end
+cust -> an : GET insights
+an --> cust : notices + suggestions with "why"
+cust -> an : withdraw marketing (WP-26 preference)
+note over an : suggestions hidden, never deleted;\nno Core, entitlement or application path
+staff -> api : outcome report
+api -> an : denominators, outcomes,\nwatermarks, LATE_DATA flag
+@enduml

@@ -1,3 +1,7 @@
+#[path = "cases/security.rs"]
+mod security;
+#[path = "cases/statements.rs"]
+mod statements;
 use bank_controls::{entitlements::Entitlements, governance::ChangeKind};
 use bank_core::{Core, products::ProductVersion};
 use bank_documents::{Terms, TermsDraft};

@@ -19,6 +19,8 @@ pub enum ChangeKind {
     FinanceChart,
     FinanceReport,
     PeriodicPolicy,
+    PeriodicOffer,
+    PeriodicActivation,
     FinanceCorrection,
 }
 impl ChangeKind {
@@ -32,6 +34,8 @@ impl ChangeKind {
             Self::FinanceChart => "FINANCE_CHART",
             Self::FinanceReport => "FINANCE_REPORT",
             Self::PeriodicPolicy => "PERIODIC_POLICY",
+            Self::PeriodicOffer => "PERIODIC_OFFER",
+            Self::PeriodicActivation => "PERIODIC_ACTIVATION",
             Self::FinanceCorrection => "FINANCE_CORRECTION",
         }
     }
@@ -42,6 +46,8 @@ impl ChangeKind {
             | Self::FinanceChart
             | Self::FinanceReport
             | Self::PeriodicPolicy
+            | Self::PeriodicOffer
+            | Self::PeriodicActivation
             | Self::FinanceCorrection => Action::ProposeCorrection,
             Self::Master => Action::ProposeMaster,
             Self::Rail => Action::ManageRails,
@@ -54,6 +60,8 @@ impl ChangeKind {
             | Self::FinanceChart
             | Self::FinanceReport
             | Self::PeriodicPolicy
+            | Self::PeriodicOffer
+            | Self::PeriodicActivation
             | Self::FinanceCorrection => Action::ApproveCorrection,
             Self::Master => Action::ApproveMaster,
             Self::Rail => Action::ApproveRails,
@@ -176,6 +184,8 @@ impl Entitlements {
             "FINANCE_CHART" => ChangeKind::FinanceChart,
             "FINANCE_REPORT" => ChangeKind::FinanceReport,
             "PERIODIC_POLICY" => ChangeKind::PeriodicPolicy,
+            "PERIODIC_OFFER" => ChangeKind::PeriodicOffer,
+            "PERIODIC_ACTIVATION" => ChangeKind::PeriodicActivation,
             "FINANCE_CORRECTION" => ChangeKind::FinanceCorrection,
             _ => anyhow::bail!("Unsupported change"),
         };
@@ -192,7 +202,11 @@ impl Entitlements {
             .await?;
         if matches!(
             kind,
-            ChangeKind::FinanceReport | ChangeKind::PeriodicPolicy | ChangeKind::FinanceCorrection
+            ChangeKind::FinanceReport
+                | ChangeKind::PeriodicPolicy
+                | ChangeKind::PeriodicOffer
+                | ChangeKind::PeriodicActivation
+                | ChangeKind::FinanceCorrection
         ) {
             let current:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM controls.role_grants g WHERE g.person_id=$1 AND g.role='finance_approver' AND g.scope IS NULL AND g.revoked_at IS NULL AND g.valid_from<=now() AND g.valid_until>now()) AND EXISTS(SELECT 1 FROM controls.case_queue_members q WHERE q.person_id=$1 AND q.queue='finance-operations' AND q.capability='APPROVE' AND q.revoked_at IS NULL)").bind(person.0).fetch_one(&mut *tx).await?;
             ensure!(current, "Current Finance approval role and queue required");
@@ -243,6 +257,8 @@ impl Entitlements {
             | ChangeKind::FinanceChart
             | ChangeKind::FinanceReport
             | ChangeKind::PeriodicPolicy
+            | ChangeKind::PeriodicOffer
+            | ChangeKind::PeriodicActivation
             | ChangeKind::FinanceCorrection => "finance_approver",
             ChangeKind::Master => "data_approver",
             ChangeKind::Rail => "payment_approver",

@@ -64,12 +64,22 @@ impl Payments {
             "Quote already bound to another channel intent"
         );
         tx.commit().await?;
-        self.challenge(actor, id).await
+        // A partner may draft a payment but never start or complete its approval: the customer approves it with
+        // action-bound step-up in a bank channel (WP-33).
+        if actor.trust == TrustContext::Partner {
+            return self.status_record(id).await;
+        }
+        // WP-41 (CF-04): the quote was validated in full moments ago in this request, so the challenge starts from it
+        // without a second validation pass. Confirmation re-validates everything before any reservation or posting.
+        self.start_challenge(actor, id, &q).await
     }
     // The intent commits before its independently owned Controls challenge is linked.
     // A same-key retry can observe that boundary before the original creator resumes.
     async fn created_intent_status(&self, actor: &ActorContext, id: Uuid) -> Result<PaymentStatus> {
         let status = self.detail(actor, id).await?;
+        if actor.trust == TrustContext::Partner {
+            return Ok(status);
+        }
         if status.state == "DRAFT"
             && status.challenge_id.is_none()
             && status.expires_at > Utc::now()
@@ -116,21 +126,29 @@ impl Payments {
     }
     pub(crate) async fn intent(&self, id: Uuid) -> Result<Intent> {
         let r = sqlx::query(
-            "SELECT id,actor_context,quote_id,challenge_id,state FROM payments.intents WHERE id=$1",
+            "SELECT id,actor_context,authorized_actor,quote_id,challenge_id,state FROM payments.intents WHERE id=$1",
         )
         .bind(id)
         .fetch_one(&self.pool)
         .await?;
         Ok(Intent {
             id: r.get("id"),
-            actor: serde_json::from_value(r.get("actor_context"))?,
+            // The effective actor: the approving customer once a partner-drafted payment is confirmed (WP-33).
+            actor: serde_json::from_value(
+                r.get::<Option<serde_json::Value>, _>("authorized_actor")
+                    .unwrap_or_else(|| r.get("actor_context")),
+            )?,
+            initiator: serde_json::from_value(r.get("actor_context"))?,
             quote_id: r.get("quote_id"),
             challenge: r.get("challenge_id"),
             state: r.get("state"),
         })
     }
     pub(crate) async fn owned_intent(&self, actor: &ActorContext, id: Uuid) -> Result<Intent> {
-        ensure!(actor.trust == TrustContext::Customer, "Customer required");
+        ensure!(
+            matches!(actor.trust, TrustContext::Customer | TrustContext::Partner),
+            "Customer required"
+        );
         let intent = self.intent(id).await?;
         ensure!(
             intent.actor.issuer == actor.issuer && intent.actor.subject == actor.subject,
@@ -146,10 +164,26 @@ impl Payments {
         Ok(intent)
     }
     pub async fn challenge(&self, actor: &ActorContext, id: Uuid) -> Result<PaymentStatus> {
+        ensure!(
+            actor.trust == TrustContext::Customer,
+            "Customer approval required"
+        );
         let intent = self.owned_intent(actor, id).await?;
         ensure!(intent.state == "DRAFT", "Only a draft can start approval");
         let q = self.owned_quote(actor, intent.quote_id).await?;
         self.current_quote(actor, &q).await?;
+        self.start_challenge(actor, id, &q).await
+    }
+    async fn start_challenge(
+        &self,
+        actor: &ActorContext,
+        id: Uuid,
+        q: &crate::types::QuoteRecord,
+    ) -> Result<PaymentStatus> {
+        ensure!(
+            actor.trust == TrustContext::Customer,
+            "Customer approval required"
+        );
         let resource = self
             .core
             .authority(
@@ -165,6 +199,10 @@ impl Payments {
         self.detail(actor, id).await
     }
     pub async fn confirm(&self, actor: &ActorContext, id: Uuid) -> Result<PaymentStatus> {
+        ensure!(
+            actor.trust == TrustContext::Customer,
+            "Customer approval required"
+        );
         let intent = self.owned_intent(actor, id).await?;
         if intent.state != "DRAFT" {
             return self.detail(actor, id).await;
@@ -195,7 +233,11 @@ impl Payments {
             )
             .await?;
         let mut tx = self.pool.begin().await?;
-        let changed=sqlx::query("UPDATE payments.intents SET state='ACCEPTED',reason_code='VALIDATION_PENDING',confirmed_at=now(),version=version+1,updated_at=now() WHERE id=$1 AND state='DRAFT'").bind(id).execute(&mut *tx).await?;
+        // A partner-drafted payment records the approving customer as its authorizing actor (set once).
+        let authorized = (intent.initiator.trust == TrustContext::Partner)
+            .then(|| serde_json::to_value(actor))
+            .transpose()?;
+        let changed=sqlx::query("UPDATE payments.intents SET state='ACCEPTED',reason_code='VALIDATION_PENDING',confirmed_at=now(),authorized_actor=coalesce($2,authorized_actor),version=version+1,updated_at=now() WHERE id=$1 AND state='DRAFT'").bind(id).bind(authorized).execute(&mut *tx).await?;
         if changed.rows_affected() == 1 {
             self.fact(&mut tx, actor, id, "payment.confirmed").await?;
         }
@@ -224,6 +266,16 @@ impl Payments {
         sqlx::query("UPDATE payments.intents SET operation_id=$2 WHERE id=$1 AND (operation_id IS NULL OR operation_id=$2)").bind(id).bind(op.id).execute(&self.pool).await?;
         Ok(op)
     }
+    /// WP-33: a partner reads only payments it initiated itself, and only while its consent still permits.
+    pub async fn partner_detail(&self, actor: &ActorContext, id: Uuid) -> Result<PaymentStatus> {
+        ensure!(actor.trust == TrustContext::Partner, "Partner required");
+        let intent = self.owned_intent(actor, id).await?;
+        ensure!(
+            intent.initiator.client_id == actor.client_id,
+            crate::ResourceUnavailable
+        );
+        self.status_record(id).await
+    }
     pub async fn detail(&self, actor: &ActorContext, id: Uuid) -> Result<PaymentStatus> {
         self.owned_intent(actor, id).await?;
         self.status_record(id).await
@@ -237,12 +289,14 @@ impl Payments {
             Err(e) => return Err(e),
         };
         let owned = self.core.accounts_for(person).await?;
+        // A current delegate also sees the payments they started on the delegated account (WP-33).
+        let delegated = self.core.delegated_accounts(person).await?;
         let mut result = vec![];
         for id in ids {
             let status = self.status_record(id).await?;
-            if owned
-                .iter()
-                .any(|a| a.id == status.details.payer_account_id)
+            let payer = status.details.payer_account_id;
+            if owned.iter().any(|a| a.id == payer)
+                || delegated.iter().any(|d| d.account_id == payer)
             {
                 result.push(status);
             }

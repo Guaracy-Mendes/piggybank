@@ -160,8 +160,8 @@ export function FinanceCorrections({
           <p className="eyebrow">CONTROLLED FINANCIAL CORRECTIONS</p>
           <h1>Preserve the source. Record the correction.</h1>
           <p>
-            Full reversals of eligible synthetic funding, with exact journal
-            lineage and independent approval.
+            Full reversals of eligible synthetic funding, fees and interest,
+            with exact journal lineage and independent approval.
           </p>
         </div>
         <button className="secondary" onClick={() => void load()}>
@@ -169,9 +169,9 @@ export function FinanceCorrections({
         </button>
       </div>
       <p className="notice">
-        Only original synthetic funding journals are eligible. Execution creates
-        one new linked journal and checks current authority, restrictions and
-        available funds, including holds.
+        Original synthetic funding and native periodic fee or interest journals
+        are eligible. Execution creates one new linked journal and checks
+        current authority, restrictions and available funds, including holds.
       </p>
       {error && <Alert>{error}</Alert>}
       {notice && (
@@ -284,7 +284,7 @@ export function FinanceCorrections({
                     disabled={busy || reviewed !== detail.detailsDigest}
                     onClick={() => void act("approval")}
                   >
-                    Approve funding correction
+                    Approve financial correction
                   </button>
                 </>
               )}
@@ -302,8 +302,8 @@ export function FinanceCorrections({
                         )
                       }
                     />
-                    I intend to reverse this exact synthetic funding and debit
-                    the customer account.
+                    I intend to reverse this exact synthetic posting and apply
+                    the displayed reversing legs to the customer account.
                   </label>
                   <button
                     disabled={busy || intent !== detail.detailsDigest}
@@ -365,11 +365,11 @@ export function FinanceCorrections({
       </div>
       {access.capabilities.includes("finance.recover") && (
         <section className="panel">
-          <h2>Request a funding correction</h2>
+          <h2>Request a financial correction</h2>
           <p>
-            Use the original Core funding journal reference. Every source and
-            amount is captured from Core before approval. A changed reason
-            creates a different proposal.
+            Use the original Core funding or periodic journal reference. Every
+            source and amount is captured from Core before approval. A changed
+            reason creates a different proposal.
           </p>
           <form
             className="configuration-form"
@@ -379,7 +379,7 @@ export function FinanceCorrections({
             }}
           >
             <label htmlFor="correction-original">
-              Original funding journal ID
+              Original financial journal ID
             </label>
             <input
               id="correction-original"
@@ -396,7 +396,7 @@ export function FinanceCorrections({
               rows={3}
               required
             />
-            <button disabled={busy}>Save funding correction request</button>
+            <button disabled={busy}>Save financial correction request</button>
           </form>
         </section>
       )}

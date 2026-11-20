@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Piggybank",
+    "slug": "piggybank-mobile",
+    "scheme": "piggybank",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.piggybank.synthetic",
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.piggybank.synthetic",
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      "./plugins/withLoopbackCleartext"
+    ],
+    "extra": {
+      "apiBase": "http://127.0.0.1:4180",
+      "issuer": "http://127.0.0.1:18280/realms/customers",
+      "clientId": "bank-mobile",
+      "redirectUri": "piggybank://auth/callback",
+      "label": "SYNTHETIC_TST_LOCAL"
+    }
+  }
+}

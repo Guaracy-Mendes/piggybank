@@ -168,7 +168,7 @@ async fn main() -> anyhow::Result<()> {
         pool: Module::Simulator.connect().await?,
         key: simulator_key(),
     };
-    let rails = rail::router(app.pool.clone());
+    let rails = rail::router(app.pool.clone()).merge(rail::router_b(app.pool.clone()));
     let gl = gl::router(app.pool.clone());
     let liquidity = liquidity::router(app.pool.clone());
     let settlement = settlement::router(app.pool.clone());

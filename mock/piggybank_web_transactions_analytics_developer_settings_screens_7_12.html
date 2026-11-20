@@ -1,0 +1,2146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiggyBank UI Kit — Bundle 2: Web Transactions, Analytics & Developer Settings (Screens 7–12)</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            emeraldBrand: '#1D6E4E',
+            emeraldHover: '#15553C',
+            emeraldTint: '#E8F3EE',
+            sidebarDark: '#1E2D2F',
+            sidebarMuted: '#A3B8B5',
+            canvasMint: '#F6F9F8',
+            cardBorder: '#E6ECEA',
+            textPrimary: '#132224',
+            textSecondary: '#64748B',
+            mintChart: '#34D399',
+            goldAccent: '#F59E0B',
+            coralAccent: '#EF4444',
+            indigoAccent: '#6366F1',
+          },
+          boxShadow: {
+            webFrame: '0 22px 55px -12px rgba(19, 34, 36, 0.11), 0 4px 16px -4px rgba(19, 34, 36, 0.05)',
+            cardSoft: '0 2px 12px -2px rgba(19, 34, 36, 0.04)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    @keyframes floatPiggy {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-piggy-float {
+      animation: floatPiggy 3.8s ease-in-out infinite;
+    }
+
+    /* Custom range slider styling for Screen 12 */
+    input[type="range"].piggy-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 999px;
+      background: #E8F3EE;
+      outline: none;
+    }
+    input[type="range"].piggy-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #1D6E4E;
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(29, 110, 78, 0.4);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].piggy-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+    }
+  </style>
+</head>
+<body class="bg-canvasMint text-textPrimary font-sans antialiased selection:bg-emeraldBrand selection:text-white min-h-screen flex flex-col">
+
+  <!-- Toast Feedback Banner (Never uses alert) -->
+  <div
+    id="toastBanner"
+    class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-sidebarDark text-white px-4 py-3 rounded-2xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none"
+  >
+    <span class="w-2.5 h-2.5 rounded-full bg-mintChart animate-pulse"></span>
+    <span id="toastMessage" class="text-sm font-medium">Action completed</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- STICKY BUNDLE CONTROL & SCREEN SWITCHER BAR                           -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cardBorder shadow-2xs">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Bundle Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs shrink-0">
+          <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="font-display font-bold text-sm sm:text-base text-textPrimary">
+              Bundle 2: Web Transactions, Analytics & Developer Settings (Screens 7–12)
+            </h1>
+            <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">
+              Web App Views
+            </span>
+          </div>
+          <p class="text-[11px] text-textSecondary hidden sm:block">
+            PiggyBank Design System • Light & Dark Slate-Teal Sidebars • One-Click Screen HTML Extraction
+          </p>
+        </div>
+      </div>
+
+      <!-- Screen Switcher Tabs -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto max-w-full py-1" aria-label="Screen Switcher">
+        <button
+          type="button"
+          onclick="switchScreenView('overview')"
+          id="tab-overview"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-sidebarDark text-white flex items-center gap-1.5 shrink-0 transition-all"
+        >
+          <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+          <span>All Screens Overview (6)</span>
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('7')"
+          id="tab-7"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          7. Recent Transactions & Sparklines
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('8')"
+          id="tab-8"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          8. Light-Sidebar Dashboard Variant
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('9')"
+          id="tab-9"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          9. Analytics & Financial Reports
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('10')"
+          id="tab-10"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          10. Savings Goals & Vaults
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('11')"
+          id="tab-11"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          11. API Tokens & Developer Keys
+        </button>
+        <button
+          type="button"
+          onclick="switchScreenView('12')"
+          id="tab-12"
+          class="switcher-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          12. Web Settings & Security
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN STAGE: ALL SCREENS STACKED OVERVIEW OR SINGLE SCREEN FOCUS        -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-[1380px] w-full mx-auto px-4 sm:px-6 py-8 space-y-12" id="bundleStage">
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 7: RECENT TRANSACTIONS & TRACKING CUSHION BALANCES           -->
+    <!-- =================================================================== -->
+    <article id="wrapper-7" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-emeraldBrand text-white font-display font-bold text-xs">Screen 07</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">Recent Transactions & Tracking Cushion Balances</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Light Sidebar Variant + Mini SVG Sparklines + Assets Served Table</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-7', 'Screen 7: Recent Transactions & Sparklines')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 7 -->
+      <section
+        id="screen-7"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px]"
+      >
+        <!-- Light Sidebar Variant (#FFFFFF) -->
+        <aside class="w-full lg:w-64 bg-white border-b lg:border-b-0 lg:border-r border-cardBorder p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <!-- PiggyBank Brand Header -->
+            <div class="flex items-center justify-between lg:justify-start gap-3 mb-7">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                  <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+                </div>
+                <span class="font-display font-extrabold text-lg text-textPrimary tracking-tight">PiggyBank</span>
+              </div>
+              <span class="lg:hidden px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">Pro Workspace</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" onclick="showToast('Viewing Overview Dashboard')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldTint text-emeraldBrand shrink-0">
+                <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                <span>Recent Transactions</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Opening Cushion & Reserve Vaults')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Cushion Reserves</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Opening Connected Wallets')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="wallet" class="w-4 h-4"></i>
+                <span>Asset Wallets</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Opening Statements & Exports')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>Statements</span>
+              </a>
+            </nav>
+          </div>
+
+          <!-- Bottom Account Status Pill -->
+          <div class="hidden lg:block pt-5 border-t border-cardBorder">
+            <div class="p-3.5 rounded-2xl bg-canvasMint border border-cardBorder flex items-center gap-3">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                onerror="this.src='https://placehold.co/100x100/1D6E4E/FFFFFF?text=CB'"
+                alt="Clara Bennett"
+                class="w-9 h-9 rounded-full object-cover"
+              />
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-textPrimary truncate">Clara Bennett</p>
+                <p class="text-[11px] text-emeraldBrand font-semibold truncate">Treasury Verified</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 p-5 sm:p-7 space-y-6">
+          <!-- Page Title & Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="font-display text-xl sm:text-2xl font-extrabold text-textPrimary tracking-tight">Recent Transactions</h3>
+              <p class="text-xs text-textSecondary mt-0.5">Real-time liquidity tracking, automated cushion buffers, and settled asset transfers</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <select
+                onchange="updateCushionTimeframe(this.value)"
+                class="px-3.5 py-2 rounded-xl bg-white border border-cardBorder text-xs font-semibold text-textPrimary focus:outline-none focus:border-emeraldBrand cursor-pointer"
+              >
+                <option value="30D">Last 30 Days</option>
+                <option value="90D">Last Quarter (90D)</option>
+                <option value="YTD">Year to Date (2026)</option>
+              </select>
+              <button
+                type="button"
+                onclick="showToast('Exported Recent Transactions & Cushion Ledger CSV')"
+                class="px-4 py-2 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export Ledger</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tracking Cushion Balances Card with Interactive Mini SVG Sparkline Rows -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <div>
+                <h4 class="font-display text-sm sm:text-base font-bold text-textPrimary">Tracking Cushion Balances</h4>
+                <p class="text-xs text-textSecondary">Click any reserve row to inspect automated sweep thresholds</p>
+              </div>
+              <span id="cushionTimeframeBadge" class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">
+                30D Liquidity Trend • +14.8%
+              </span>
+            </div>
+
+            <div class="divide-y divide-cardBorder">
+              <!-- Sparkline Row 1 -->
+              <div class="py-3.5 first:pt-1 last:pb-1">
+                <div
+                  onclick="toggleCushionDetail('cushion-detail-1')"
+                  class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer hover:bg-canvasMint/70 p-2 rounded-xl transition-colors"
+                >
+                  <div class="flex items-center gap-3 min-w-[200px]">
+                    <div class="w-10 h-10 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center shrink-0">
+                      <i data-lucide="target" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs sm:text-sm font-bold text-textPrimary">Target Cushion Reserve</p>
+                      <p class="text-[11px] text-textSecondary">Auto-sweep 8% of incoming deposits</p>
+                    </div>
+                  </div>
+
+                  <!-- Mini SVG Sparkline -->
+                  <div class="w-32 sm:w-44 h-10 flex items-center">
+                    <svg class="w-full h-9 overflow-visible" viewBox="0 0 160 36" fill="none">
+                      <defs>
+                        <linearGradient id="sparkGrad1" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.22" />
+                          <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M2 28 L28 24 L54 26 L80 17 L106 19 L132 10 L158 5 L158 35 L2 35 Z" fill="url(#sparkGrad1)" />
+                      <path d="M2 28 L28 24 L54 26 L80 17 L106 19 L132 10 L158 5" stroke="#1D6E4E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="158" cy="5" r="3" fill="#34D399" stroke="#1D6E4E" stroke-width="1.5" />
+                    </svg>
+                  </div>
+
+                  <div class="text-right ml-auto sm:ml-0">
+                    <p class="font-display text-sm font-extrabold text-emeraldBrand">+$1,420.50</p>
+                    <p class="text-[11px] text-textSecondary font-medium">Bal: $9,840.50</p>
+                  </div>
+                </div>
+                <!-- Expandable Detail -->
+                <div id="cushion-detail-1" class="hidden mt-2 mx-2 p-3 rounded-xl bg-canvasMint border border-cardBorder text-xs text-textSecondary flex flex-wrap items-center justify-between gap-2">
+                  <span>Next scheduled sweep: <strong>Nov 15, 2026</strong> • APY Yield: <strong class="text-emeraldBrand">4.65%</strong></span>
+                  <button type="button" onclick="showToast('Triggered instant $250 top-up to Target Cushion Reserve')" class="text-emeraldBrand font-bold hover:underline">+ Instant Top-Up $250</button>
+                </div>
+              </div>
+
+              <!-- Sparkline Row 2 -->
+              <div class="py-3.5">
+                <div
+                  onclick="toggleCushionDetail('cushion-detail-2')"
+                  class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer hover:bg-canvasMint/70 p-2 rounded-xl transition-colors"
+                >
+                  <div class="flex items-center gap-3 min-w-[200px]">
+                    <div class="w-10 h-10 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center shrink-0">
+                      <i data-lucide="shield" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs sm:text-sm font-bold text-textPrimary">Emergency Buffer Vault</p>
+                      <p class="text-[11px] text-textSecondary">6-month runway protection shield</p>
+                    </div>
+                  </div>
+
+                  <!-- Mini SVG Sparkline -->
+                  <div class="w-32 sm:w-44 h-10 flex items-center">
+                    <svg class="w-full h-9 overflow-visible" viewBox="0 0 160 36" fill="none">
+                      <defs>
+                        <linearGradient id="sparkGrad2" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="#34D399" stop-opacity="0.26" />
+                          <stop offset="100%" stop-color="#34D399" stop-opacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M2 30 L32 27 L62 20 L92 18 L124 11 L158 4 L158 35 L2 35 Z" fill="url(#sparkGrad2)" />
+                      <path d="M2 30 L32 27 L62 20 L92 18 L124 11 L158 4" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="158" cy="4" r="3" fill="#1D6E4E" />
+                    </svg>
+                  </div>
+
+                  <div class="text-right ml-auto sm:ml-0">
+                    <p class="font-display text-sm font-extrabold text-emeraldBrand">+$3,180.00</p>
+                    <p class="text-[11px] text-textSecondary font-medium">Bal: $18,500.00</p>
+                  </div>
+                </div>
+                <div id="cushion-detail-2" class="hidden mt-2 mx-2 p-3 rounded-xl bg-canvasMint border border-cardBorder text-xs text-textSecondary flex flex-wrap items-center justify-between gap-2">
+                  <span>Runway Coverage: <strong>5.8 Months</strong> • Lock Status: <strong class="text-emeraldBrand">Instant Withdrawal Enabled</strong></span>
+                  <button type="button" onclick="showToast('Adjusted Emergency Buffer target to $20,000')" class="text-emeraldBrand font-bold hover:underline">Edit Target</button>
+                </div>
+              </div>
+
+              <!-- Sparkline Row 3 -->
+              <div class="py-3.5 last:pb-1">
+                <div
+                  onclick="toggleCushionDetail('cushion-detail-3')"
+                  class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 cursor-pointer hover:bg-canvasMint/70 p-2 rounded-xl transition-colors"
+                >
+                  <div class="flex items-center gap-3 min-w-[200px]">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-goldAccent flex items-center justify-center shrink-0">
+                      <i data-lucide="landmark" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs sm:text-sm font-bold text-textPrimary">Tax & Ops Reserve</p>
+                      <p class="text-[11px] text-textSecondary">Quarterly Q4 withholding allocation</p>
+                    </div>
+                  </div>
+
+                  <!-- Mini SVG Sparkline -->
+                  <div class="w-32 sm:w-44 h-10 flex items-center">
+                    <svg class="w-full h-9 overflow-visible" viewBox="0 0 160 36" fill="none">
+                      <path d="M2 24 L28 26 L56 19 L84 21 L112 13 L138 14 L158 7" stroke="#F59E0B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="158" cy="7" r="3" fill="#F59E0B" />
+                    </svg>
+                  </div>
+
+                  <div class="text-right ml-auto sm:ml-0">
+                    <p class="font-display text-sm font-extrabold text-emeraldBrand">+$2,840.25</p>
+                    <p class="text-[11px] text-textSecondary font-medium">Bal: $7,910.25</p>
+                  </div>
+                </div>
+                <div id="cushion-detail-3" class="hidden mt-2 mx-2 p-3 rounded-xl bg-canvasMint border border-cardBorder text-xs text-textSecondary flex flex-wrap items-center justify-between gap-2">
+                  <span>IRS & State Auto-Pay Ready • Next Filing Date: <strong>Jan 15, 2027</strong></span>
+                  <button type="button" onclick="showToast('Tax Reserve withholding set to 15%')" class="text-emeraldBrand font-bold hover:underline">Configure %</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Assets Served Table with Search & Status Filter -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h4 class="font-display text-sm sm:text-base font-bold text-textPrimary">Total Assets Served</h4>
+                <p class="text-xs text-textSecondary">Counterparties, escrow settlements, and recurring asset payouts</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="relative">
+                  <i data-lucide="search" class="w-3.5 h-3.5 text-textSecondary absolute left-3 top-1/2 -translate-y-1/2"></i>
+                  <input
+                    type="text"
+                    onkeyup="filterAssetsTable(this.value)"
+                    placeholder="Filter asset or recipient..."
+                    class="pl-8 pr-3 py-1.5 rounded-xl bg-canvasMint border border-cardBorder text-xs text-textPrimary placeholder-textSecondary focus:outline-none focus:border-emeraldBrand"
+                  />
+                </div>
+                <select
+                  onchange="filterAssetsStatus(this.value)"
+                  class="px-3 py-1.5 rounded-xl bg-canvasMint border border-cardBorder text-xs font-semibold text-textPrimary focus:outline-none focus:border-emeraldBrand cursor-pointer"
+                >
+                  <option value="ALL">All Statuses</option>
+                  <option value="Settled">Settled</option>
+                  <option value="Processing">Processing</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-cardBorder text-[11px] font-bold uppercase tracking-wider text-textSecondary">
+                    <th class="py-2.5 px-3">Recipient / Counterparty</th>
+                    <th class="py-2.5 px-3">Asset Class</th>
+                    <th class="py-2.5 px-3">Date</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="assetsServedBody" class="divide-y divide-cardBorder text-xs">
+                  <tr data-name="sophia miller treasury" data-status="Settled" class="asset-row hover:bg-canvasMint/60 transition-colors">
+                    <td class="py-3 px-3">
+                      <div class="flex items-center gap-2.5">
+                        <img
+                          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"
+                          onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=SM'"
+                          alt="Sophia Miller"
+                          class="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div>
+                          <p class="font-bold text-textPrimary">Sophia Miller</p>
+                          <p class="text-[11px] text-textSecondary">ACH Wire • #PB-9041</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-3 font-medium text-textPrimary">USD Treasury Yield</td>
+                    <td class="py-3 px-3 text-textSecondary">Nov 12, 2026</td>
+                    <td class="py-3 px-3">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand font-bold text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-mintChart"></span>
+                        Settled
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-right font-display font-bold text-emeraldBrand">+$2,450.00</td>
+                  </tr>
+
+                  <tr data-name="nordic cloud infrastructure" data-status="Settled" class="asset-row hover:bg-canvasMint/60 transition-colors">
+                    <td class="py-3 px-3">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigoAccent font-bold flex items-center justify-center">NC</div>
+                        <div>
+                          <p class="font-bold text-textPrimary">Nordic Cloud Ops</p>
+                          <p class="text-[11px] text-textSecondary">Virtual Card •••• 4829</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-3 font-medium text-textPrimary">Operating Expense</td>
+                    <td class="py-3 px-3 text-textSecondary">Nov 11, 2026</td>
+                    <td class="py-3 px-3">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand font-bold text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-mintChart"></span>
+                        Settled
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-right font-display font-bold text-textPrimary">-$418.90</td>
+                  </tr>
+
+                  <tr data-name="liam carter global escrow" data-status="Processing" class="asset-row hover:bg-canvasMint/60 transition-colors">
+                    <td class="py-3 px-3">
+                      <div class="flex items-center gap-2.5">
+                        <img
+                          src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
+                          onerror="this.src='https://placehold.co/80x80/1E2D2F/FFFFFF?text=LC'"
+                          alt="Liam Carter"
+                          class="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div>
+                          <p class="font-bold text-textPrimary">Liam Carter</p>
+                          <p class="text-[11px] text-textSecondary">SEPA Instant • #PB-9038</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 px-3 font-medium text-textPrimary">EUR / USD FX Pool</td>
+                    <td class="py-3 px-3 text-textSecondary">Nov 10, 2026</td>
+                    <td class="py-3 px-3">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-goldAccent font-bold text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-goldAccent animate-pulse"></span>
+                        Processing
+                      </span>
+                    </td>
+                    <td class="py-3 px-3 text-right font-display font-bold text-emeraldBrand">+$1,190.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- END SCREEN 7 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 8: LIGHT-SIDEBAR WEB DASHBOARD VARIANT (4-QUADRANT BENTO)    -->
+    <!-- =================================================================== -->
+    <article id="wrapper-8" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-emeraldBrand text-white font-display font-bold text-xs">Screen 08</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">Light-Sidebar Web Dashboard Variant (4-Quadrant Bento)</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Balance Summary ($12,415.72) + Goal Pills + 3D Piggy Vacation Fund</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-8', 'Screen 8: Light-Sidebar Dashboard Variant')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 8 -->
+      <section
+        id="screen-8"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px]"
+      >
+        <!-- Light Sidebar (#FFFFFF) -->
+        <aside class="w-full lg:w-60 bg-white border-b lg:border-b-0 lg:border-r border-cardBorder p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-2.5 mb-7">
+              <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <span class="font-display font-extrabold text-lg text-textPrimary tracking-tight">PiggyBank</span>
+            </div>
+
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldTint text-emeraldBrand shrink-0">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>Overview</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Switching to Transfers')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Payments</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Switching to Savings Goals')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                <span>Savings Vaults</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Switching to Cards')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                <span>Virtual Cards</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Switching to Analytics')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>Reports</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="hidden lg:block p-4 rounded-2xl bg-emeraldTint/70 border border-emeraldBrand/15">
+            <p class="text-xs font-bold text-emeraldBrand">Smart Round-Ups Active</p>
+            <p class="text-[11px] text-textSecondary mt-1">+$64.20 saved automatically this week across 14 card purchases.</p>
+          </div>
+        </aside>
+
+        <!-- Main 4-Quadrant Bento Dashboard -->
+        <div class="flex-1 p-5 sm:p-7 flex flex-col gap-5">
+          <!-- Top Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display text-xl font-extrabold text-textPrimary tracking-tight">Welcome back, Clara</h3>
+              <p class="text-xs text-textSecondary">Friday, November 13, 2026 • All accounts synced</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button
+                type="button"
+                onclick="showToast('No unread security alerts')"
+                class="w-9 h-9 rounded-xl bg-white border border-cardBorder flex items-center justify-center text-textSecondary hover:text-emeraldBrand relative"
+              >
+                <i data-lucide="bell" class="w-4 h-4"></i>
+                <span class="w-2 h-2 rounded-full bg-mintChart absolute top-2 right-2"></span>
+              </button>
+              <div class="flex items-center gap-2 bg-white border border-cardBorder rounded-xl px-3 py-1.5">
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/1D6E4E/FFFFFF?text=CB'"
+                  alt="Clara Bennett"
+                  class="w-6 h-6 rounded-full object-cover"
+                />
+                <span class="text-xs font-bold text-textPrimary">Clara B.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4-Quadrant Bento Grid -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 flex-1">
+            <!-- QUADRANT 1 (Top-Left): Balance Summary ($12,415.72) + Dual-Line Sparkline + 4 Circular Quick Actions -->
+            <div class="xl:col-span-7 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <span class="text-xs font-semibold text-textSecondary">Balance Summary</span>
+                  <div class="flex items-baseline gap-2.5 mt-1">
+                    <h4 id="s8MainBalance" class="font-display text-2xl sm:text-3xl font-extrabold text-textPrimary tracking-tight">$12,415.72</h4>
+                    <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">+8.4%</span>
+                  </div>
+                </div>
+
+                <!-- Dual-Line Green/Mint Sparkline -->
+                <div class="w-40 sm:w-48 h-14">
+                  <svg class="w-full h-full overflow-visible" viewBox="0 0 180 50" fill="none">
+                    <path d="M4 38 C32 34, 52 20, 82 24 C112 28, 140 12, 176 8" stroke="#1D6E4E" stroke-width="2.5" stroke-linecap="round" />
+                    <path d="M4 44 C36 42, 64 33, 94 31 C124 29, 150 22, 176 18" stroke="#34D399" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round" />
+                    <circle cx="176" cy="8" r="3.5" fill="#1D6E4E" />
+                  </svg>
+                </div>
+              </div>
+
+              <!-- 4 Circular Quick Action Icons (Send, Request, Exchange, Bills) -->
+              <div class="grid grid-cols-4 gap-3 pt-5 mt-4 border-t border-cardBorder">
+                <button
+                  type="button"
+                  onclick="showToast('Quick Action: Send Money modal ready')"
+                  class="group flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-canvasMint transition-colors"
+                >
+                  <span class="w-11 h-11 rounded-full bg-emeraldBrand group-hover:bg-emeraldHover text-white flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
+                    <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                  </span>
+                  <span class="text-xs font-semibold text-textPrimary">Send</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="showToast('Quick Action: Payment request link copied')"
+                  class="group flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-canvasMint transition-colors"
+                >
+                  <span class="w-11 h-11 rounded-full bg-emeraldTint group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center transition-all group-hover:scale-105">
+                    <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+                  </span>
+                  <span class="text-xs font-semibold text-textPrimary">Request</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="showToast('Quick Action: Live FX Exchange USD ↔ EUR')"
+                  class="group flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-canvasMint transition-colors"
+                >
+                  <span class="w-11 h-11 rounded-full bg-emeraldTint group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center transition-all group-hover:scale-105">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                  </span>
+                  <span class="text-xs font-semibold text-textPrimary">Exchange</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="showToast('Quick Action: Scheduled Utility Bills (2 due)')"
+                  class="group flex flex-col items-center gap-2 p-2 rounded-xl hover:bg-canvasMint transition-colors"
+                >
+                  <span class="w-11 h-11 rounded-full bg-emeraldTint group-hover:bg-emeraldBrand text-emeraldBrand group-hover:text-white flex items-center justify-center transition-all group-hover:scale-105">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                  </span>
+                  <span class="text-xs font-semibold text-textPrimary">Bills</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- QUADRANT 2 (Top-Right): Recent Transactions Compact Card -->
+            <div class="xl:col-span-5 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3.5">
+                  <h4 class="font-display text-sm font-bold text-textPrimary">Recent Transactions</h4>
+                  <span class="text-[11px] font-semibold text-textSecondary">Today</span>
+                </div>
+
+                <div class="space-y-2.5">
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint/80">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                        <i data-lucide="arrow-down-left" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-textPrimary">Stripe Payout</p>
+                        <p class="text-[11px] text-textSecondary">Direct Deposit • 09:42 AM</p>
+                      </div>
+                    </div>
+                    <span class="font-display text-xs font-extrabold text-emeraldBrand">+$1,850.00</span>
+                  </div>
+
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint/80">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigoAccent flex items-center justify-center">
+                        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-textPrimary">Whole Foods Market</p>
+                        <p class="text-[11px] text-textSecondary">Apple Pay • Yesterday</p>
+                      </div>
+                    </div>
+                    <span class="font-display text-xs font-bold text-textPrimary">-$84.30</span>
+                  </div>
+
+                  <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint/80">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                        <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-textPrimary">Vacation Auto-Save</p>
+                        <p class="text-[11px] text-textSecondary">Recurring Vault Rule</p>
+                      </div>
+                    </div>
+                    <span class="font-display text-xs font-extrabold text-emeraldBrand">+$150.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="switchScreenView('7')"
+                class="mt-4 w-full py-2.5 px-4 rounded-xl bg-canvasMint hover:bg-emeraldTint border border-cardBorder text-xs font-bold text-emeraldBrand transition-colors"
+              >
+                View All Transactions
+              </button>
+            </div>
+
+            <!-- QUADRANT 3 (Bottom-Left): Goal Balance Pill Strip + Smooth Emerald Area Chart -->
+            <div class="xl:col-span-7 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <h4 class="font-display text-sm font-bold text-textPrimary">Goal Balance</h4>
+                  <span id="s8SelectedGoalLabel" class="text-xs font-bold text-emeraldBrand">Travel • $3,450.00</span>
+                </div>
+
+                <!-- Horizontal Pill Icon Strip (Travel, Tech, Home, Auto, Health, Education) -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2">
+                  <button type="button" onclick="selectS8GoalPill(this, 'Travel • $3,450.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-emeraldBrand text-white text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="plane" class="w-3.5 h-3.5"></i>
+                    <span>Travel</span>
+                  </button>
+                  <button type="button" onclick="selectS8GoalPill(this, 'Tech • $1,920.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="laptop" class="w-3.5 h-3.5 text-emeraldBrand"></i>
+                    <span>Tech</span>
+                  </button>
+                  <button type="button" onclick="selectS8GoalPill(this, 'Home • $24,500.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="home" class="w-3.5 h-3.5 text-emeraldBrand"></i>
+                    <span>Home</span>
+                  </button>
+                  <button type="button" onclick="selectS8GoalPill(this, 'Auto • $8,200.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="car" class="w-3.5 h-3.5 text-emeraldBrand"></i>
+                    <span>Auto</span>
+                  </button>
+                  <button type="button" onclick="selectS8GoalPill(this, 'Health • $2,100.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="heart-pulse" class="w-3.5 h-3.5 text-emeraldBrand"></i>
+                    <span>Health</span>
+                  </button>
+                  <button type="button" onclick="selectS8GoalPill(this, 'Education • $4,600.00')" class="s8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emeraldBrand"></i>
+                    <span>Education</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Balance Dashboard Smooth Emerald Area Line Chart -->
+              <div class="mt-3 pt-3 border-t border-cardBorder">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-textSecondary">Balance Dashboard</span>
+                  <span class="text-[11px] font-semibold text-emeraldBrand">Jun – Nov 2026</span>
+                </div>
+                <svg class="w-full h-32 overflow-visible" viewBox="0 0 420 110" fill="none">
+                  <defs>
+                    <linearGradient id="s8AreaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.28" />
+                      <stop offset="100%" stop-color="#34D399" stop-opacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  <!-- Subtle horizontal grid lines -->
+                  <line x1="0" y1="22" x2="420" y2="22" stroke="#E6ECEA" stroke-dasharray="3 3" />
+                  <line x1="0" y1="55" x2="420" y2="55" stroke="#E6ECEA" stroke-dasharray="3 3" />
+                  <line x1="0" y1="88" x2="420" y2="88" stroke="#E6ECEA" stroke-dasharray="3 3" />
+                  <!-- Smooth Area & Stroke -->
+                  <path d="M6 84 C65 78, 95 52, 148 56 C200 60, 235 30, 288 34 C340 38, 375 16, 414 12 L414 102 L6 102 Z" fill="url(#s8AreaGrad)" />
+                  <path d="M6 84 C65 78, 95 52, 148 56 C200 60, 235 30, 288 34 C340 38, 375 16, 414 12" stroke="#1D6E4E" stroke-width="2.8" stroke-linecap="round" />
+                  <circle cx="288" cy="34" r="4" fill="#FFFFFF" stroke="#1D6E4E" stroke-width="2.5" />
+                  <circle cx="414" cy="12" r="4.5" fill="#34D399" stroke="#1D6E4E" stroke-width="2" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- QUADRANT 4 (Bottom-Right): Savings Goals — Vacation Fund with 3D SVG Piggy Bank -->
+            <div class="xl:col-span-5 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-emeraldBrand">Savings Goals</span>
+                  <h4 class="font-display text-base font-extrabold text-textPrimary">Vacation Fund</h4>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-xs font-bold">69% Funded</span>
+              </div>
+
+              <!-- Custom 3D-Style SVG Piggy Bank with Botanical Mint Leaves & Floating Gold Coins -->
+              <div class="my-2 rounded-2xl bg-gradient-to-b from-canvasMint to-emeraldTint/65 border border-emeraldBrand/10 p-3 flex items-center justify-center">
+                <svg class="w-44 h-32 animate-piggy-float" viewBox="0 0 240 175" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <radialGradient id="s8PiggyBody" cx="38%" cy="32%" r="65%">
+                      <stop offset="0%" stop-color="#FFD6E0" />
+                      <stop offset="55%" stop-color="#F79BB4" />
+                      <stop offset="100%" stop-color="#DE6D8D" />
+                    </radialGradient>
+                    <linearGradient id="s8CoinGold" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#FFE680" />
+                      <stop offset="55%" stop-color="#F59E0B" />
+                      <stop offset="100%" stop-color="#B45309" />
+                    </linearGradient>
+                  </defs>
+                  <!-- Shadow -->
+                  <ellipse cx="120" cy="156" rx="72" ry="9" fill="#1D6E4E" opacity="0.14" />
+                  <!-- Botanical Mint Leaves -->
+                  <path d="M52 132 C28 116 28 84 52 72 C66 94 65 116 52 132 Z" fill="#34D399" opacity="0.65" />
+                  <path d="M190 130 C212 114 212 82 188 70 C175 92 176 114 190 130 Z" fill="#1D6E4E" opacity="0.55" />
+                  <!-- Floating Gold Coins -->
+                  <g transform="translate(106, 10)">
+                    <circle cx="14" cy="14" r="12" fill="url(#s8CoinGold)" stroke="#FEF3C7" stroke-width="1.5" />
+                    <text x="14" y="18" text-anchor="middle" fill="#78350F" font-size="12" font-weight="800">$</text>
+                  </g>
+                  <g transform="translate(164, 26) rotate(12)">
+                    <circle cx="10" cy="10" r="9.5" fill="url(#s8CoinGold)" stroke="#FEF3C7" stroke-width="1.2" />
+                    <text x="10" y="14" text-anchor="middle" fill="#78350F" font-size="10" font-weight="800">$</text>
+                  </g>
+                  <!-- Legs & Tail -->
+                  <rect x="84" y="126" width="15" height="22" rx="7" fill="#D96B8A" />
+                  <rect x="138" y="126" width="15" height="22" rx="7" fill="#D96B8A" />
+                  <path d="M172 98 C184 94 186 82 177 81 C170 80 171 90 180 90" stroke="#E57A98" stroke-width="4" stroke-linecap="round" />
+                  <!-- Piggy Body & Slot -->
+                  <ellipse cx="122" cy="100" rx="50" ry="40" fill="url(#s8PiggyBody)" />
+                  <rect x="109" y="61" width="24" height="5" rx="2.5" fill="#7D2941" />
+                  <!-- Front Legs, Ear, Snout, Eye -->
+                  <rect x="95" y="130" width="15" height="21" rx="7" fill="#EE83A1" />
+                  <rect x="130" y="130" width="15" height="21" rx="7" fill="#EE83A1" />
+                  <path d="M102 68 C94 50 112 46 118 64 Z" fill="#F695B0" />
+                  <ellipse cx="72" cy="102" rx="13" ry="16" fill="#FFB3C6" />
+                  <ellipse cx="69" cy="99" rx="2.2" ry="4" fill="#9E3B57" />
+                  <ellipse cx="75" cy="99" rx="2.2" ry="4" fill="#9E3B57" />
+                  <circle cx="91" cy="88" r="4.2" fill="#132224" />
+                  <circle cx="89.8" cy="86.6" r="1.4" fill="#FFFFFF" />
+                </svg>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-bold text-textPrimary">$3,450.00 saved</span>
+                  <span class="text-textSecondary">Goal: $5,000.00</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-canvasMint overflow-hidden mb-3">
+                  <div class="h-full bg-emeraldBrand rounded-full" style="width: 69%"></div>
+                </div>
+                <button
+                  type="button"
+                  onclick="showToast('Added +$100.00 to Vacation Fund!')"
+                  class="w-full py-2.5 px-4 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold shadow-xs transition-colors"
+                >
+                  Select Money
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- END SCREEN 8 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 9: ANALYTICS & FINANCIAL REPORTS (DARK SLATE-TEAL SIDEBAR)   -->
+    <!-- =================================================================== -->
+    <article id="wrapper-9" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-sidebarDark text-white font-display font-bold text-xs">Screen 09</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">Analytics & Financial Reports</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Dark Slate-Teal Sidebar (#1E2D2F) + KPI Cards + Donut & Bar Charts</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-9', 'Screen 9: Analytics & Financial Reports')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 9 -->
+      <section
+        id="screen-9"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px]"
+      >
+        <!-- Dark Slate-Teal Sidebar (#1E2D2F) -->
+        <aside class="w-full lg:w-64 bg-sidebarDark text-white p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-2.5 mb-7">
+              <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <span class="font-display font-extrabold text-lg tracking-tight text-white">PiggyBank</span>
+            </div>
+
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Dashboard')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldBrand text-white shrink-0 shadow-xs">
+                <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                <span>Analytics & Cashflow</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Savings Vaults')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                <span>Savings Vaults</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to API Tokens')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="key-round" class="w-4 h-4"></i>
+                <span>Developer API</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Settings')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+                <span>Settings</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="hidden lg:block p-3.5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="text-sidebarMuted">Monthly Budget</span>
+              <span class="font-bold text-mintChart">On Track</span>
+            </div>
+            <p class="text-[11px] text-sidebarMuted">You spent 18% less on Dining compared to October.</p>
+          </div>
+        </aside>
+
+        <!-- Main Analytics Stage -->
+        <div class="flex-1 p-5 sm:p-7 space-y-6">
+          <!-- Header -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display text-xl sm:text-2xl font-extrabold text-textPrimary tracking-tight">Analytics & Cashflow</h3>
+              <p class="text-xs text-textSecondary mt-0.5">Comprehensive income velocity, category spend allocation, and net savings efficiency</p>
+            </div>
+            <button
+              type="button"
+              onclick="showToast('Generated November 2026 Financial Statement (PDF & CSV)')"
+              class="px-4 py-2.5 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition-colors"
+            >
+              <i data-lucide="file-down" class="w-4 h-4"></i>
+              <span>Download CSV / PDF Report</span>
+            </button>
+          </div>
+
+          <!-- Top 3 KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-textSecondary">Monthly Income</span>
+                <span class="w-8 h-8 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                  <i data-lucide="trending-up" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <p class="font-display text-2xl font-extrabold text-textPrimary mt-2">$8,450.00</p>
+              <p class="text-[11px] font-semibold text-emeraldBrand mt-1">+6.2% vs last month</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-textSecondary">Total Spending</span>
+                <span class="w-8 h-8 rounded-xl bg-red-50 text-coralAccent flex items-center justify-center">
+                  <i data-lucide="credit-card" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <p class="font-display text-2xl font-extrabold text-textPrimary mt-2">$3,190.40</p>
+              <p class="text-[11px] font-semibold text-emeraldBrand mt-1">-4.1% under budget cap</p>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-textSecondary">Net Savings Rate</span>
+                <span class="w-8 h-8 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                  <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                </span>
+              </div>
+              <p class="font-display text-2xl font-extrabold text-emeraldBrand mt-2">62.2%</p>
+              <p class="text-[11px] font-semibold text-textSecondary mt-1">$5,259.60 retained in vaults</p>
+            </div>
+          </div>
+
+          <!-- Interactive Category Filter Toggles -->
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold text-textSecondary mr-1">Highlight Category:</span>
+            <button type="button" onclick="highlightAnalyticsCategory('All', '$3,190.40')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-sidebarDark text-white text-xs font-semibold transition-all">All Categories</button>
+            <button type="button" onclick="highlightAnalyticsCategory('Housing', '$1,450.00 (45%)')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all">Housing</button>
+            <button type="button" onclick="highlightAnalyticsCategory('Dining', '$540.20 (17%)')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all">Dining</button>
+            <button type="button" onclick="highlightAnalyticsCategory('Travel', '$480.00 (15%)')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all">Travel</button>
+            <button type="button" onclick="highlightAnalyticsCategory('Subscriptions', '$220.20 (7%)')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all">Subscriptions</button>
+            <button type="button" onclick="highlightAnalyticsCategory('Investments', '$500.00 (16%)')" class="s9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all">Investments</button>
+          </div>
+
+          <!-- Charts Row: Spending Breakdown Donut Ring + Vertical Cashflow Bar Chart -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <!-- Donut Ring Chart -->
+            <div class="xl:col-span-5 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <h4 class="font-display text-sm font-bold text-textPrimary">Spending Breakdown</h4>
+                <p class="text-xs text-textSecondary">Proportional allocation by merchant group</p>
+              </div>
+
+              <div class="my-4 flex items-center justify-center relative">
+                <svg class="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#F6F9F8" stroke-width="14" />
+                  <!-- Housing 45% (130 of 289) -->
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#1D6E4E" stroke-width="14" stroke-dasharray="130 289" stroke-dashoffset="0" />
+                  <!-- Dining 17% (49) -->
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#34D399" stroke-width="14" stroke-dasharray="49 289" stroke-dashoffset="-132" />
+                  <!-- Investments 16% (46) -->
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#6366F1" stroke-width="14" stroke-dasharray="46 289" stroke-dashoffset="-183" />
+                  <!-- Travel 15% (43) -->
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="43 289" stroke-dashoffset="-231" />
+                  <!-- Subscriptions 7% (17) -->
+                  <circle cx="60" cy="60" r="46" fill="none" stroke="#EF4444" stroke-width="14" stroke-dasharray="17 289" stroke-dashoffset="-276" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-6">
+                  <span id="s9DonutTitle" class="text-[11px] font-semibold text-textSecondary">All Spend</span>
+                  <span id="s9DonutValue" class="font-display text-sm font-extrabold text-textPrimary mt-0.5">$3,190.40</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emeraldBrand"></span><span class="text-textSecondary">Housing (45%)</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-mintChart"></span><span class="text-textSecondary">Dining (17%)</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigoAccent"></span><span class="text-textSecondary">Invest (16%)</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-goldAccent"></span><span class="text-textSecondary">Travel (15%)</span></div>
+              </div>
+            </div>
+
+            <!-- Vertical Bar Chart -->
+            <div class="xl:col-span-7 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <h4 class="font-display text-sm font-bold text-textPrimary">6-Month Income vs. Spending</h4>
+                  <p class="text-xs text-textSecondary">Positive net cashflow surplus every month</p>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] font-semibold">
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-emeraldBrand"></span>Income</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-xs bg-mintChart"></span>Spending</span>
+                </div>
+              </div>
+
+              <!-- Vertical Bars -->
+              <div class="grid grid-cols-6 gap-3 items-end h-48 pt-4 px-2 border-b border-cardBorder">
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[76%]" title="Jun Income: $7,600"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[38%]" title="Jun Spend: $3,400"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-textSecondary">Jun</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[80%]" title="Jul Income: $7,900"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[42%]" title="Jul Spend: $3,650"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-textSecondary">Jul</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[78%]" title="Aug Income: $7,820"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[35%]" title="Aug Spend: $3,100"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-textSecondary">Aug</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[84%]" title="Sep Income: $8,120"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[39%]" title="Sep Spend: $3,320"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-textSecondary">Sep</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[86%]" title="Oct Income: $8,290"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[36%]" title="Oct Spend: $3,290"></div>
+                  </div>
+                  <span class="text-[11px] font-semibold text-textSecondary">Oct</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1.5 h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-36">
+                    <div class="w-3.5 bg-emeraldBrand rounded-t-md h-[92%]" title="Nov Income: $8,450"></div>
+                    <div class="w-3.5 bg-mintChart rounded-t-md h-[34%]" title="Nov Spend: $3,190"></div>
+                  </div>
+                  <span class="text-[11px] font-bold text-emeraldBrand">Nov</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- END SCREEN 9 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 10: SAVINGS GOALS & AUTOMATED RULES (DARK SIDEBAR)           -->
+    <!-- =================================================================== -->
+    <article id="wrapper-10" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-sidebarDark text-white font-display font-bold text-xs">Screen 10</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">Savings Goals & Automated Rules</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Interactive "+ Quick Deposit $100" Vaults + Automated Round-Up Toggles</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-10', 'Screen 10: Savings Goals & Vaults')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 10 -->
+      <section
+        id="screen-10"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px]"
+      >
+        <!-- Dark Slate-Teal Sidebar (#1E2D2F) -->
+        <aside class="w-full lg:w-64 bg-sidebarDark text-white p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-2.5 mb-7">
+              <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <span class="font-display font-extrabold text-lg tracking-tight text-white">PiggyBank</span>
+            </div>
+
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Dashboard')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldBrand text-white shrink-0 shadow-xs">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                <span>Savings Vaults</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Analytics')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                <span>Analytics</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Cards')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
+                <span>Cards</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="hidden lg:block p-4 rounded-2xl bg-emeraldBrand/20 border border-emeraldBrand/40">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-mintChart">High-Yield Treasury</span>
+            <p class="font-display text-xl font-extrabold text-white mt-1">4.85% APY</p>
+            <p class="text-[11px] text-sidebarMuted mt-1">Compounded daily across all active PiggyBank goals.</p>
+          </div>
+        </aside>
+
+        <!-- Main Vaults & Automation Stage -->
+        <div class="flex-1 p-5 sm:p-7 space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display text-xl sm:text-2xl font-extrabold text-textPrimary tracking-tight">Savings Goals & Vaults</h3>
+              <p class="text-xs text-textSecondary mt-0.5">Total Vault Balance: <strong id="s10TotalVaults" class="text-emeraldBrand">$36,150.00</strong> across 3 dedicated goals</p>
+            </div>
+            <button
+              type="button"
+              onclick="showToast('Create New Savings Goal wizard opened')"
+              class="px-4 py-2.5 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>New Savings Goal</span>
+            </button>
+          </div>
+
+          <!-- 3 Active Savings Vault Cards with Interactive + Quick Deposit $100 -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Vault 1: Vacation Fund ($3,450 / $5,000) -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">Target: Jun 2027</span>
+                  <span id="vault1Pct" class="text-xs font-extrabold text-emeraldBrand">69%</span>
+                </div>
+
+                <!-- Custom Vacation SVG Illustration -->
+                <div class="h-24 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-center mb-4">
+                  <svg class="w-20 h-16" viewBox="0 0 96 72" fill="none">
+                    <circle cx="48" cy="36" r="24" fill="#E8F3EE" />
+                    <path d="M22 44 L72 24 L62 38 L70 46 L52 42 L38 52 L40 40 Z" fill="#1D6E4E" />
+                    <circle cx="68" cy="18" r="6" fill="#F59E0B" />
+                  </svg>
+                </div>
+
+                <h4 class="font-display text-base font-extrabold text-textPrimary">Vacation Fund</h4>
+                <p class="text-xs text-textSecondary mt-0.5">Amalfi Coast & Mediterranean Trip</p>
+
+                <div class="mt-4">
+                  <div class="flex items-baseline justify-between text-xs mb-1.5">
+                    <span id="vault1Amount" class="font-display font-extrabold text-textPrimary">$3,450</span>
+                    <span class="text-textSecondary">of $5,000</span>
+                  </div>
+                  <div class="w-full h-2.5 rounded-full bg-canvasMint overflow-hidden">
+                    <div id="vault1Bar" class="h-full bg-emeraldBrand rounded-full transition-all duration-300" style="width: 69%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="depositToVault(1, 100)"
+                class="mt-5 w-full py-2.5 px-4 rounded-xl bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Quick Deposit $100</span>
+              </button>
+            </div>
+
+            <!-- Vault 2: New Car Fund ($8,200 / $15,000) -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 rounded-full bg-indigo-50 text-indigoAccent text-[11px] font-bold">Target: Dec 2027</span>
+                  <span id="vault2Pct" class="text-xs font-extrabold text-emeraldBrand">55%</span>
+                </div>
+
+                <!-- Custom EV / Car SVG Illustration -->
+                <div class="h-24 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-center mb-4">
+                  <svg class="w-24 h-16" viewBox="0 0 110 72" fill="none">
+                    <rect x="18" y="34" width="74" height="18" rx="8" fill="#1D6E4E" />
+                    <path d="M30 34 L40 20 H70 L80 34 Z" fill="#34D399" />
+                    <circle cx="34" cy="52" r="7" fill="#1E2D2F" />
+                    <circle cx="76" cy="52" r="7" fill="#1E2D2F" />
+                  </svg>
+                </div>
+
+                <h4 class="font-display text-base font-extrabold text-textPrimary">New Car Fund</h4>
+                <p class="text-xs text-textSecondary mt-0.5">Zero-APR Downpayment Reserve</p>
+
+                <div class="mt-4">
+                  <div class="flex items-baseline justify-between text-xs mb-1.5">
+                    <span id="vault2Amount" class="font-display font-extrabold text-textPrimary">$8,200</span>
+                    <span class="text-textSecondary">of $15,000</span>
+                  </div>
+                  <div class="w-full h-2.5 rounded-full bg-canvasMint overflow-hidden">
+                    <div id="vault2Bar" class="h-full bg-mintChart rounded-full transition-all duration-300" style="width: 55%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="depositToVault(2, 100)"
+                class="mt-5 w-full py-2.5 px-4 rounded-xl bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Quick Deposit $100</span>
+              </button>
+            </div>
+
+            <!-- Vault 3: Home Downpayment ($24,500 / $50,000) -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="px-2.5 py-1 rounded-full bg-amber-50 text-goldAccent text-[11px] font-bold">Target: Sep 2028</span>
+                  <span id="vault3Pct" class="text-xs font-extrabold text-emeraldBrand">49%</span>
+                </div>
+
+                <!-- Custom Home SVG Illustration -->
+                <div class="h-24 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-center mb-4">
+                  <svg class="w-20 h-16" viewBox="0 0 96 72" fill="none">
+                    <path d="M20 36 L48 14 L76 36 Z" fill="#1D6E4E" />
+                    <rect x="28" y="34" width="40" height="24" rx="4" fill="#34D399" />
+                    <rect x="43" y="43" width="10" height="15" rx="2" fill="#FFFFFF" />
+                  </svg>
+                </div>
+
+                <h4 class="font-display text-base font-extrabold text-textPrimary">Home Downpayment</h4>
+                <p class="text-xs text-textSecondary mt-0.5">20% Equity Milestone Vault</p>
+
+                <div class="mt-4">
+                  <div class="flex items-baseline justify-between text-xs mb-1.5">
+                    <span id="vault3Amount" class="font-display font-extrabold text-textPrimary">$24,500</span>
+                    <span class="text-textSecondary">of $50,000</span>
+                  </div>
+                  <div class="w-full h-2.5 rounded-full bg-canvasMint overflow-hidden">
+                    <div id="vault3Bar" class="h-full bg-emeraldBrand rounded-full transition-all duration-300" style="width: 49%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="depositToVault(3, 100)"
+                class="mt-5 w-full py-2.5 px-4 rounded-xl bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Quick Deposit $100</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Automated Round-Up Rules Card -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft">
+            <h4 class="font-display text-sm font-bold text-textPrimary mb-3.5">Automated Round-Up & Payday Rules</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-3.5 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold text-textPrimary">2x Spare Change Round-Ups</p>
+                  <p class="text-[11px] text-textSecondary mt-0.5">Round every card swipe to nearest $5 into Vacation Fund</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" checked onchange="showToast('2x Spare Change Round-Ups ' + (this.checked ? 'enabled' : 'paused'))" class="sr-only peer" />
+                  <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+                </label>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-between gap-3">
+                <div>
+                  <p class="text-xs font-bold text-textPrimary">Payday 15% Auto-Split</p>
+                  <p class="text-[11px] text-textSecondary mt-0.5">Route 15% of every direct deposit to Home Downpayment</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" checked onchange="showToast('Payday 15% Auto-Split ' + (this.checked ? 'enabled' : 'paused'))" class="sr-only peer" />
+                  <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- END SCREEN 10 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 11: API TOKENS & DEVELOPER KEYS (LIGHT SIDEBAR + DRAWER)     -->
+    <!-- =================================================================== -->
+    <article id="wrapper-11" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-emeraldBrand text-white font-display font-bold text-xs">Screen 11</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">API Tokens & Developer Keys</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Pastel Ring Quota Chart + Piggy Vector + Slide-Over Token Drawer</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-11', 'Screen 11: API Tokens & Developer Keys')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 11 -->
+      <section
+        id="screen-11"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px] relative"
+      >
+        <!-- Light Sidebar (#FFFFFF) -->
+        <aside class="w-full lg:w-60 bg-white border-b lg:border-b-0 lg:border-r border-cardBorder p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-2.5 mb-7">
+              <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <span class="font-display font-extrabold text-lg text-textPrimary tracking-tight">PiggyBank</span>
+            </div>
+
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" onclick="showToast('Switching to Dashboard')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldTint text-emeraldBrand shrink-0">
+                <i data-lucide="key-round" class="w-4 h-4"></i>
+                <span>API Tokens</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Viewing Webhook Delivery Logs')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="webhook" class="w-4 h-4"></i>
+                <span>Webhooks</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Opening Sandbox Environment')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-textSecondary hover:bg-canvasMint hover:text-textPrimary shrink-0 transition-colors">
+                <i data-lucide="terminal" class="w-4 h-4"></i>
+                <span>Sandbox Logs</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="hidden lg:block p-3.5 rounded-2xl bg-canvasMint border border-cardBorder">
+            <div class="flex items-center gap-2 text-xs font-bold text-textPrimary">
+              <span class="w-2 h-2 rounded-full bg-mintChart animate-pulse"></span>
+              <span>API Gateway v2.4</span>
+            </div>
+            <p class="text-[11px] text-textSecondary mt-1">99.99% uptime • 42ms avg latency</p>
+          </div>
+        </aside>
+
+        <!-- Main API Tokens Workspace + Slide-Over Drawer -->
+        <div class="flex-1 p-5 sm:p-7 flex flex-col xl:flex-row gap-6">
+          <!-- Left / Center Content -->
+          <div class="flex-1 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="font-display text-xl sm:text-2xl font-extrabold text-textPrimary tracking-tight">API Tokens</h3>
+                <p class="text-xs text-textSecondary mt-0.5">Manage programmatic treasury access, rate limits, and signed webhook endpoints</p>
+              </div>
+              <button
+                type="button"
+                onclick="toggleApiDrawer(true)"
+                class="px-4 py-2.5 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Generate New Token</span>
+              </button>
+            </div>
+
+            <!-- Centered Card with Circular Pastel Mint/Blue/Pink Ring Chart & Custom Piggy Bank Vector -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-6 shadow-cardSoft flex flex-col sm:flex-row items-center justify-around gap-6">
+              <div class="relative w-44 h-44 flex items-center justify-center shrink-0">
+                <!-- Pastel Mint / Sky Blue / Soft Pink Ring SVG -->
+                <svg class="w-44 h-44 -rotate-90" viewBox="0 0 140 140">
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="#F6F9F8" stroke-width="14" />
+                  <!-- Pastel Mint Segment (38%) -->
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="#6EE7B7" stroke-width="14" stroke-linecap="round" stroke-dasharray="128 340" stroke-dashoffset="0" />
+                  <!-- Pastel Sky Blue Segment (18%) -->
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="#93C5FD" stroke-width="14" stroke-linecap="round" stroke-dasharray="61 340" stroke-dashoffset="-134" />
+                  <!-- Pastel Soft Pink Segment (12%) -->
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="#F9A8D4" stroke-width="14" stroke-linecap="round" stroke-dasharray="41 340" stroke-dashoffset="-201" />
+                </svg>
+
+                <!-- Center Piggy Bank Vector Illustration -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <div class="w-16 h-16 rounded-full bg-emeraldTint/75 flex items-center justify-center">
+                    <svg class="w-10 h-10" viewBox="0 0 48 48" fill="none">
+                      <ellipse cx="25" cy="26" rx="14" ry="11" fill="#F48FB1" />
+                      <rect x="21" y="15" width="8" height="2.2" rx="1.1" fill="#881337" />
+                      <ellipse cx="11" cy="26" rx="3.5" ry="4.5" fill="#F8BBD0" />
+                      <circle cx="17" cy="23" r="1.5" fill="#1E2D2F" />
+                      <rect x="17" y="34" width="4" height="6" rx="2" fill="#EC4899" />
+                      <rect x="28" y="34" width="4" height="6" rx="2" fill="#EC4899" />
+                      <circle cx="25" cy="9" r="3.5" fill="#F59E0B" />
+                    </svg>
+                  </div>
+                  <span class="font-display text-xs font-extrabold text-textPrimary mt-1">68% Used</span>
+                </div>
+              </div>
+
+              <div class="space-y-3 text-center sm:text-left max-w-xs">
+                <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">Monthly Quota: 680K / 1.0M Calls</span>
+                <h4 class="font-display text-base font-extrabold text-textPrimary">Production API Throughput</h4>
+                <p class="text-xs text-textSecondary leading-relaxed">
+                  Your live keys are operating well within burst limits. Automatic webhook retries are healthy.
+                </p>
+                <div class="flex flex-wrap justify-center sm:justify-start gap-3 pt-1 text-[11px] font-semibold">
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#6EE7B7]"></span>Balances (38%)</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#93C5FD]"></span>Transfers (18%)</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#F9A8D4]"></span>Webhooks (12%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active API Keys Table -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft">
+              <h4 class="font-display text-sm font-bold text-textPrimary mb-3">Active API Keys & Webhooks</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="border-b border-cardBorder text-[11px] font-bold uppercase text-textSecondary">
+                      <th class="py-2.5 px-2">Key Name</th>
+                      <th class="py-2.5 px-2">Secret Token</th>
+                      <th class="py-2.5 px-2">Webhook Status</th>
+                      <th class="py-2.5 px-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-cardBorder">
+                    <tr>
+                      <td class="py-3 px-2 font-bold text-textPrimary">Production Treasury</td>
+                      <td class="py-3 px-2 font-mono text-textSecondary">
+                        <span id="apiKeyMask1">pk_live_98a7••••••••4f21</span>
+                      </td>
+                      <td class="py-3 px-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand font-bold text-[11px]">
+                          <span class="w-1.5 h-1.5 rounded-full bg-mintChart"></span>
+                          Verified 200 OK
+                        </span>
+                      </td>
+                      <td class="py-3 px-2 text-right space-x-1">
+                        <button
+                          type="button"
+                          onclick="toggleApiKeyReveal('apiKeyMask1', 'pk_live_98a7c410e9b24f21', 'pk_live_98a7••••••••4f21')"
+                          class="px-2.5 py-1 rounded-lg bg-canvasMint hover:bg-emeraldTint text-textPrimary font-semibold transition-colors"
+                        >
+                          Reveal
+                        </button>
+                        <button
+                          type="button"
+                          onclick="copyPlainText('pk_live_98a7c410e9b24f21', 'Production API Key')"
+                          class="px-2.5 py-1 rounded-lg bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white font-semibold transition-colors"
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td class="py-3 px-2 font-bold text-textPrimary">Accounting Sync Read-Only</td>
+                      <td class="py-3 px-2 font-mono text-textSecondary">
+                        <span id="apiKeyMask2">pk_live_31d9••••••••8c04</span>
+                      </td>
+                      <td class="py-3 px-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand font-bold text-[11px]">
+                          <span class="w-1.5 h-1.5 rounded-full bg-mintChart"></span>
+                          Active
+                        </span>
+                      </td>
+                      <td class="py-3 px-2 text-right space-x-1">
+                        <button
+                          type="button"
+                          onclick="toggleApiKeyReveal('apiKeyMask2', 'pk_live_31d9f772a10b8c04', 'pk_live_31d9••••••••8c04')"
+                          class="px-2.5 py-1 rounded-lg bg-canvasMint hover:bg-emeraldTint text-textPrimary font-semibold transition-colors"
+                        >
+                          Reveal
+                        </button>
+                        <button
+                          type="button"
+                          onclick="copyPlainText('pk_live_31d9f772a10b8c04', 'Accounting Sync API Key')"
+                          class="px-2.5 py-1 rounded-lg bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white font-semibold transition-colors"
+                        >
+                          Copy
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right-Side Slide-Over Drawer: Generate New Token Permissions Checklist -->
+          <aside
+            id="apiTokenDrawer"
+            class="w-full xl:w-80 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between shrink-0"
+          >
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-cardBorder">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emeraldBrand"></span>
+                  <h4 class="font-display text-sm font-bold text-textPrimary">Generate New Token</h4>
+                </div>
+                <button
+                  type="button"
+                  onclick="showToast('Drawer permissions reset to defaults')"
+                  class="text-xs text-textSecondary hover:text-emeraldBrand font-semibold"
+                >
+                  Reset
+                </button>
+              </div>
+
+              <div class="mt-4 space-y-3.5">
+                <div>
+                  <label class="block text-xs font-semibold text-textPrimary mb-1">Token Label</label>
+                  <input
+                    id="newTokenLabelInput"
+                    type="text"
+                    value="ERP Treasury Connector"
+                    class="w-full px-3 py-2 rounded-xl bg-canvasMint border border-cardBorder text-xs font-medium text-textPrimary focus:outline-none focus:border-emeraldBrand"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-textPrimary mb-2">Permissions Checklist</label>
+                  <div class="space-y-2">
+                    <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-canvasMint border border-cardBorder cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 accent-emeraldBrand rounded" />
+                      <div>
+                        <span class="block text-xs font-bold text-textPrimary">Read Balances</span>
+                        <span class="block text-[11px] text-textSecondary">View checking, cushion & vault totals</span>
+                      </div>
+                    </label>
+
+                    <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-canvasMint border border-cardBorder cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 accent-emeraldBrand rounded" />
+                      <div>
+                        <span class="block text-xs font-bold text-textPrimary">Initiate Transfers</span>
+                        <span class="block text-[11px] text-textSecondary">Create ACH & instant P2P payouts</span>
+                      </div>
+                    </label>
+
+                    <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-canvasMint border border-cardBorder cursor-pointer">
+                      <input type="checkbox" checked class="mt-0.5 accent-emeraldBrand rounded" />
+                      <div>
+                        <span class="block text-xs font-bold text-textPrimary">Manage Webhooks</span>
+                        <span class="block text-[11px] text-textSecondary">Subscribe to settlement events</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onclick="generateNewApiToken()"
+              class="mt-5 w-full py-2.5 px-4 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="key" class="w-3.5 h-3.5"></i>
+              <span>Create & Copy Secret Key</span>
+            </button>
+          </aside>
+        </div>
+      </section>
+      <!-- END SCREEN 11 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 12: ACCOUNT SETTINGS, SECURITY & LIMITS (DARK SIDEBAR)       -->
+    <!-- =================================================================== -->
+    <article id="wrapper-12" class="screen-block space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-sidebarDark text-white font-display font-bold text-xs">Screen 12</span>
+          <h2 class="font-display font-bold text-sm sm:text-base text-textPrimary">Account Settings, Security & Limits</h2>
+          <span class="hidden md:inline-block text-xs text-textSecondary">• Interactive Transfer Limit Slider ($5K–$50K) + 2FA Toggle + Active Sessions</span>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('screen-12', 'Screen 12: Web Settings & Security')"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-emeraldTint border border-cardBorder text-xs font-semibold text-emeraldBrand shadow-2xs transition-colors"
+        >
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Copy Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 12 -->
+      <section
+        id="screen-12"
+        class="w-full bg-canvasMint rounded-[22px] border border-cardBorder shadow-webFrame overflow-hidden flex flex-col lg:flex-row min-h-[700px]"
+      >
+        <!-- Dark Slate-Teal Sidebar (#1E2D2F) -->
+        <aside class="w-full lg:w-64 bg-sidebarDark text-white p-5 flex flex-col justify-between shrink-0">
+          <div>
+            <div class="flex items-center gap-2.5 mb-7">
+              <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+              <span class="font-display font-extrabold text-lg tracking-tight text-white">PiggyBank</span>
+            </div>
+
+            <nav class="flex lg:flex-col gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Dashboard')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Analytics')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                <span>Analytics</span>
+              </a>
+              <a href="javascript:void(0)" onclick="showToast('Navigating to Savings Vaults')" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-sidebarMuted hover:text-white hover:bg-white/5 shrink-0 transition-colors">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+                <span>Savings Vaults</span>
+              </a>
+              <a href="javascript:void(0)" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-emeraldBrand text-white shrink-0 shadow-xs">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Settings & Security</span>
+              </a>
+            </nav>
+          </div>
+
+          <div class="hidden lg:block p-3.5 rounded-2xl bg-white/5 border border-white/10">
+            <div class="flex items-center gap-2 text-xs font-bold text-mintChart">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+              <span>SOC2 Type II Protected</span>
+            </div>
+            <p class="text-[11px] text-sidebarMuted mt-1">Hardware passkey & biometric enforcement active.</p>
+          </div>
+        </aside>
+
+        <!-- Main Settings & Security Stage -->
+        <div class="flex-1 p-5 sm:p-7 space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display text-xl sm:text-2xl font-extrabold text-textPrimary tracking-tight">Account Settings, Security & Limits</h3>
+              <p class="text-xs text-textSecondary mt-0.5">Configure daily transfer ceilings, hardware 2FA, and active device sessions</p>
+            </div>
+            <button
+              type="button"
+              onclick="showToast('Security & transfer limit preferences saved!')"
+              class="px-4 py-2.5 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold shadow-xs transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+
+          <!-- Tabbed Settings Navigation -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-cardBorder">
+            <button type="button" onclick="selectSettingsTab(this)" class="s12-tab px-3.5 py-2 rounded-xl text-xs font-semibold text-textSecondary hover:text-textPrimary">Profile</button>
+            <button type="button" onclick="selectSettingsTab(this)" class="s12-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-emeraldTint text-emeraldBrand">Security & 2FA</button>
+            <button type="button" onclick="selectSettingsTab(this)" class="s12-tab px-3.5 py-2 rounded-xl text-xs font-semibold text-textSecondary hover:text-textPrimary">Transfer Limits</button>
+            <button type="button" onclick="selectSettingsTab(this)" class="s12-tab px-3.5 py-2 rounded-xl text-xs font-semibold text-textSecondary hover:text-textPrimary">Notifications</button>
+          </div>
+
+          <!-- Top Grid: Interactive Daily Transfer Limit Slider + Two-Factor Authenticator Toggle -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <!-- Daily Transfer Limit Slider ($5,000 to $50,000) -->
+            <div class="xl:col-span-7 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <h4 class="font-display text-sm font-bold text-textPrimary">Daily Outbound Transfer Limit</h4>
+                    <p class="text-xs text-textSecondary">Applies to ACH wires, instant P2P, and virtual cards</p>
+                  </div>
+                  <span id="dailyLimitDisplay" class="font-display text-xl font-extrabold text-emeraldBrand bg-emeraldTint px-3 py-1 rounded-xl">
+                    $25,000
+                  </span>
+                </div>
+
+                <div class="mt-5">
+                  <input
+                    id="dailyLimitSlider"
+                    type="range"
+                    min="5000"
+                    max="50000"
+                    step="1000"
+                    value="25000"
+                    oninput="updateTransferLimit(this.value)"
+                    class="piggy-slider w-full"
+                  />
+                  <div class="flex justify-between text-[11px] font-semibold text-textSecondary mt-2">
+                    <span>$5,000 Min</span>
+                    <span>$25,000 Recommended</span>
+                    <span>$50,000 Max</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-cardBorder flex items-center justify-between text-xs">
+                <span class="text-textSecondary">Used today: <strong class="text-textPrimary">$1,420.00</strong></span>
+                <span id="remainingLimitText" class="font-semibold text-emeraldBrand">$23,580.00 remaining</span>
+              </div>
+            </div>
+
+            <!-- Two-Factor Authentication Authenticator Toggle Card -->
+            <div class="xl:col-span-5 bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft flex flex-col justify-between">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center shrink-0">
+                    <i data-lucide="smartphone-nfc" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-display text-sm font-bold text-textPrimary">Two-Factor Authenticator</h4>
+                    <p class="text-xs text-textSecondary mt-1">Require TOTP authenticator or hardware passkey for transfers over $1,000.</p>
+                  </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked
+                    onchange="toggleTwoFactorStatus(this.checked)"
+                    class="sr-only peer"
+                  />
+                  <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                </label>
+              </div>
+
+              <div class="mt-4 p-3 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-between">
+                <span id="twoFactorBadge" class="inline-flex items-center gap-1.5 text-xs font-bold text-emeraldBrand">
+                  <span class="w-2 h-2 rounded-full bg-mintChart animate-pulse"></span>
+                  Authenticator App Verified
+                </span>
+                <button
+                  type="button"
+                  onclick="showToast('Backup recovery codes downloaded securely')"
+                  class="text-xs font-semibold text-textSecondary hover:text-emeraldBrand underline"
+                >
+                  Backup Codes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Device Sessions List with Revoke Buttons -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-5 shadow-cardSoft">
+            <div class="flex items-center justify-between mb-3.5">
+              <div>
+                <h4 class="font-display text-sm font-bold text-textPrimary">Active Device Sessions</h4>
+                <p class="text-xs text-textSecondary">Devices currently authorized to access your PiggyBank treasury</p>
+              </div>
+              <span class="text-xs font-semibold text-emeraldBrand">3 Authorized</span>
+            </div>
+
+            <div class="divide-y divide-cardBorder">
+              <!-- Current Device -->
+              <div class="py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                    <i data-lucide="laptop" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">MacBook Pro 16" • Chrome 131</p>
+                    <p class="text-[11px] text-textSecondary">San Francisco, CA • IP 192.168.1.44 • Active now</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">
+                  Current Session
+                </span>
+              </div>
+
+              <!-- Secondary Device 1 -->
+              <div id="session-row-1" class="py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-canvasMint text-textPrimary border border-cardBorder flex items-center justify-center">
+                    <i data-lucide="smartphone" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">iPhone 16 Pro • PiggyBank iOS App</p>
+                    <p class="text-[11px] text-textSecondary">San Francisco, CA • FaceID Verified • 2 hours ago</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onclick="revokeDeviceSession('session-row-1', 'iPhone 16 Pro')"
+                  class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-coralAccent text-coralAccent hover:text-white text-xs font-semibold transition-colors"
+                >
+                  Revoke
+                </button>
+              </div>
+
+              <!-- Secondary Device 2 -->
+              <div id="session-row-2" class="py-3 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-canvasMint text-textPrimary border border-cardBorder flex items-center justify-center">
+                    <i data-lucide="tablet" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">iPad Air M2 • Safari</p>
+                    <p class="text-[11px] text-textSecondary">New York, NY • 4 days ago</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onclick="revokeDeviceSession('session-row-2', 'iPad Air M2')"
+                  class="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-coralAccent text-coralAccent hover:text-white text-xs font-semibold transition-colors"
+                >
+                  Revoke
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- END SCREEN 12 -->
+    </article>
+
+  </main>
+
+  <script>
+    // Render all Lucide icons
+    lucide.createIcons();
+
+    // Non-blocking toast banner (replaces alert)
+    let toastTimeout;
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      document.getElementById('toastMessage').textContent = msg;
+      banner.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('translate-y-24', 'opacity-0');
+      }, 3200);
+    }
+
+    // Top Bundle Switcher: All Screens Overview (6) or single screen focus
+    function switchScreenView(target) {
+      const tabs = document.querySelectorAll('.switcher-tab');
+      tabs.forEach((tab) => {
+        tab.classList.remove('bg-sidebarDark', 'text-white');
+        tab.classList.add('bg-canvasMint', 'text-textPrimary', 'border', 'border-cardBorder');
+      });
+
+      const activeTab = document.getElementById(`tab-${target}`);
+      if (activeTab) {
+        activeTab.classList.remove('bg-canvasMint', 'text-textPrimary', 'border', 'border-cardBorder');
+        activeTab.classList.add('bg-sidebarDark', 'text-white');
+      }
+
+      const blocks = document.querySelectorAll('.screen-block');
+      if (target === 'overview') {
+        blocks.forEach((block) => block.classList.remove('hidden'));
+      } else {
+        blocks.forEach((block) => {
+          if (block.id === `wrapper-${target}`) {
+            block.classList.remove('hidden');
+          } else {
+            block.classList.add('hidden');
+          }
+        });
+      }
+    }
+
+    // Copy self-contained HTML for any individual screen
+    function copyScreenHtml(sectionId, screenTitle) {
+      const el = document.getElementById(sectionId);
+      if (!el) return;
+
+      const helper = document.createElement('textarea');
+      helper.value = el.outerHTML;
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand('copy');
+      document.body.removeChild(helper);
+
+      showToast(`Copied standalone HTML for ${screenTitle}!`);
+    }
+
+    // Screen 7: Expand/collapse cushion balance details
+    function toggleCushionDetail(detailId) {
+      const panel = document.getElementById(detailId);
+      if (panel) {
+        panel.classList.toggle('hidden');
+      }
+    }
+
+    // Screen 7: Timeframe selector badge update
+    function updateCushionTimeframe(tf) {
+      const badge = document.getElementById('cushionTimeframeBadge');
+      const labels = {
+        '30D': '30D Liquidity Trend • +14.8%',
+        '90D': '90D Liquidity Trend • +31.4%',
+        'YTD': '2026 YTD Trend • +64.2%',
+      };
+      badge.textContent = labels[tf] || labels['30D'];
+      showToast(`Updated Cushion Balances timeframe to ${tf}`);
+    }
+
+    // Screen 7: Filter Total Assets Served table by text
+    function filterAssetsTable(query) {
+      const q = query.toLowerCase().trim();
+      document.querySelectorAll('.asset-row').forEach((row) => {
+        const name = row.getAttribute('data-name') || '';
+        row.style.display = name.includes(q) ? '' : 'none';
+      });
+    }
+
+    // Screen 7: Filter Total Assets Served table by status
+    function filterAssetsStatus(status) {
+      document.querySelectorAll('.asset-row').forEach((row) => {
+        const rowStatus = row.getAttribute('data-status');
+        row.style.display = (status === 'ALL' || rowStatus === status) ? '' : 'none';
+      });
+    }
+
+    // Screen 8: Goal pill selection
+    function selectS8GoalPill(btn, summaryText) {
+      document.querySelectorAll('.s8-goal-pill').forEach((pill) => {
+        pill.className = 's8-goal-pill px-3 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder text-xs font-semibold flex items-center gap-1.5 shrink-0';
+      });
+      btn.className = 's8-goal-pill px-3 py-1.5 rounded-full bg-emeraldBrand text-white text-xs font-semibold flex items-center gap-1.5 shrink-0';
+      document.getElementById('s8SelectedGoalLabel').textContent = summaryText;
+    }
+
+    // Screen 9: Highlight category in Analytics
+    function highlightAnalyticsCategory(categoryName, metricText) {
+      document.querySelectorAll('.s9-cat-btn').forEach((btn) => {
+        btn.className = 's9-cat-btn px-3 py-1.5 rounded-xl bg-white border border-cardBorder text-textPrimary hover:bg-emeraldTint text-xs font-semibold transition-all';
+      });
+      event.currentTarget.className = 's9-cat-btn px-3 py-1.5 rounded-xl bg-sidebarDark text-white text-xs font-semibold transition-all';
+
+      document.getElementById('s9DonutTitle').textContent = categoryName === 'All' ? 'All Spend' : categoryName;
+      document.getElementById('s9DonutValue').textContent = metricText;
+      showToast(`Filtered analytics breakdown: ${categoryName}`);
+    }
+
+    // Screen 10: Interactive + Quick Deposit $100 to Savings Vaults
+    const vaultState = {
+      1: { current: 3450, goal: 5000, name: 'Vacation Fund' },
+      2: { current: 8200, goal: 15000, name: 'New Car Fund' },
+      3: { current: 24500, goal: 50000, name: 'Home Downpayment' },
+    };
+
+    function depositToVault(vaultId, amount) {
+      const vault = vaultState[vaultId];
+      if (!vault) return;
+      vault.current = Math.min(vault.goal, vault.current + amount);
+      const pct = Math.round((vault.current / vault.goal) * 100);
+
+      document.getElementById(`vault${vaultId}Amount`).textContent = `$${vault.current.toLocaleString()}`;
+      document.getElementById(`vault${vaultId}Pct`).textContent = `${pct}%`;
+      document.getElementById(`vault${vaultId}Bar`).style.width = `${pct}%`;
+
+      const total = vaultState[1].current + vaultState[2].current + vaultState[3].current;
+      document.getElementById('s10TotalVaults').textContent = `$${total.toLocaleString()}.00`;
+
+      showToast(`Deposited +$${amount} into ${vault.name} (${pct}% funded)`);
+    }
+
+    // Screen 11: Reveal or mask secret API token
+    function toggleApiKeyReveal(spanId, fullKey, maskedKey) {
+      const span = document.getElementById(spanId);
+      const btn = event.currentTarget;
+      if (span.textContent === maskedKey) {
+        span.textContent = fullKey;
+        btn.textContent = 'Hide';
+      } else {
+        span.textContent = maskedKey;
+        btn.textContent = 'Reveal';
+      }
+    }
+
+    // Screen 11: Copy plain text to clipboard
+    function copyPlainText(text, label) {
+      const area = document.createElement('textarea');
+      area.value = text;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand('copy');
+      document.body.removeChild(area);
+      showToast(`Copied ${label} to clipboard!`);
+    }
+
+    // Screen 11: Generate new token from drawer
+    function generateNewApiToken() {
+      const label = document.getElementById('newTokenLabelInput').value.trim() || 'Custom Treasury Key';
+      const generatedSecret = 'pk_live_' + Math.random().toString(36).substring(2, 14);
+      copyPlainText(generatedSecret, `New Token (${label})`);
+    }
+
+    // Screen 11: Highlight drawer when header CTA clicked
+    function toggleApiDrawer(focus) {
+      const drawer = document.getElementById('apiTokenDrawer');
+      if (focus && drawer) {
+        drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        drawer.classList.add('ring-2', 'ring-emeraldBrand');
+        setTimeout(() => drawer.classList.remove('ring-2', 'ring-emeraldBrand'), 1600);
+      }
+    }
+
+    // Screen 12: Settings tab switching
+    function selectSettingsTab(btn) {
+      document.querySelectorAll('.s12-tab').forEach((tab) => {
+        tab.className = 's12-tab px-3.5 py-2 rounded-xl text-xs font-semibold text-textSecondary hover:text-textPrimary';
+      });
+      btn.className = 's12-tab px-3.5 py-2 rounded-xl text-xs font-bold bg-emeraldTint text-emeraldBrand';
+      showToast(`Switched settings section to ${btn.textContent}`);
+    }
+
+    // Screen 12: Interactive daily transfer limit slider
+    function updateTransferLimit(val) {
+      const num = parseInt(val, 10);
+      const remaining = Math.max(0, num - 1420);
+      document.getElementById('dailyLimitDisplay').textContent = `$${num.toLocaleString()}`;
+      document.getElementById('remainingLimitText').textContent = `$${remaining.toLocaleString()}.00 remaining`;
+    }
+
+    // Screen 12: Toggle 2FA status badge
+    function toggleTwoFactorStatus(isEnabled) {
+      const badge = document.getElementById('twoFactorBadge');
+      if (isEnabled) {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-mintChart animate-pulse"></span> Authenticator App Verified';
+        badge.className = 'inline-flex items-center gap-1.5 text-xs font-bold text-emeraldBrand';
+        showToast('Two-Factor Authenticator enabled');
+      } else {
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-goldAccent"></span> 2FA Temporarily Paused';
+        badge.className = 'inline-flex items-center gap-1.5 text-xs font-bold text-goldAccent';
+        showToast('Warning: Two-Factor Authenticator paused');
+      }
+    }
+
+    // Screen 12: Revoke active device session
+    function revokeDeviceSession(rowId, deviceName) {
+      const row = document.getElementById(rowId);
+      if (row) {
+        row.style.opacity = '0.45';
+        row.querySelector('button').textContent = 'Revoked';
+        row.querySelector('button').disabled = true;
+        showToast(`Revoked session access for ${deviceName}`);
+      }
+    }
+  </script>
+</body>
+</html>

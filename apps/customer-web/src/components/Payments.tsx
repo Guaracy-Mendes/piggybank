@@ -15,6 +15,9 @@ import { Credits } from "./Credits";
 import type { Account } from "../types";
 import { navigate, stableKey, doneKey } from "../lib/navigation";
 import { PageTitle } from "../lib/display";
+import { QrCode } from "./QrCode";
+import { amount } from "../consumer/model";
+import { encodePaymentCode, parsePaymentCode } from "../lib/paymentCode";
 type Payment = Schema["PaymentStatus"];
 const labels: Record<Payment["state"], string> = {
   DRAFT: "Approval needed",
@@ -90,6 +93,8 @@ export function PaymentsView({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState(false);
+  const referenceInput = useRef<HTMLInputElement>(null);
+  const [codeInfo, setCodeInfo] = useState("");
   const [savedQuote, setSavedQuote] = useState<Schema["PaymentQuote"]>();
   const load = useCallback(async () => {
     try {
@@ -294,9 +299,52 @@ export function PaymentsView({
               <option value="SIMULATED">Simulated external rail</option>
             </select>
           </label>
+          <label className="wide">
+            Payment code (text from a scanned QR, optional)
+            <span className="code-row">
+              <input
+                name="code"
+                maxLength={400}
+                placeholder="pbtst:pay?ref=PB…"
+              />
+              <button
+                type="button"
+                className="secondary"
+                onClick={(e) => {
+                  const input = e.currentTarget.form?.elements.namedItem(
+                    "code",
+                  ) as HTMLInputElement | null;
+                  const code = parsePaymentCode(input?.value ?? "");
+                  if (!code || !referenceInput.current) {
+                    setCodeInfo("");
+                    setError("That is not a PiggyBank TST payment code.");
+                    return;
+                  }
+                  referenceInput.current.value = code.reference;
+                  setError("");
+                  setCodeInfo(
+                    `Reference ···· ${code.reference.slice(-8)} filled in` +
+                      (code.amountMinor
+                        ? ` · requested ${amount(code.amountMinor)}`
+                        : "") +
+                      (code.memo ? ` · memo “${code.memo}”` : "") +
+                      ". Name the recipient and add them; nothing is paid yet.",
+                  );
+                }}
+              >
+                Use payment code
+              </button>
+            </span>
+          </label>
+          {codeInfo && (
+            <p className="wide muted" role="status" data-testid="code-info">
+              {codeInfo}
+            </p>
+          )}
           <label>
             Shared receiving reference
             <input
+              ref={referenceInput}
               name="reference"
               required
               pattern="(PB|SIM)[A-Fa-f0-9]{32}"
@@ -439,6 +487,14 @@ function Receiving({ accounts }: { accounts: Account[] }) {
           <code>{reference}</code>
           <small>
             Only TST internal payments. This is a synthetic reference.
+          </small>
+          <QrCode
+            payload={encodePaymentCode({ reference })}
+            label="QR code for your receiving reference"
+          />
+          <small>
+            Scanning this code only fills in a recipient. Every payment still
+            needs its own quote and approval.
           </small>
         </div>
       )}

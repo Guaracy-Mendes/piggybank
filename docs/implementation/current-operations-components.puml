@@ -1,0 +1,34 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - WP-26 monitoring, data quality, operations reporting and notifications
+Person(customer,"Customer","Reads safe messages; sets optional purposes")
+Person(reviewer,"Controls reviewer","Retrospective scan; proposes disposition")
+Person(approver,"Independent approver","Approves disposition")
+Person(steward,"Data steward","Repairs projection; acknowledges cleared alerts")
+Person(operator,"Operations","Synthetic channel outage drills")
+Container_Boundary(api,"Rust bank-api") {
+ Component(routes,"Monitoring routes","Axum + OIDC BFF","Customer / workforce trust; roles rechecked in PostgreSQL")
+ Component(mon,"Monitoring","bank-controls monitoring","Rules over durable projected facts; REPEATABLE READ operations snapshot; correlation trace")
+ Component(alerts,"Alerts","bank-data alerts","Data-quality findings, repair, notification derivation and synthetic capture")
+}
+Container(worker,"bank-worker","Rust","Every 5 s: monitoring tick, derive, deliver; every 30 s: data-quality scan")
+ContainerDb(controls,"Controls schema","PostgreSQL","Rules, evaluations, alerts, dispositions, snapshots, MONITORING / DATA cases")
+ContainerDb(data,"Data schema","PostgreSQL","transaction_views (from journal.batch-posted), quality alerts, repairs, notifications, attempts")
+ContainerDb(core,"Core journal","PostgreSQL","Read-only to monitoring and repair; never written")
+Rel(customer,routes,"Messages, preferences")
+Rel(reviewer,routes,"Alerts, scan, propose")
+Rel(approver,routes,"Approve")
+Rel(steward,routes,"Data quality, repair, acknowledge")
+Rel(operator,routes,"Channel availability")
+Rel(routes,mon,"Actor + person")
+Rel(routes,alerts,"Actor + person")
+Rel(worker,mon,"monitoring_tick")
+Rel(worker,alerts,"quality_scan, derive, deliver")
+Rel(mon,controls,"Owned alerts and cases")
+Rel(alerts,data,"Owned Data rows")
+Rel(mon,data,"Reads projected facts")
+Rel(mon,core,"Reads journal amounts and times")
+Rel(alerts,core,"Reads journal for findings and repair")
+SHOW_LEGEND()
+@enduml

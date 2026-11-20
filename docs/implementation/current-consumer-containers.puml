@@ -1,0 +1,24 @@
+@startuml
+!include <C4/C4_Container>
+LAYOUT_TOP_DOWN()
+title C4 L2 - official consumer UI and synthetic wealth implementation
+Person(owner,"Customer","Own banking, saving and investment workspaces")
+System_Ext(issuer,"Customer issuer","Existing OIDC authorization code + PKCE and fresh action-bound login")
+System_Boundary(bank,"Piggybank local evaluation") {
+ Container(web,"Customer portal","React / TypeScript","Official emerald / slate-teal HTML language; desktop sidebar and five mobile tabs")
+ Container(api,"Bank API","Rust / Axum","Customer BFF session, CSRF, typed UUID keys and scoped capabilities")
+ Container(worker,"Bank worker","Rust","Recurring savings/investment, order recovery, declared dividends, alerts and Finance discovery")
+ ContainerDb(pg,"Owned schemas","PostgreSQL","Native cash, vault balances, holds, positions, immutable fills and statement facts")
+ Container(finance,"Finance and GL protocol","Rust + native receipts","Independently approved chart v3; original Core journal source and durable export receipts")
+ Container(sim,"Provider simulator","Persistent synthetic adapter","Existing TST rails / GL; no live bank, exchange or card network")
+}
+Rel(owner,web,"Review exact values and authorize owned instructions","Browser")
+Rel(web,api,"Read snapshots / submit exact reviewed command","Cookie session + CSRF")
+Rel(api,issuer,"Login and retained action-bound reauthentication","OIDC + PKCE")
+Rel(api,pg,"Narrow SECURITY DEFINER capabilities","Module-role SQL")
+Rel(worker,pg,"Native retained consent + current ownership; economic uniqueness","Bounded sequential recovery")
+Rel(worker,finance,"Discover original native journal facts")
+Rel(finance,pg,"Retain immutable source / original export / actual receipt")
+Rel(finance,sim,"Authenticated idempotent GL protocol")
+SHOW_LEGEND()
+@enduml

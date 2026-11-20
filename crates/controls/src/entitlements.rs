@@ -1,4 +1,4 @@
-use crate::audit::{AuditLog, AuditRecord};
+use crate::audit::{AuditLog, AuditRecord, shard_stream};
 use anyhow::{Result, ensure};
 use bank_platform::domain::{
     ActorContext, Clock, PartyId, PaymentDetails, SystemClock, TrustContext, fingerprint,
@@ -15,6 +15,21 @@ pub struct ResourceAuthority {
     pub owners: Vec<PartyId>,
     pub permitted_staff: Vec<PartyId>,
     pub action_restricted: bool,
+    /// WP-33 (FR-ACC-08): current, unexpired, unrevoked delegations on the account.
+    pub delegates: Vec<Delegate>,
+}
+/// Bounded delegated authority. A delegate may read; with `can_pay` may also start payments, each no larger than
+/// `payment_limit_minor` (enforced by Payments against the exact amount). Delegates never service the account.
+#[derive(Clone, Debug)]
+pub struct Delegate {
+    pub person: PartyId,
+    pub can_pay: bool,
+    pub payment_limit_minor: Option<i64>,
+}
+impl ResourceAuthority {
+    pub fn delegate(&self, person: PartyId) -> Option<&Delegate> {
+        self.delegates.iter().find(|d| d.person == person)
+    }
 }
 #[derive(Clone, Copy)]
 pub struct ApprovalRef {
@@ -41,6 +56,8 @@ pub enum Action {
     ApproveMaster,
     ManageRails,
     ApproveRails,
+    ManageRecords,
+    ApproveRecords,
 }
 impl Action {
     fn code(self) -> &'static str {
@@ -63,6 +80,8 @@ impl Action {
             Self::ApproveMaster => "master.approve",
             Self::ManageRails => "rail.manage",
             Self::ApproveRails => "rail.approve",
+            Self::ManageRecords => "records.manage",
+            Self::ApproveRecords => "records.approve",
         }
     }
     fn role(self) -> &'static str {
@@ -84,6 +103,8 @@ impl Action {
             Self::ApproveMaster => "data_approver",
             Self::ManageRails => "payment_operator",
             Self::ApproveRails => "payment_approver",
+            Self::ManageRecords => "records_officer",
+            Self::ApproveRecords => "records_approver",
         }
     }
 }
@@ -200,19 +221,59 @@ impl Entitlements {
                 );
                 record.outcome = "DENIED".into();
                 record.reason_code = "NO_PERSON_LINK".into();
+                let id = Uuid::new_v4();
                 AuditLog::new(self.pool.clone())
-                    .append(Uuid::new_v4(), "authorization", &record)
+                    .append(id, &shard_stream("authorization", id), &record)
                     .await?;
                 return Ok(false);
             }
             Err(error) => return Err(error),
         };
         let allowed = match actor.trust {
-            TrustContext::Customer => {
-                matches!(
-                    action,
-                    Action::ReadAccount | Action::CreatePayment | Action::ServiceAccount
-                ) && resource.is_some_and(|r| r.owners.contains(&person) && !r.action_restricted)
+            TrustContext::Customer => resource.is_some_and(|r| {
+                let owner = r.owners.contains(&person);
+                let delegate = r.delegate(person);
+                !r.action_restricted
+                    && match action {
+                        Action::ReadAccount => owner || delegate.is_some(),
+                        Action::CreatePayment => owner || delegate.is_some_and(|d| d.can_pay),
+                        Action::ServiceAccount => owner,
+                        _ => false,
+                    }
+            }),
+            // WP-34: inside an assisted session the staff member acts for the represented customer, limited to the
+            // operations confirmed for the channel and to the customer's own, unrestricted accounts.
+            TrustContext::Workforce
+                if actor.roles.iter().any(|role| role.starts_with("assisted:")) =>
+            {
+                let session = actor
+                    .roles
+                    .iter()
+                    .find_map(|role| role.strip_prefix("assisted:"))
+                    .and_then(|id| Uuid::parse_str(id).ok());
+                let operation = match action {
+                    Action::ReadAccount => Some("READ_ACCOUNT"),
+                    Action::ServiceAccount => Some("PROTECTIVE_FREEZE"),
+                    Action::CreatePayment => Some("DRAFT_PAYMENT"),
+                    _ => None,
+                };
+                match (session, operation, actor.represented_party, resource) {
+                    (Some(session), Some(operation), Some(customer), Some(r))
+                        if r.owners.contains(&customer) && !r.action_restricted =>
+                    {
+                        sqlx::query_scalar::<_, bool>(
+                            "SELECT controls.assisted_permits($1,$2,$3,$4,$5)",
+                        )
+                        .bind(session)
+                        .bind(person.0)
+                        .bind(customer.0)
+                        .bind(r.resource_id)
+                        .bind(operation)
+                        .fetch_one(&self.pool)
+                        .await?
+                    }
+                    _ => false,
+                }
             }
             TrustContext::Workforce => {
                 let related = resource
@@ -226,7 +287,44 @@ impl Entitlements {
                 matches!(action, Action::WorkflowWork)
                     && self.has_role(person, action.role(), None).await?
             }
-            TrustContext::Partner => false, // Partner grants/delegation are explicitly R2.
+            // WP-33: a partner acts only for the consenting owner, on a consented account, within a live grant.
+            // The API limits each endpoint to its scope; here either consented scope may read the account (a
+            // payment initiation reads its payer account), and only `payments:initiate` may create a payment.
+            TrustContext::Partner => match resource {
+                Some(r) if r.owners.contains(&person) && !r.action_restricted => {
+                    let consent = actor
+                        .roles
+                        .iter()
+                        .find_map(|role| role.strip_prefix("consent:"))
+                        .and_then(|id| Uuid::parse_str(id).ok());
+                    let scopes: &[&str] = match action {
+                        Action::ReadAccount => &["accounts:read", "payments:initiate"],
+                        Action::CreatePayment => &["payments:initiate"],
+                        _ => &[],
+                    };
+                    let mut permitted = false;
+                    if let Some(consent) = consent {
+                        for scope in scopes {
+                            if sqlx::query_scalar::<_, bool>(
+                                "SELECT identity.consent_permits($1,$2,$3,$4,$5)",
+                            )
+                            .bind(consent)
+                            .bind(&actor.client_id)
+                            .bind(person.0)
+                            .bind(r.resource_id)
+                            .bind(scope)
+                            .fetch_one(&self.pool)
+                            .await?
+                            {
+                                permitted = true;
+                                break;
+                            }
+                        }
+                    }
+                    permitted
+                }
+                _ => false,
+            },
         };
         let mut resolved = actor.clone();
         resolved.person_id = Some(person);
@@ -238,8 +336,10 @@ impl Entitlements {
         );
         record.outcome = if allowed { "ALLOWED" } else { "DENIED" }.into();
         record.reason_code = "ENTITLEMENT_POLICY".into();
+        // Keyed by the record id, not the resource: one busy account must not concentrate on one shard.
+        let id = Uuid::new_v4();
         AuditLog::new(self.pool.clone())
-            .append(Uuid::new_v4(), "authorization", &record)
+            .append(id, &shard_stream("authorization", id), &record)
             .await?;
         Ok(allowed)
     }
@@ -276,7 +376,9 @@ impl Entitlements {
                 "finance_adjuster",
                 "finance_approver",
                 "data_steward",
-                "data_approver"
+                "data_approver",
+                "records_officer",
+                "records_approver"
             ]
             .contains(&role),
             "Unknown role"

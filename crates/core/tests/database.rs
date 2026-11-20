@@ -675,3 +675,8 @@ async fn canonical_parties_account_activation_and_closure_are_guarded() -> anyho
     db.close().await?;
     Ok(())
 }
+
+#[path = "cases/consumer.rs"]
+mod consumer;
+#[path = "cases/partners.rs"]
+mod partners;

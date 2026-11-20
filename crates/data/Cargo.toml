@@ -6,6 +6,7 @@ rust-version.workspace=true
 license.workspace=true
 [dependencies]
 anyhow.workspace=true
+bank-adapters.workspace=true
 bank-platform.workspace=true
 bank-core.workspace=true
 bank-controls.workspace=true
@@ -15,7 +16,6 @@ serde_json.workspace=true
 sqlx.workspace=true
 uuid.workspace=true
 [dev-dependencies]
-bank-adapters.workspace=true
 futures-util.workspace=true
 bank-platform={workspace=true,features=["test-support"]}
 tokio.workspace=true

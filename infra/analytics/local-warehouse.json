@@ -1,0 +1,26 @@
+{
+  "adapter": "LOCAL_WAREHOUSE",
+  "status": "LOCAL_TEMPLATE",
+  "decision": "User decision 2026-11-18: one local warehouse adapter as the template; analytical products pending DEC-05/06/08.",
+  "dataClassification": "SYNTHETIC_TST_ONLY",
+  "storage": {
+    "engine": "PostgreSQL schema analytics in the local piggybank database",
+    "migration": "migrations/0071_governed_warehouse.sql",
+    "runtimeRole": "bank_data",
+    "runtimePrivileges": "EXECUTE on analytics API functions only; no table privileges; no core schema usage"
+  },
+  "processing": {
+    "engine": "Deterministic SQL transforms inside definer functions",
+    "transforms": ["daily_ledger_movement v1", "daily_ledger_movement v2"],
+    "reproducibility": "Snapshot stores fact cut, master-data cut, transform digest and result digest; reproduction recomputes and compares"
+  },
+  "ingestion": {
+    "incremental": "bank-worker every 30 s, 30 s safe lag, 5000 rows per dataset per pass",
+    "backfill": "data_steward, window up to 93 days, always evidenced as a run",
+    "deduplication": "economic identity per dataset; same identity with different content is quarantined"
+  },
+  "sources": ["data.transaction_views (Core journal.batch-posted projection)", "data.account_views (Core account.changed projection)"],
+  "controlTotals": "core.journal_entries by business date, read through a definer function",
+  "contracts": "contracts/events/analytics/",
+  "notSelected": ["cloud warehouse", "lakehouse/object storage", "stream processor", "BI semantic layer", "regulatory reporting formats (DEC-06)"]
+}

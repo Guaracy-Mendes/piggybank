@@ -1,0 +1,109 @@
+@startuml
+hide methods
+title UML domain - personal finance configuration, facts and scoped credentials
+class Person {
+ canonicalId : UUID
+}
+class NativeBankAccount {
+ id : Core ledger UUID
+ currentOwner : canonical person
+ booked / held : i64 minor TST
+}
+class Card {
+ owner : canonical person
+ bankAccountId : UUID
+ frozen / online / ATM : preferences
+ network = SYNTHETIC_ONLY
+}
+class RoundupMandate {
+ cardId / vaultId : current owned resources
+ multiplier : 1 / 2 / 3 / 5
+ weeklyCapMinor : positive i64
+ issuerApproval : exact retained terms
+}
+class RoundupFact {
+ operationId : unique UUID
+ amountMinor : exact native saving
+ nativeBatchId : immutable
+}
+class Budget {
+ category + owner : unique
+ limitMinor : positive i64
+ thresholdPercent : 1..100
+ rollover : previous unused month
+}
+class MovementMetadata {
+ bankAccountId + nativeBatchId : unique
+ category / note : bounded
+ receipt : bounded MIME + base64
+}
+class Bill {
+ owner / merchant / dueDate
+ state : ACTIVE / CANCELLATION_REQUESTED
+}
+class BankLink {
+ owner / institution / maskedDigits
+ state : VERIFIED_SYNTHETIC / REVOKED
+ fundedMinor : retained lifetime allowance
+}
+class PaymentRequest {
+ requester / recipient : current persons
+ amountMinor / receivingReference
+ state : REQUESTED / CANCELLED
+}
+class Preference {
+ theme / privacy / goals
+ notifications : effective native preference
+}
+class Notification {
+ owner / category / safe route
+ createdAt / readAt
+}
+class Statement {
+ complete bounded source facts
+ opening / closing : exact minor TST
+ sourceDigest : immutable SHA256
+}
+class PersonalReadToken {
+ owner / private actor
+ secretHash : SHA256 only
+ scope : one read capability
+ expiresAt / revokedAt
+}
+class "ProgressReport <<derived read>>" as ProgressReport {
+ contributionFacts : own deposits / SAVE runs / round-ups
+ streaks : UTC day and month islands
+ badges : fixed catalogue + first unlock date
+ netWorthAt(t) : journal + position-event replay
+ lifetimeInterest : PERIODIC_ACCRUAL net of corrections
+}
+Person "1" -- "0..*" NativeBankAccount : current owner
+Person "1" -- "1" ProgressReport : computed per read
+Person "1" -- "0..*" Card
+NativeBankAccount "1" -- "0..*" Card
+Card "1" -- "0..1" RoundupMandate
+RoundupMandate "1" -- "0..*" RoundupFact
+Person "1" -- "0..*" Budget
+NativeBankAccount "1" -- "0..*" MovementMetadata
+Person "1" -- "0..*" Bill
+Person "1" -- "0..*" BankLink
+Person "1" -- "0..*" PaymentRequest
+Person "1" -- "0..1" Preference
+Person "1" -- "0..*" Notification
+NativeBankAccount "1" -- "0..*" Statement
+Person "1" -- "0..*" PersonalReadToken
+note bottom of PersonalReadToken
+One-time secret response is excluded from retained command receipts.
+Revocation and expiry are checked at every scoped read.
+This token never authorizes a payment or trade.
+end note
+note right of ProgressReport
+Stores nothing and posts nothing.
+A held symbol without a retained price at the instant
+is reported incomplete; the monthly change is then withheld.
+end note
+note bottom of PaymentRequest
+Requests and bill cancellation requests are not money completion.
+Actual payments use the existing quoted, approved native payment flow.
+end note
+@enduml

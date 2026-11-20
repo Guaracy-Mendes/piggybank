@@ -8,6 +8,7 @@ license.workspace = true
 anyhow.workspace = true
 bank-controls.workspace = true
 libc.workspace = true
+ring.workspace = true
 uuid.workspace = true
 [dev-dependencies]
 bank-platform = { workspace = true, features = ["test-support"] }

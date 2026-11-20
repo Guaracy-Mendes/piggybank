@@ -1,0 +1,19 @@
+{
+  "dataset": "ledger_entries",
+  "version": 1,
+  "source": "DATA_TRANSACTION_VIEWS",
+  "economicKey": ["operationId", "postingKind", "accountId"],
+  "economicFields": ["amountMinor", "currency", "businessDate", "originalBatchId"],
+  "purposes": ["FINANCIAL_REPORTING", "OPERATIONS_ANALYTICS"],
+  "fields": [
+    {"name": "batchId", "type": "uuid", "required": true},
+    {"name": "operationId", "type": "uuid", "required": true},
+    {"name": "postingKind", "type": "text", "required": true},
+    {"name": "accountId", "type": "uuid", "required": true},
+    {"name": "accountKind", "type": "text", "required": true},
+    {"name": "amountMinor", "type": "bigint", "required": true},
+    {"name": "currency", "type": "text", "required": true},
+    {"name": "businessDate", "type": "date", "required": true},
+    {"name": "originalBatchId", "type": "uuid", "required": false}
+  ]
+}

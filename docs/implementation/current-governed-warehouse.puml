@@ -1,0 +1,46 @@
+@startuml
+title UML component - governed warehouse with one local adapter (WP-37)
+skinparam componentStyle rectangle
+
+package "Core (balance authority)" {
+  [Journal batches/entries] as journal
+  [Outbox] as coreOutbox
+}
+package "Data module (role bank_data)" {
+  [Event projection\n(transaction_views, account_views)] as projection
+  [Master references\n(master_refs, history, conflicts)] as master
+  package "analytics schema (LOCAL_WAREHOUSE)" {
+    [Datasets + versioned schemas\n(backward compatible)] as schemas
+    [Ingestion runs\n(incremental, backfill)] as runs
+    [Facts\n(append-only, economic identity)] as facts
+    [Conflicts / rejects\n(quarantine)] as quarantine
+    [Transforms v1, v2\n(digest)] as transforms
+    [Snapshots + rows\n(fact cut, master cut,\nresult digest, control totals)] as snapshots
+    [Purposes + denials] as purposes
+  }
+  [Data outbox] as dataOutbox
+}
+actor "Data steward /\nfinance staff" as staff
+[bank-worker] as worker
+
+coreOutbox --> projection : journal.batch-posted,\naccount.changed
+worker --> runs : every 30 s,\n30 s safe lag
+staff --> runs : backfill
+staff --> schemas : register next version
+projection --> runs : candidate rows
+runs --> facts : new identity
+runs --> quarantine : same identity,\ndifferent content
+staff --> purposes : snapshot request
+purposes --> snapshots : role + dataset permit
+facts --> snapshots
+transforms --> snapshots
+master --> snapshots : canonical as of\nmaster cut
+journal ..> snapshots : control totals\n(read only)
+snapshots --> dataOutbox : analytics.snapshot-published
+
+note bottom of snapshots
+  No Core schema usage for bank_data.
+  No function body writes Core.
+  Reproduction recomputes at stored cuts.
+end note
+@enduml

@@ -10,13 +10,21 @@ import {
   value,
 } from "@piggybank/web-core";
 import type { Product } from "../types";
-import { login } from "../lib/navigation";
+import { login, register } from "../lib/navigation";
 
 export function Wordmark() {
   return (
     <a className="wordmark" href="#/home" aria-label="Piggybank home">
       <span className="mark" aria-hidden="true">
-        p
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          aria-hidden="true"
+        >
+          <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5zM2 9v1c0 1.1.9 2 2 2h1M16 11h.01" />
+        </svg>
       </span>
       piggybank<span className="wordmark-dot">.</span>
     </a>
@@ -41,6 +49,9 @@ export function Welcome() {
         <Wordmark />
         <div className="row">
           <Badge>Synthetic demo</Badge>
+          <button className="secondary" onClick={register}>
+            Create account
+          </button>
           <button className="secondary" onClick={login}>
             Sign in <Icon name="arrow" />
           </button>
@@ -59,6 +70,7 @@ export function Welcome() {
               A clear view of your money, an account that feels simple, and a
               place to pick up where you left off.
             </p>
+            <WelcomeSlides />
             <button onClick={login}>
               Start your application <Icon name="arrow" />
             </button>
@@ -163,5 +175,48 @@ export function ProductCard({
         Open an account <Icon name="arrow" />
       </button>
     </article>
+  );
+}
+
+function WelcomeSlides() {
+  const [index, setIndex] = useState(0);
+  const slides = [
+    [
+      "Save Automatically",
+      "Turn spare change and recurring deposits into meaningful goals.",
+    ],
+    [
+      "Spend Smarter",
+      "See your spending clearly, set budgets and control your virtual cards.",
+    ],
+    [
+      "Invest Effortlessly",
+      "Explore fractional synthetic shares with a clear review before every order.",
+    ],
+  ];
+  return (
+    <section
+      className="ui-welcome-slides"
+      aria-label="Piggybank features"
+      aria-roledescription="carousel"
+    >
+      <div aria-live="polite">
+        <strong>{slides[index][0]}</strong>
+        <p>{slides[index][1]}</p>
+      </div>
+      <div className="ui-actions">
+        {slides.map(([title], i) => (
+          <button
+            key={title}
+            className="secondary"
+            aria-label={"Show " + title}
+            aria-pressed={index === i}
+            onClick={() => setIndex(i)}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }

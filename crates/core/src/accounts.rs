@@ -1,6 +1,6 @@
 use crate::Core;
 use anyhow::{Result, ensure};
-use bank_controls::entitlements::{Action, Entitlements, ResourceAuthority};
+use bank_controls::entitlements::{Action, Delegate, Entitlements, ResourceAuthority};
 use bank_platform::{
     database::Module,
     domain::{AccountId, ActorContext, EventEnvelope, EventId, PartyId, fingerprint},
@@ -198,11 +198,24 @@ impl Core {
         }
         let restricted = matches!(action, Action::CreatePayment)
             && (row.get::<String, _>("state") != "ACTIVE" || row.get::<bool, _>("debit_blocked"));
+        // WP-33: only current delegations count; expiry is evaluated here, so a lapsed grant needs no job.
+        let delegates = sqlx::query("SELECT delegate_person,authority,payment_limit_minor FROM core.account_delegations WHERE account_id=$1 AND revoked_at IS NULL AND expires_at>clock_timestamp()")
+            .bind(account.0)
+            .fetch_all(&self.pool)
+            .await?
+            .into_iter()
+            .map(|d| Delegate {
+                person: PartyId(d.get("delegate_person")),
+                can_pay: d.get::<String, _>("authority") == "PAY",
+                payment_limit_minor: d.get("payment_limit_minor"),
+            })
+            .collect();
         Ok(ResourceAuthority {
             resource_id: account.0,
             owners,
             permitted_staff: staff,
             action_restricted: restricted,
+            delegates,
         })
     }
     pub async fn accounts_for(&self, person: PartyId) -> Result<Vec<AccountSummary>> {

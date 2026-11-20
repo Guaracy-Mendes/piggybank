@@ -1,0 +1,35 @@
+@startuml
+title UML sequence - durable event to one economic alert, owned data defect and safe message
+participant "Core" as Core
+participant "Relay / JetStream" as Relay
+participant "Data consumer" as Data
+participant "Worker" as Worker
+participant "Controls monitoring" as Mon
+participant "Data alerts" as Alerts
+actor Reviewer
+actor Approver
+actor Steward
+Core -> Relay : journal.batch-posted (outbox)
+Relay -> Data : deliver (at least once)
+Data -> Data : inbox + aggregate version; duplicate absorbed,\nconflict or gap quarantined
+Worker -> Mon : monitoring_tick
+Mon -> Mon : each projected fact once per current rule;\nwindow over journal times
+alt pattern complete
+ Mon -> Mon : anchor = earliest operation in window;\nskip if an overlapping alert exists
+ Mon -> Mon : alert + MONITORING case (never customer-visible)
+end
+Reviewer -> Mon : retrospective scan (bounded)
+Mon --> Reviewer : evaluated / created 0 / existing n
+Reviewer -> Mon : propose disposition + rationale
+Approver -> Mon : approve (different person)
+Mon -> Mon : case CLOSED, attributable actions
+Worker -> Alerts : quality_scan
+Alerts -> Alerts : findings: missing / quarantined / broken / stale /\nundelivered / backlog / aged break / failed message
+Alerts -> Alerts : one OPEN alert per (check, subject) + DATA case + next action
+Steward -> Alerts : repair_projection(batch)
+Alerts -> Data : insert read-model rows only (no balance write)
+Worker -> Alerts : next scan clears the alert
+Steward -> Alerts : acknowledge cleared alert -> case CLOSED
+Worker -> Alerts : derive (dedupe key per economic / document identity)
+Worker -> Alerts : deliver: synthetic capture; channel down -> backoff, 6 attempts
+@enduml

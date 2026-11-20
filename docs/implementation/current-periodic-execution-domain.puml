@@ -1,0 +1,91 @@
+@startuml
+title UML domain - custody, activation, closed facts and financial proof
+hide methods
+class PeriodicPolicy {
+ id : UUID
+ productVersionId : UUID
+ calendar : immutable UTC snapshot
+ calculation : fixed monthly / daily ACT365
+ activation = PREVIEW_ONLY
+}
+class FinancialOffer {
+ id : UUID
+ material : full text + policy snapshot
+ digest : SHA256
+ independentPublication : proof
+}
+class EnrollmentConsent {
+ id : UUID
+ accountId : UUID
+ offer : complete approved snapshot
+ acceptedAt : native time
+ earliestPeriodStart : date
+ attributionDigest : private identity proof
+}
+class PendingWithdrawal {
+ consentId : unique UUID
+ consentDigest : SHA256
+ withdrawnAt : native time
+}
+class Activation {
+ id : UUID
+ consentId : unique UUID
+ counterAccountId : UUID
+ detailsDigest : independent approval
+ firstPeriodStart : UTC date
+}
+class TerminalStop {
+ activationId : unique UUID
+ reason : retained text
+}
+class PeriodRun {
+ actorAndRequestScope : immutable
+ activationId : UUID
+ periodStart : UTC date
+ operationId : write once
+ lastError : safe code
+}
+class Finalization {
+ id : UUID
+ accountPolicyPeriod : unique
+ periodStart : date
+ periodEnd : exclusive date
+ sourceFacts : at most 1000 native facts
+ sourceDigest : SHA256
+ amountMinor : exact integer string
+}
+class PostingReceipt {
+ finalizationId : unique UUID
+ batchId : optional unique UUID
+ amountMinor : nonnegative integer
+}
+class CoreJournal {
+ batchId : UUID
+ operationId : finalization UUID
+ kind : fee / accrual / correction
+ businessDate : native booking date
+ balancedLegs : immutable
+}
+class FinanceCorrection {
+ originalBatchId : unique source
+ exactSourceAndLegsDigest : SHA256
+ independentApproval : required
+ newLinkedBatchId : UUID
+}
+PeriodicPolicy "1" -- "0..1" FinancialOffer
+FinancialOffer "1" -- "0..*" EnrollmentConsent
+EnrollmentConsent "1" -- "0..1" PendingWithdrawal
+EnrollmentConsent "1" -- "0..1" Activation
+Activation "1" -- "0..1" TerminalStop
+Activation "1" -- "0..*" PeriodRun
+Activation "1" -- "0..*" Finalization
+PeriodRun "0..*" --> "0..1" Finalization : same economic period
+Finalization "1" -- "0..1" PostingReceipt
+PostingReceipt "1" --> "0..1" CoreJournal : zero has no journal
+CoreJournal "1" -- "0..1" FinanceCorrection
+note bottom of Finalization
+Immutable source prefix under account locks.
+Watermark refuses later backdated runtime facts.
+Not a global book close.
+end note
+@enduml

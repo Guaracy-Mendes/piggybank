@@ -4,5 +4,9 @@
   "displayName": "Piggybank — synthetic customers",
   "registrationAllowed": false,
   "sslRequired": "none",
-  "accessTokenLifespan": 60
+  "accessTokenLifespan": 60,
+  "loginTheme": "piggybank",
+  "registrationEmailAsUsername": false,
+  "resetPasswordAllowed": false,
+  "passwordPolicy": "length(8) and maxLength(128) and upperCase(1) and specialChars(1) and notUsername and notEmail"
 }

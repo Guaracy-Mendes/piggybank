@@ -30,6 +30,7 @@ services:
     ports: ["127.0.0.1:18280:8080"]
     volumes:
       - ../identity:/opt/keycloak/data/import:ro,Z
+      - ../identity/themes/piggybank:/opt/keycloak/themes/piggybank:ro,Z
     depends_on:
       postgres:
         condition: service_healthy

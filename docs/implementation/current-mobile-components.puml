@@ -1,0 +1,24 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - WP-27 native mobile channel
+Person(customer,"Customer","Android device or emulator")
+Container_Boundary(app,"Piggybank native app (Expo SDK 54 / React Native 0.81)") {
+ Component(session,"Native session","expo-auth-session + expo-secure-store","PKCE S256, rotating refresh token in Keystore/Keychain (this device only), access token in memory")
+ Component(client,"Typed API client","openapi-fetch + generated schema","Bearer per request; same contract as web; no cookies or CSRF")
+ Component(pending,"Persisted operation","secure storage","Idempotency key + quote saved before a payment is sent; resend or read, never replace")
+ Component(screens,"Screens","React Native","Accounts/onboarding, payments, statements, support, profile/device; offline and background cover")
+}
+System_Ext(browser,"System browser tab","Custom Tab / ASWebAuthenticationSession")
+Container(issuer,"Local OIDC issuer","Keycloak","Public client bank-mobile, redirect piggybank://auth/callback, 30 s access tokens, refresh rotation")
+Container(api,"bank-api","Rust / Axum","Bearer verification (azp bank-mobile), native step-up begin/proof, all customer routes")
+Rel(customer,screens,"Uses")
+Rel(screens,session,"Sign in / step-up / sign out")
+Rel(session,browser,"Authorization request")
+Rel(browser,issuer,"Password login")
+Rel(issuer,session,"Code via custom scheme; token exchange, refresh, revoke")
+Rel(screens,client,"Reads and commands")
+Rel(client,api,"HTTPS (loopback cleartext only in the synthetic profile)")
+Rel(screens,pending,"Before / after payment request")
+SHOW_LEGEND()
+@enduml

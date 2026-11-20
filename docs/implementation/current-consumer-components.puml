@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - native consumer and investment capabilities
+Person(customer,"Customer","Current canonical person and CUSTOMER client")
+Container_Boundary(portal,"Customer React portal") {
+ Component(shell,"Official shell","web-core / official.css","Self-hosted fonts, shared tokens, responsive navigation and persisted appearance")
+ Component(personal,"Personal finance","Consumer context + Personal.tsx","Vaults, budgets, card controls, bank links, statements, notifications and scoped tokens")
+ Component(invest,"Investment suite","Investments.tsx","Portfolio, allocation, trade ticket, watchlist, income, recurring consent and actual receipts")
+}
+Container_Boundary(api,"Rust bank-api") {
+ Component(boundary,"Customer HTTP boundary","Identity + consumer.rs","BFF session, CSRF, canonical routes, current person, UUID idempotency")
+ Component(core,"Core consumer facade","Rust + native SQL","Current identity / ownership; exact minor units and integer microshares")
+ Component(pdf,"Statement renderer","Native fact PDF","Complete bounded source facts; escaped literals and valid page/xref structure")
+}
+ContainerDb(native,"Core native financial capabilities","PostgreSQL","Commands, approvals, child ledgers, holds, positions, schedules, facts and outbox")
+Container(worker,"Recovery worker","Rust","Try-lock person before resource locks; retained mandate; unique schedule/date and action/person")
+System_Ext(oidc,"Customer issuer","Fresh exact action-bound proof")
+Rel(customer,shell,"Navigate / read / configure")
+Rel(shell,personal,"Owned server workspace")
+Rel(shell,invest,"Owned wealth workspace")
+Rel(personal,boundary,"Exact command + original request key")
+Rel(invest,boundary,"Native quote / review / approved execution")
+Rel(boundary,core,"Validated current actor and structured input")
+Rel(boundary,pdf,"Owned immutable statement only")
+Rel(core,native,"Narrow native commands; no runtime direct financial DML")
+Rel(boundary,oidc,"Nonce + digest + exact subject")
+Rel(worker,native,"Recover due work / fill or expire / declare actual income")
+SHOW_LEGEND()
+@enduml

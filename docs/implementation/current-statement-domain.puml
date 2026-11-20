@@ -1,0 +1,66 @@
+@startuml
+title UML domain - statement versions, retrieval and retention
+hide methods
+class RetentionPolicy {
+ recordClass : STATEMENT / DATA_EXPORT / ACCESS_EVIDENCE
+ version : int
+ retainDays : int
+ anchor : PERIOD_END / CREATED
+ disposal : PERMITTED / NOT_ENABLED
+ label = SYNTHETIC_FIXTURE
+}
+class StatementVersion {
+ id : UUID
+ accountId : UUID
+ owners : UUID[] at generation
+ periodStart : first day of UTC month
+ version : int
+ reason : INITIAL / LINKED_CORRECTION / SOURCE_CHANGED
+ snapshotDigest : SHA256
+ contentDigest : SHA256
+ retainUntil : date
+}
+class StatementObject {
+ versionId : UUID
+ document : exact totals + facts + readiness
+}
+class SingleUseLink {
+ tokenDigest : SHA256
+ actor : issuer/subject/trust/person
+ expiresAt : created + 2 minutes
+ usedAt : once
+}
+class LegalHold {
+ scope : ACCOUNT / PERSON
+ reference : case or matter
+ placedBy : person
+}
+class HoldRelease {
+ releasedBy : different person
+ reason : text
+}
+class Disposal {
+ evidence : digests, policy, retainUntil, hold check
+ evidenceDigest : SHA256
+}
+class DataRequest {
+ kind : ACCESS / CORRECTION / DELETION
+ verification = AUTHENTICATED_CUSTOMER_SESSION
+}
+class RequestOutcome {
+ outcome : ALLOWED / PARTIALLY_RESTRICTED / RESTRICTED
+ items : per record status
+}
+class AccessEvidence {
+ action / outcome / reason
+ immutable
+}
+StatementVersion --> RetentionPolicy : assigned at creation
+StatementVersion "1" -- "0..1" StatementObject
+StatementVersion "0..1" --> "0..1" StatementVersion : supersedes
+StatementVersion "1" -- "0..*" SingleUseLink
+StatementVersion "1" -- "0..1" Disposal
+LegalHold "1" -- "0..1" HoldRelease
+DataRequest "1" -- "0..1" RequestOutcome
+RequestOutcome ..> Disposal : deletion where permitted
+@enduml

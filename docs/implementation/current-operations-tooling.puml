@@ -1,0 +1,20 @@
+@startuml
+!include <C4/C4_Container>
+title C4 container view - WP-29 operations tooling (local profile)
+Person(oncall,"On-call staff","Primary / secondary")
+System_Boundary(local,"Synthetic local environment") {
+ Container(api,"bank-api","Rust / Axum","Ingress records request metrics; /metrics (token); staff paging and roster routes")
+ Container(worker,"bank-worker","Rust","Every 5 s: page_tick, monitoring, notifications; every 30 s: data-quality scan")
+ ContainerDb(db,"PostgreSQL","Module schemas","pages, deliveries, roster history; metrics_snapshot(); migration lock checked in CI")
+ Container(ci,"scripts/ci.py","Python","Gated stages; sanitized evidence in .local/ci/<UTC>/")
+ Container(drills,"Deployment drills","Python","config_failure.py, operations.py (alert + backup/restore)")
+}
+System_Ext(scraper,"Metrics scraper (future)","Prometheus-compatible; not deployed locally")
+Rel(oncall,api,"Acknowledge page / set roster")
+Rel(worker,db,"Open, deliver and escalate pages")
+Rel(api,db,"Gauges and page records")
+Rel(scraper,api,"GET /metrics with bearer token")
+Rel(ci,api,"Runs suites against isolated fixtures")
+Rel(drills,db,"pg_dump / pg_restore into a new database")
+SHOW_LEGEND()
+@enduml

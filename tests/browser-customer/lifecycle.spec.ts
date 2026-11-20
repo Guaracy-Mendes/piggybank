@@ -148,7 +148,7 @@ test("customer completes persistent onboarding, sees exact balances and manages 
   ).toBeVisible({ timeout: 30_000 });
   await page.getByRole("link", { name: "Overview", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Hello, Synthetic." }),
+    page.getByRole("heading", { name: "Good to see you, Synthetic." }),
   ).toBeVisible();
   await accessible();
   await page.screenshot({
@@ -157,10 +157,10 @@ test("customer completes persistent onboarding, sees exact balances and manages 
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
-    page.getByRole("navigation", { name: "Main navigation" }),
+    page.getByRole("navigation", { name: "Mobile navigation" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Hello, Synthetic." }),
+    page.getByRole("heading", { name: "Good to see you, Synthetic." }),
   ).toBeVisible();
   expect(
     await page.evaluate(

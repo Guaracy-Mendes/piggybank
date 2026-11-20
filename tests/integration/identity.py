@@ -63,6 +63,17 @@ def sql(statement):
     if TEST_DATABASE is None:raise RuntimeError("Explicit HTTP database fixture required")
     return TEST_DATABASE.sql(statement)
 
+def stored_token(statement):
+    """Server-held tokens are sealed (AES-256-GCM, row-bound). The harness opens them with the documented
+    synthetic local key only to prove the plaintext is a valid issuer token; the database never holds it."""
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    row=sql(statement.replace("SELECT access_token","SELECT id_hash||'|'||access_token"))
+    id_hash,sealed=row.split("|",1)
+    assert sealed.startswith("v1:synthetic-v1:") and "." not in sealed.split(":",2)[2][:40],"session tokens must be sealed at rest"
+    raw=base64.b64decode(sealed.split(":",2)[2])
+    key=hashlib.sha256(b"piggybank-synthetic-local-session-key").digest()
+    return AESGCM(key).decrypt(raw[:12],raw[12:],f"{id_hash}:access".encode()).decode()
+
 def step_login(opener,challenge,username,expected):
     status,body,_=call(opener,"/auth/customer/step-up/"+challenge)
     assert status==200
@@ -84,8 +95,26 @@ def main():
             except OSError:pass
             time.sleep(.25)
         else:raise AssertionError("API readiness timeout")
+        # UI-02: registration starts the same PKCE login at the issuer with prompt=create; customers only.
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self,*args,**kwargs):return None
+        status,_,headers=call(urllib.request.build_opener(NoRedirect),"/auth/customer/register")
+        location=urllib.parse.parse_qs(urllib.parse.urlsplit(headers["Location"]).query)
+        assert status in (302,303) and location["prompt"]==["create"] and location["code_challenge_method"]==["S256"] and location["client_id"]==["customer-web"],(status,location)
+        assert "pb_login_customer=" in headers.get("Set-Cookie","")
+        assert call(urllib.request.build_opener(NoRedirect),"/auth/workforce/register")[0]==404
+        assert call(urllib.request.build_opener(NoRedirect),"/auth/service/register")[0]==404
         alice,jar,identity=browser_login("customer","alice")
         staff,staff_jar,staff_identity=browser_login("workforce","reviewer")
+        # UI-03: contact verification is customer-only, reads the issuer's email, and needs CSRF to send.
+        status,body,_=call(alice,"/auth/customer/contact-verification")
+        contact=json.loads(body)
+        assert status==200 and contact["verified"] is True and contact["destination"]=="a•••@example.invalid" and contact["delivery"]=="SIMULATED_OUTBOX",contact
+        assert call(alice,"/auth/customer/contact-verification","POST",b"")[0]==403
+        alice_csrf=next(c.value for c in jar if c.name=="pb_csrf_customer")
+        assert call(alice,"/auth/customer/contact-verification","POST",b"",{"X-CSRF-Token":alice_csrf,"Origin":BASE})[0]==409
+        assert call(staff,"/auth/workforce/contact-verification")[0]==404
+        assert call(urllib.request.build_opener(),"/auth/customer/contact-verification")[0]==401
         assert call(alice,"/auth/workforce/me")[0]==401
         assert call(staff,"/auth/customer/me")[0]==401
         assert call(staff,"/auth/workforce/me",headers={"Origin":"https://untrusted.invalid"})[0]==403
@@ -100,7 +129,7 @@ def main():
         # Only synthetic, validated UUID subjects are interpolated by this test admin harness.
         import uuid
         alice_id=str(uuid.UUID(alice_id))
-        token=sql(f"SELECT access_token FROM identity.sessions WHERE subject='{alice_id}' ORDER BY created_at DESC LIMIT 1")
+        token=stored_token(f"SELECT access_token FROM identity.sessions WHERE subject='{alice_id}' ORDER BY created_at DESC LIMIT 1")
         assert call(urllib.request.build_opener(),"/auth/customer/me",headers={"Authorization":"Bearer "+token})[0]==200
         assert call(urllib.request.build_opener(),"/auth/workforce/me",headers={"Authorization":"Bearer "+token})[0]==401
         unsigned=base64.urlsafe_b64encode(json.dumps({"alg":"none"}).encode()).decode().rstrip("=")+"."+token.split(".")[1]+"."
@@ -146,12 +175,12 @@ def main():
         rotation_id=next(c["id"] for c in fixtures.call(admin,"customers/components") if c["name"]==name)
         time.sleep(2.1)  # Bound the configured unknown-kid refresh cooldown.
         rotated,_,_=browser_login("customer","alice")
-        rotated_token=sql(f"SELECT access_token FROM identity.sessions WHERE subject='{alice_id}' ORDER BY created_at DESC LIMIT 1")
+        rotated_token=stored_token(f"SELECT access_token FROM identity.sessions WHERE subject='{alice_id}' ORDER BY created_at DESC LIMIT 1")
         def kid(value):return json.loads(base64.urlsafe_b64decode(value.split('.')[0]+'==='))["kid"]
         assert kid(token)!=kid(rotated_token)
         assert call(rotated,"/auth/customer/me")[0]==200
         assert "access_token" not in json.dumps(identity) and "refresh_token" not in json.dumps(identity)
-        print(json.dumps({"result":"passed","real_oidc_code_pkce":True,"workforce_customer_isolation":True,"csrf_and_unsigned_token_rejected":True,"refresh_and_revocation":True,"logout":True,"issuer_signing_key_rotation":True,"action_bound_reauthentication":True}))
+        print(json.dumps({"result":"passed","real_oidc_code_pkce":True,"workforce_customer_isolation":True,"csrf_and_unsigned_token_rejected":True,"refresh_and_revocation":True,"logout":True,"issuer_signing_key_rotation":True,"action_bound_reauthentication":True,"tokens_sealed_at_rest":True}))
     finally:
         if admin and alice_id:
             fixtures.call(admin,"customers/users/"+alice_id,"PUT",{"enabled":True})

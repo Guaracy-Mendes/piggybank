@@ -50,6 +50,10 @@ pub fn router(identity: IdentityService, journeys: Arc<LocalJourneys>) -> Router
             "/api/v1/accounts/{id}/periodic-disclosures/{policyId}",
             get(periodic_disclosure),
         )
+        .route(
+            "/api/v1/accounts/{id}/periodic-disclosures/{policyId}/review",
+            get(periodic_review).post(acknowledge_periodic_preview),
+        )
         .route("/api/v1/accounts/{id}/freeze", post(freeze))
         .route("/api/v1/accounts/{id}/closure", post(close))
         .route("/api/v1/profile", get(profile))
@@ -62,6 +66,11 @@ pub fn router(identity: IdentityService, journeys: Arc<LocalJourneys>) -> Router
         .with_state(Arc::new((identity, journeys)))
 }
 fn error(e: anyhow::Error) -> StatusCode {
+    if e.downcast_ref::<bank_documents::periodic::ReviewInputError>()
+        .is_some()
+    {
+        return StatusCode::UNPROCESSABLE_ENTITY;
+    }
     if e.downcast_ref::<bank_core::accruals::disclosures::DisclosureLimit>()
         .is_some()
     {
@@ -70,6 +79,9 @@ fn error(e: anyhow::Error) -> StatusCode {
 
     match e.downcast_ref::<sqlx::Error>() {
         Some(sqlx::Error::RowNotFound) => StatusCode::NOT_FOUND,
+        Some(sqlx::Error::Database(db)) if db.code().as_deref() == Some("P0002") => {
+            StatusCode::NOT_FOUND
+        }
         Some(sqlx::Error::Database(db))
             if matches!(
                 db.code().as_deref(),
@@ -350,5 +362,56 @@ async fn periodic_disclosure(
         .periodic_disclosure(&app.1.controls, &a.actor, AccountId(id), policy)
         .await
         .map(Json)
+        .map_err(error)
+}
+async fn periodic_review(
+    State(app): State<App>,
+    h: HeaderMap,
+    Path((id, policy)): Path<(Uuid, Uuid)>,
+) -> Result<Json<bank_documents::periodic::PreviewReviewReceipt>, StatusCode> {
+    let a = app.0.authenticate(&h, Trust::Customer, false).await?;
+    app.1
+        .terms
+        .periodic_preview_review(
+            &app.1.core,
+            &app.1.controls,
+            &a.actor,
+            AccountId(id),
+            policy,
+        )
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn acknowledge_periodic_preview(
+    State(app): State<App>,
+    h: HeaderMap,
+    Path((id, policy)): Path<(Uuid, Uuid)>,
+    Json(input): Json<bank_documents::periodic::ReviewInput>,
+) -> Result<
+    (
+        StatusCode,
+        Json<bank_documents::periodic::PreviewReviewReceipt>,
+    ),
+    StatusCode,
+> {
+    let a = app.0.authenticate(&h, Trust::Customer, true).await?;
+    let key = h
+        .get("Idempotency-Key")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| Uuid::parse_str(s).ok())
+        .filter(|id| !id.is_nil())
+        .ok_or(StatusCode::BAD_REQUEST)?;
+    app.1
+        .terms
+        .acknowledge_periodic_preview(
+            &app.1.core,
+            &app.1.controls,
+            &a.actor,
+            (AccountId(id), policy, key),
+            &input,
+        )
+        .await
+        .map(|r| (StatusCode::CREATED, Json(r)))
         .map_err(error)
 }

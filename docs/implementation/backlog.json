@@ -4,7 +4,7 @@
   "baseline_date": "2026-10-23",
   "status": "in_progress",
   "scope": "Full PRD target, local engineering first, with separate provider and production gates",
-  "next_work_package": "WP-24",
+  "next_work_package": null,
   "requirement_owners": {
     "FR-CH-01": "WP-27",
     "FR-CH-02": "WP-18",
@@ -1516,7 +1516,7 @@
       "release": "R1",
       "size": "XL",
       "title": "Implement finance, GL uniqueness, reporting and liquidity",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "WP-09",
         "WP-10",
@@ -1565,7 +1565,7 @@
       "verification": [
         "AT-12/24/25, business-calendar cut-off, repeated accrual job and GL timeout/replay cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed the user-approved essential synthetic R1 scope: unique GL, reports/revisions/liquidity and owned reconciliation; independently approved financial terms, explicit owner consent/pending withdrawal, independently approved native activation, sequential immutable UTC account-period finality, exact monthly fee/daily accrual jobs and linked corrections. See wp24-essential-scope.md for deliberate deferrals. This is not production R1 qualification. Stop before WP-25 per user instruction.",
       "blocker": "",
       "evidence": [
         {
@@ -1623,7 +1623,31 @@
           "command": "make app-check; make test-unit; make test-integration; focused native disclosure and real-issuer browser regressions; make test-payments; make test-customer; make test-staff; make test-browser; make test-foundation; make test-identity; make test-events; make test-lifecycle; make test-ingress; make web-check; make web-build; make cloud-check; project-local Terraform fmt/validate/test for GCP and AWS; python3 infra/cloud/shared/package.py cloud-20261112-02 --runtime podman; python3 tests/deployment/runtime.py cloud-20261112-02; applied migration/source and previous archive seal checks; make check",
           "result": "passed",
           "artifact": "docs/implementation/evidence/WP-24-disclosures.md"
+        },
+        {
+          "timestamp": "2026-11-13T15:44:20.270455+00:00",
+          "environment": "local synthetic PostgreSQL/OIDC/provider/browser and actual sealed cloud archive/images",
+          "command": "six focused native preview-review cases; make app-check test-unit test-integration; focused real-issuer post-commit response-loss review; make migrate; make test-payments; make test-customer; make test-staff; make test-browser; make test-foundation test-identity test-events test-lifecycle test-ingress; make web-build cloud-check; project-local Terraform fmt/validate/test for GCP and AWS; python3 infra/cloud/shared/package.py cloud-20261113-01 --runtime podman; python3 tests/deployment/runtime.py cloud-20261113-01; migration and prior archive seal checks; make check",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-preview-reviews.md"
+        },
+        {
+          "timestamp": "2026-11-16T01:47:53.587580+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, worker/provider/browser and actual sealed cloud archive",
+          "command": "make app-check test-unit test-integration; make test-payments test-customer test-staff test-browser; make test-foundation test-identity test-events test-lifecycle test-ingress; make migrate web-build cloud-check; GCP/AWS Terraform fmt/validate/mock plans; make check; package.py cloud-20261115-01 and actual archived runtime acceptance; applied migration and historical seal verification",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-24-complete.md"
         }
+      ],
+      "acceptance_scope": "docs/implementation/wp24-essential-scope.md",
+      "deferred_enhancements": [
+        "Non-UTC/DST and chosen real-provider calendars",
+        "Product-specific real legal/retention certification",
+        "Tiered rates, taxes, proration and variable charges",
+        "Resume after stop/withdrawal",
+        "More than 1000 native source facts and global close/restatement",
+        "Live cloud, production security/capacity/DR and NFR-14 SLA qualification",
+        "Additional UI polish and later work packages"
       ]
     },
     {
@@ -1632,7 +1656,7 @@
       "release": "R1",
       "size": "L",
       "title": "Implement statements, secure retrieval, retention and legal holds",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-07",
         "WP-16",
@@ -1677,9 +1701,38 @@
       "verification": [
         "AT-15/16 plus object/metadata partial failure, correction and period-boundary cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local synthetic scope (migration 0062, schema 62): readiness-gated immutable monthly statement versions from native Core journals (month ended in Core UTC clock, enrolled periodic finality complete; exact opening/movements/closing; idempotent, concurrency-safe; LINKED_CORRECTION supersession with identical totals, visible SOURCE_CHANGED); two-minute single-use actor-bound retrieval with append-only access evidence; versioned fixture retention, account/person legal holds with independent release, evidence-first permitted disposal with tombstones; verified data-subject requests with per-record allowed/restricted outcomes; customer Statements & documents, staff Records & retention, worker statement cycle. See docs/implementation/statements-retention.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-17T15:51:20.024454+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, worker/provider/browser",
+          "command": "make app-check web-build ui-sources docs; cargo test --workspace --locked --test database; cargo test --lib; playwright consumer (offset 200), payments, customer, staff, issuer; tests/integration/ingress.py; local_cx.py prepare (schema 62); render_diagrams.py; migration checksum verification",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-25.md"
+        }
+      ],
+      "implemented_artifacts": [
+        "migrations/0062_document_statements.sql",
+        "crates/documents/src/statements/",
+        "crates/documents/src/retention/",
+        "apps/bank-api/src/documents.rs",
+        "apps/bank-worker/src/main.rs",
+        "apps/customer-web/src/consumer/Documents.tsx",
+        "apps/staff-web/src/Records.tsx",
+        "crates/documents/tests/cases/statements.rs",
+        "tests/acceptance/documents/README.md",
+        "docs/runbooks/statements-retention.md"
+      ],
+      "deferred_enhancements": [
+        "Real retention schedules, jurisdictional holds and certification (DEC-06/DEC-11)",
+        "Production object store, encryption keys and backup/hold propagation (WP-28/29/31)",
+        "Sensitive-content-free document notifications (WP-26)",
+        "Native mobile retrieval (WP-27)",
+        "Non-UTC or non-monthly statement cycles",
+        "More than 1,000 facts per account-month",
+        "Access-evidence disposal"
+      ]
     },
     {
       "id": "WP-26",
@@ -1687,7 +1740,7 @@
       "release": "R1",
       "size": "L",
       "title": "Implement alerts, transaction monitoring and data-quality operations",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-09",
         "WP-13",
@@ -1737,9 +1790,36 @@
       "verification": [
         "AT-13/20/25/30 with duplicate events, late feeds, consent preferences and redacted notification capture."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local synthetic scope (migration 0063, schema 63): fixture transaction-monitoring rules over durable projected journal facts with one alert per economic episode, non-customer MONITORING cases and independent attributable disposition; eight data-quality checks with owned DATA cases, next actions, auto-clear and steward acknowledgement; read-model-only projection repair; REPEATABLE READ operations snapshots and durable-identifier traces; deduplicated purpose-scoped safe notifications with synthetic capture, outage retries and failure alerts; staff Operations monitor, customer Messages/preferences and worker loops. See docs/implementation/operations-monitoring.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-17T16:49:37.707093+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, worker/provider/browser",
+          "command": "make app-check web-build ui-sources docs; cargo test --workspace --locked --test database; cargo test --lib; playwright consumer (offset 200), payments, customer, staff, issuer; tests/integration/ingress.py; local_cx.py prepare (schema 63); render_diagrams.py; migration checksum verification",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-26.md"
+        }
+      ],
+      "implemented_artifacts": [
+        "migrations/0063_operations_monitoring.sql",
+        "crates/controls/src/monitoring/",
+        "crates/data/src/alerts/",
+        "apps/bank-api/src/monitoring.rs",
+        "apps/bank-worker/src/main.rs",
+        "apps/staff-web/src/Operations.tsx",
+        "apps/customer-web/src/consumer/Messages.tsx",
+        "crates/data/tests/cases/operations.rs",
+        "tests/acceptance/operations/README.md",
+        "docs/runbooks/event-replay.md"
+      ],
+      "deferred_enhancements": [
+        "Real monitoring typologies, tuning, SAR filing and model validation (DEC-06)",
+        "Real email/SMS/push providers, translations and consent law (DEC-10, WP-31)",
+        "Measured NFR-08 lag under load (WP-30)",
+        "Metrics/tracing/alert routing infrastructure (WP-29)",
+        "AT-20 callback key rotation and rail pause remain WP-21/22 evidence"
+      ]
     },
     {
       "id": "WP-27",
@@ -1747,7 +1827,7 @@
       "release": "R1",
       "size": "XL",
       "title": "Deliver dedicated native mobile banking",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-18",
         "WP-20",
@@ -1792,9 +1872,35 @@
       "verification": [
         "Native/emulator lifecycle, redirect/secure storage, accessibility, payment timeout and document authorization tests."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local scope on an Android emulator (iOS explicitly pending): Expo SDK 54 / React Native 0.81 app on the generated API contract; system-browser PKCE for bank-mobile, Keystore-held rotating refresh tokens, sign-out/device removal with issuer revocation; native action-bound step-up (migration 0064, schema 64) verifying fresh ID token nonce/audience/auth_time; persisted payment operations recovered after process death; offline command blocking; background privacy cover; accessible accounts/onboarding/payments/statements/support/profile screens. See docs/implementation/native-mobile.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-17T17:54:31.576557+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, worker/provider/browser, Android emulator Pixel_9_Pro_XL (x86_64, KVM)",
+          "command": "make app-check web-build ui-sources docs; cargo test --workspace --locked --test database; cargo test --lib; scripts/mobile.sh check/build; tests/mobile/native_api.py; tests/mobile/device.py; playwright consumer (offset 200), payments, customer, staff, issuer; tests/integration/ingress.py; local_cx.py prepare (schema 64); migration checksum verification",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-27.md"
+        }
+      ],
+      "implemented_artifacts": [
+        "apps/mobile/",
+        "migrations/0064_native_step_up.sql",
+        "crates/identity/src/sessions.rs",
+        "apps/bank-api/src/approvals.rs",
+        "tests/mobile/native_api.py",
+        "tests/mobile/device.py",
+        "tests/mobile/README.md",
+        "scripts/mobile.sh",
+        "docs/runbooks/mobile-development.md"
+      ],
+      "deferred_enhancements": [
+        "iOS build and device evidence (requires macOS/Xcode)",
+        "Real-device matrix, TalkBack/VoiceOver walkthroughs, store signing",
+        "Push notifications, biometrics, app attestation",
+        "Translations and supported device/language matrix (DEC-10)",
+        "Consumer wealth workspace on native"
+      ]
     },
     {
       "id": "WP-28",
@@ -1802,7 +1908,7 @@
       "release": "R1",
       "size": "L",
       "title": "Qualify security, privacy, account recovery and audit lifecycle",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-04",
         "WP-05",
@@ -1853,9 +1959,36 @@
       "verification": [
         "AT-14/16/19/27/29 including actual issuer revocation, credential rotation and sensitive-data inspection."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local synthetic scope (migration 0065, schema 65): issuer-backed lost-device and credential-reset recovery with recorded ownership verification, durable risk signals and independent security approval; least-privilege executor client with file-based rotatable secret; AES-256-GCM row-bound sealing of server-held session tokens with rotatable key ring (SF-001 resolved); privacy restriction and own-subject personal export; access recertification and findings register with independent disposition; sensitive-log inspection; sanitized threat model and incident runbook. See docs/implementation/security-lifecycle.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-17T21:34:05.691524+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, worker/provider/browser, Android emulator",
+          "command": "make app-check web-build ui-sources docs; cargo test --workspace --locked --test database; cargo test --lib; tests/integration/identity.py; tests/acceptance/security/security.py; tests/mobile/native_api.py; tests/mobile/device.py; playwright consumer (offset 200), payments, customer, staff, issuer; tests/integration/ingress.py; local_cx.py prepare (schema 65); migration checksum verification",
+          "result": "passed",
+          "artifact": "docs/implementation/evidence/WP-28.md"
+        }
+      ],
+      "implemented_artifacts": [
+        "migrations/0065_security_lifecycle.sql",
+        "crates/identity/src/recovery/",
+        "crates/identity/src/seal.rs",
+        "crates/controls/src/security/",
+        "apps/bank-api/src/security.rs",
+        "apps/staff-web/src/Security.tsx",
+        "apps/customer-web/src/components/DeviceSecurity.tsx",
+        "crates/documents/tests/cases/security.rs",
+        "tests/acceptance/security/",
+        "docs/security/threat-model.md",
+        "docs/runbooks/security-incident.md"
+      ],
+      "deferred_enhancements": [
+        "Real MFA and phishing-resistant staff factors (DEC-10)",
+        "Production recovery policy, regulator notification and on-call rota (DEC-06, DEC-12)",
+        "KMS/HSM key custody and certificate rotation (WP-31)",
+        "Deployed network policies and CI dependency scanning (WP-29/WP-31)"
+      ]
     },
     {
       "id": "WP-29",
@@ -1863,7 +1996,7 @@
       "release": "R1",
       "size": "L",
       "title": "Package deployment, CI, observability and operations tooling",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-01",
         "WP-06",
@@ -1915,9 +2048,17 @@
       "verification": [
         "Image/build/Compose, rolling compatibility, configuration failure, alert delivery and runbook smoke."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local synthetic scope (migration 0066, schema 66): fail-closed runtime and secret-file validation; checksum-locked expand-only migrations; local CI-equivalent gated pipeline with sanitized evidence (no remote CI host chosen, DEC-05); token-gated Prometheus metrics including unbalanced-journal gauge; durable paging with escalation, audited acknowledgement and recorded on-call roster; backup/restore drill with invariant and chain-head equality; upgrade/rollback, backup and on-call runbooks. Remote CI, deployed policies, real pager and staffed on-call remain DEC-05/DEC-12/WP-31 inputs. See docs/implementation/operations-tooling.md and evidence/WP-29.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-17T23:43:00+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator",
+          "command": "python3 scripts/ci.py --apply-local --load --device (30 gated steps: static, disposable-database, isolated-runtime, persistent-local, load-qualification, android-device)",
+          "result": "passed (.local/ci/20261117T232052Z/evidence.json); earlier runs 20261117T214648Z (device cold-boot), 20261117T220732Z (mid-run source edit) and 20261117T231940Z (rustfmt) failed and are recorded",
+          "artifact": "docs/implementation/evidence/WP-29.md"
+        }
+      ]
     },
     {
       "id": "WP-30",
@@ -1925,7 +2066,7 @@
       "release": "R1",
       "size": "XL",
       "title": "Run local acceptance, capacity, fault and recovery qualification",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-23",
         "WP-24",
@@ -1997,9 +2138,17 @@
       "verification": [
         "Full local acceptance plus database concurrency, loss/replay and measured load/restore reports."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed local single-host qualification: branch-level acceptance manifest (30 scenarios, 54 branches: PASS 41, FAIL 1, PENDING 7, NOT_APPLICABLE_R1 5) validated by make acceptance; reproducible load (bank-load http/core, tests/load/run.py) with invariants and peak-connection budget; resilience drills D1-D5 (worker, API, broker, issuer, provider) gated in CI. Sustained 600 s NFR-02/03/04/05 rates passed (read p95 18.2 ms, command p95 46.9 ms, 0 errors). The 5-minute 3x burst FAILS for payment intents (~69/s of 75/s on this host; CF-04, recorded as AT-18 FAIL) after fixing two serializations found here (CF-01 single audit-chain streams sharded into 16 chains; CF-02 quota hot row single-statement async commit) and adding BANK_DB_POOL_MAX. One-hour duration, production capacity, multi-zone/regional recovery, real providers, iOS and manual accessibility remain unverified. See docs/implementation/local-qualification.md and evidence/WP-30.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T01:08:14+00:00",
+          "environment": "local single-host synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator; release binaries for load",
+          "command": "python3 tests/load/run.py --sustained 600 --burst 300 --core-seconds 60; python3 tests/resilience/drills.py; python3 scripts/acceptance.py; python3 scripts/ci.py --apply-local --load --device",
+          "result": "sustained NFR checks passed; 5-minute 3x burst failed (CF-04, recorded); drills passed; manifest valid; CI passed 30/30 (.local/ci/20261118T004715Z, load .local/load/20261118T002830Z)",
+          "artifact": "docs/implementation/evidence/WP-30.md"
+        }
+      ]
     },
     {
       "id": "WP-31",
@@ -2007,7 +2156,7 @@
       "release": "R1",
       "size": "XL",
       "title": "Integrate chosen real providers and qualify production boundaries",
-      "status": "planned",
+      "status": "blocked",
       "depends_on": [
         "WP-13",
         "WP-21",
@@ -2080,7 +2229,7 @@
         "Provider-specific contract/certification suites, real deployment recovery and production configuration validation."
       ],
       "completion_notes": "",
-      "blocker": "",
+      "blocker": "No real providers, market or production decisions are available: DEC-01 (legal entity/market), DEC-03 (real terms/chart), DEC-04 (selected rail/provider, settlement accounts, certification), DEC-05 (production cloud/storage/issuer architecture), DEC-06 (control/retention inventory), DEC-07 (ratified workload/recovery budget), DEC-10 (devices/MFA/KMS-HSM custody), DEC-11 (business replay/hold rules) and DEC-12 (owners/launch authority) are open, and no provider sandbox credentials exist. Simulator results cannot satisfy this package.",
       "evidence": []
     },
     {
@@ -2089,7 +2238,7 @@
       "release": "R1",
       "size": "L",
       "title": "Assemble controlled R1 readiness and launch evidence",
-      "status": "planned",
+      "status": "blocked",
       "depends_on": [
         "WP-30",
         "WP-31"
@@ -2172,7 +2321,7 @@
         "Complete R1 evidence/requirement audit, operational rehearsal and actual qualified deployment/pilot verification."
       ],
       "completion_notes": "",
-      "blocker": "",
+      "blocker": "Depends on WP-31, which is blocked on real providers, market and production decisions, and requires DEC-01 to DEC-08 and DEC-10 to DEC-12 (legal entity, approved terms and policies, certified rails, production architecture, ratified workload, staffing and launch authority). R1 readiness cannot be assembled from local simulator results.",
       "evidence": []
     },
     {
@@ -2181,7 +2330,7 @@
       "release": "R2",
       "size": "XL",
       "title": "Implement consented partner APIs and delegated account authority",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-30"
       ],
@@ -2225,9 +2374,17 @@
       "verification": [
         "AT-21 plus scoped client, account delegation, quota and version-transition cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed as a local synthetic R2 capability (migration 0067, schema 67): separate partners issuer realm with client-credentials tokens accepted only for registry-ACTIVE clients under maker/checker approval and immediate suspension; scoped, expiring, prospectively revocable customer consent authorized in a bank channel and re-checked by Controls at every decision; non-disclosing errors; versioned contract with Sunset/Deprecation; per-client quotas; HMAC-signed consent callbacks with once-shown sealed secrets; partner-drafted payments approved only by the customer, with a write-once authorized_actor so revocation cannot strand an approved payment (AT-21); delegated VIEW/PAY-up-to-limit account authority with immediate revocation and preserved actor evidence. Production enablement requires WP-32 and DEC-06/DEC-09/DEC-11. See docs/implementation/partner-consents.md and evidence/WP-33.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T17:15:58+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC (customers, workforce and partners realms), NATS, worker/provider/browser, Android emulator",
+          "command": "cargo test --workspace --test database; tests/acceptance/partners/partners.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (integration 163/163; partner acceptance all keys; CI 29/29 .local/ci/20261118T165612Z; schema 67 locked)",
+          "artifact": "docs/implementation/evidence/WP-33.md"
+        }
+      ]
     },
     {
       "id": "WP-34",
@@ -2235,7 +2392,7 @@
       "release": "R2",
       "size": "L",
       "title": "Implement branch, private banker and call center adapters",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-19",
         "WP-28",
@@ -2276,9 +2433,17 @@
       "verification": [
         "AT-22 and assisted customer handoff, restrictions and staff-audience negative tests."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed as a local synthetic R2 capability (migration 0068, schema 68): assisted sessions for branch, private banker and call center staff with channel-permitted verification, customer authorization in a bank channel, staff actor plus represented customer plus channel on every decision, immutable per-channel policy enabling only read and protective freeze (payments disabled until DEC-09), common account restrictions, recorded decision reasons and handoff refusal. Real channel integration and certification remain DEC-09/WP-32 inputs; ATM is WP-35. See docs/implementation/assisted-channels.md and evidence/WP-34.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T17:46:01+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator",
+          "command": "cargo test --test database (assisted case); tests/acceptance/assisted/assisted.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (integration 164/164; assisted acceptance all keys; CI 30/30 .local/ci/20261118T172534Z; schema 68 locked)",
+          "artifact": "docs/implementation/evidence/WP-34.md"
+        }
+      ]
     },
     {
       "id": "WP-35",
@@ -2286,7 +2451,7 @@
       "release": "R2",
       "size": "XL",
       "title": "Implement ATM integration and channel certification",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-23",
         "WP-30",
@@ -2328,9 +2493,17 @@
       "verification": [
         "AT-22/28 plus ATM-specific lost response, duplicate, reversal and network certification cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed as a local synthetic R2 capability against a network simulator role (migration 0069, schema 69): immutable ATM channel supplement (balance inquiry and cash withdrawal enabled, all other operations explicitly declined), HMAC-signed network messages and responses with PIN assertion, owner-linked synthetic card tokens, authorization holds keyed by authorization id with a single ATM_WITHDRAWAL posting, stored-response replay for duplicate messages, reversal before completion, late reversals flagged for review, timeout expiry, per-withdrawal and daily limits, Core-enforced common restrictions, and signed settlement reconciliation listing every difference. Real network, certification, card issuing and cash logistics remain out of scope (DEC-04/DEC-09/WP-32). See docs/implementation/atm-channel.md and evidence/WP-35.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T18:48:38+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator; test acts as ATM network",
+          "command": "tests/acceptance/atm/atm.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (ATM acceptance all keys incl. 120 s expiry; CI 31/31 .local/ci/20261118T182713Z; schema 69 locked); earlier runs 20261118T180028Z (intermittent D5 503) and 20261118T181135Z (hover contrast defect, fixed) recorded",
+          "artifact": "docs/implementation/evidence/WP-35.md"
+        }
+      ]
     },
     {
       "id": "WP-36",
@@ -2338,7 +2511,7 @@
       "release": "R2",
       "size": "XL",
       "title": "Implement additional payment rails with individual supplements",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-21",
         "WP-22",
@@ -2388,9 +2561,17 @@
       "verification": [
         "Per-rail AT-08/09/10/11/12/28 branches and certification evidence."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed with user-approved scope (2026-11-18): one synthetic ACH-style batch credit rail (SIM_BATCH, migration 0070, schema 70) as the template for later rails — immutable supplement (cutoff, business calendar, T+1, per-entry limit, R02/R03/R04 returns, 2-day return window), common action-bound approval before any hold, entry-keyed hold/BATCH_CREDIT/linked BATCH_RETURN, cancellation before cutoff, immutable outbound files sealed by worker or operator, signed network acknowledgement/settlement/return with replayable responses, late returns flagged. Real ACH and checks, debit, bill pay, wire, lockbox, SWIFT and P2P remain pending selection and certification (DEC-04/DEC-09). Also fixed a latent WP-27 native step-up timestamp race. See docs/implementation/batch-rail.md and evidence/WP-36.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T20:06:43+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator; test acts as batch network",
+          "command": "tests/acceptance/batch/batch.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (batch acceptance all keys; CI 32/32 .local/ci/20261118T194505Z; schema 70 locked); earlier runs 20261118T191347Z (step-up race, fixed) and 20261118T192331Z (test navigation race, fixed) recorded",
+          "artifact": "docs/implementation/evidence/WP-36.md"
+        }
+      ]
     },
     {
       "id": "WP-37",
@@ -2398,7 +2579,7 @@
       "release": "R2",
       "size": "XL",
       "title": "Implement governed warehouse, mastered assets and big-data ingestion",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-09",
         "WP-17",
@@ -2444,9 +2625,17 @@
       "verification": [
         "AT-13/23/25/28 lineage, backfill, purpose denial and schema compatibility cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed with user-approved scope (2026-11-18): one local warehouse adapter (LOCAL_WAREHOUSE, migration 0071, schema 71) as the template for later analytical storage/processing adapters — versioned datasets with backward-compatible schema registration, append-only facts keyed by economic identity with duplicate/conflict/reject handling, worker incremental ingestion and evidenced steward backfill, versioned digest-carrying transforms, immutable snapshots with fact/master cuts, schema/run/transform/purpose/adapter lineage, reproduction and row tracing, completeness flags (missing/stale sources, economic and master conflicts, Core control-total mismatch), purpose checks with recorded denials and WP-28 restriction exclusion, corrections and approved master merges without rewriting history, and a Data role with no Core schema usage. Analytical products and regulatory formats remain pending (DEC-05/06/08). See docs/implementation/governed-warehouse.md and evidence/WP-37.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T23:05:32+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator; local warehouse adapter only",
+          "command": "crates/data/tests database analytics; tests/acceptance/analytics/analytics.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (3 database tests; acceptance all keys; CI 33/33 .local/ci/20261118T224249Z first run; schema 71 locked)",
+          "artifact": "docs/implementation/evidence/WP-37.md"
+        }
+      ]
     },
     {
       "id": "WP-38",
@@ -2454,7 +2643,7 @@
       "release": "R2",
       "size": "L",
       "title": "Implement audiences, insights and journey partner orchestration",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-26",
         "WP-33",
@@ -2498,9 +2687,17 @@
       "verification": [
         "AT-23/28 plus purpose-revocation, export restriction and advisory-boundary cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed with user-directed scope (2026-11-18): one local journey-partner simulator role (SIM_JOURNEY, migration 0072, schema 72) as the template for selected partners — minimized warehouse signals, versioned digested segments (marketing and SERVICE_OUTREACH), consent and restriction checks at build, export, delivery, receipt and display, per-audience pseudonymous tokens, advisory insights with provenance and a customer-facing why, signed advice-only partner channel with recorded rejections and replay, withdrawal that hides and withholds without deleting evidence, and outcome reports with denominators, watermarks and late-data flags. Real audience/journey partners remain pending (DEC-05/06/09). See docs/implementation/audiences-journeys.md and evidence/WP-38.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-18T23:44:38+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker/provider/browser, Android emulator; test acts as the journey partner",
+          "command": "crates/data/tests database audiences; tests/acceptance/journeys/journeys.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (database test; acceptance all keys; CI 34/34 .local/ci/20261118T232101Z first run; schema 72 locked)",
+          "artifact": "docs/implementation/evidence/WP-38.md"
+        }
+      ]
     },
     {
       "id": "WP-39",
@@ -2508,7 +2705,7 @@
       "release": "R3",
       "size": "XL",
       "title": "Implement advanced routing and approval optimization",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-23",
         "WP-30",
@@ -2551,9 +2748,17 @@
       "verification": [
         "Cross-provider unknown-outcome, approval independence and shadow/rollback invariant cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed with user-directed scope (2026-11-18): template with two simulated providers for the same rail (SYNTHETIC_RAIL and SYNTHETIC_RAIL_B, migration 0073, schema 73) — versioned, validated route policies with maker/checker changes by independent staff, health measured from recorded simulator outcomes, attributable route decisions with shadow choices, a Core-owned route log that allows fallback only on signed, single-use proof of non-execution from the current provider with the same operation, amount and hold, inquiry (never re-route) on unknown outcomes, and shadow evaluation with a minimum sample before activation and compatible rollback. Benefit against a real baseline remains pending (AT-28 PENDING; DEC-03/04/07/11). Known limits: settlement-statement reconciliation, inbound credits and recipient verification use provider A only. See docs/implementation/payment-routing.md and evidence/WP-39.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-19T02:44:03+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker, two simulated rail providers, browser, Android emulator",
+          "command": "crates/payments/tests database routing; tests/acceptance/routing/routing.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (database test; acceptance all keys; CI 35/35 .local/ci/20261119T021738Z first run; schema 73 locked; one intermittent finance test failure during development recorded)",
+          "artifact": "docs/implementation/evidence/WP-39.md"
+        }
+      ]
     },
     {
       "id": "WP-40",
@@ -2561,7 +2766,7 @@
       "release": "R3",
       "size": "XL",
       "title": "Implement liquidity forecasting and controlled finance automation",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-24",
         "WP-30",
@@ -2603,9 +2808,17 @@
       "verification": [
         "AT-24/25 plus forecast reproducibility, stale input and limit-breach automation cases."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed locally (2026-11-19, migration 0074, schema 74): reproducible liquidity forecasts from the WP-24 signed observation, warehouse watermark and WP-37 settlement-outflow history at a recorded fact cut; confirmed funds only from fresh signed evidence; versioned maker/checker policies (model, limits, restricted actions, automation, escalation); a breach restricts new external submissions (no hold, nothing sent) and opens an owned Finance case, degraded forecasts escalate but cannot justify automation; settlement prefunding proposed only by a current confirmed breach, capped by the per-action limit, confirmed by a Finance maker, approved by a different approver and booked once by Core after re-checking approval and per-action/daily limits; independently approved lifts on a current within-limits forecast; rolling backtest against actual outflow labelled local synthetic only. Real treasury feeds, limits and accuracy against real outcomes remain pending (AT-24 real-baseline PENDING; DEC-03/06/07/12). Known limits: only the single-payment external submission path is gated. See docs/implementation/liquidity-forecasting.md and evidence/WP-40.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-19T03:45:18+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker, rail and liquidity simulators, browser, Android emulator",
+          "command": "crates/finance/tests database liquidity; tests/acceptance/liquidity/liquidity.py; playwright consumer suite; python3 scripts/ci.py --apply-local --device",
+          "result": "passed (database test; acceptance all keys; CI 36/36 .local/ci/20261119T031909Z first run; schema 74 locked; Finance suite parallel-load timeouts during development recorded as host contention, 98/98 with 4 threads)",
+          "artifact": "docs/implementation/evidence/WP-40.md"
+        }
+      ]
     },
     {
       "id": "WP-41",
@@ -2613,7 +2826,7 @@
       "release": "R3",
       "size": "L",
       "title": "Measure product outcomes and optimize capacity/cost",
-      "status": "planned",
+      "status": "done",
       "depends_on": [
         "WP-38",
         "WP-39",
@@ -2668,9 +2881,17 @@
       "verification": [
         "Before/after load/outcome/cost report plus affected full financial/security/recovery regression."
       ],
-      "completion_notes": "",
+      "completion_notes": "Completed within the user-chosen local capacity template (2026-11-19, migration 0075, schema 75): KPI-01..08 as immutable digested snapshots with explicit numerators, denominators, exclusions and breakdowns (provider vs bank payment failures; KPI-07 manual sample; no-denominator KPIs never met), labelled local synthetic; one measured CF-04 change (intent creation no longer re-validates its just-validated quote; one authority read per amount check) taking burst intent timeouts from 21,970 to 0 on the same host; ADR 0002 keeps the modular monolith and PostgreSQL. Not production measurement: KPI targets/SLAs/cohorts, cost and production capacity remain pending (DEC-07, DEC-12); AT-18 burst stays FAIL because the single host delivered only 86% of the 3x schedule. See docs/implementation/outcomes-capacity.md and evidence/WP-41.md.",
       "blocker": "",
-      "evidence": []
+      "evidence": [
+        {
+          "timestamp": "2026-11-19T21:37:00+00:00",
+          "environment": "local synthetic PostgreSQL, real local OIDC, NATS, worker, simulators, browser, Android emulator; release-build load runs on one host with an unrelated k3s server",
+          "command": "crates/data/tests database outcomes; tests/acceptance/outcomes/outcomes.py; tests/load/run.py before/after (60+300, 600+300); python3 scripts/ci.py --apply-local --device",
+          "result": "passed (CI 37/37 .local/ci/20261119T211027Z first run; schema 75 locked; load .local/load/20261119T201637Z, 20261119T203413Z, 20261119T204944Z; 3x burst not demonstrated)",
+          "artifact": "docs/implementation/evidence/WP-41.md"
+        }
+      ]
     }
   ]
 }

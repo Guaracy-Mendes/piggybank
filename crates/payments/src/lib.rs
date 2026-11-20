@@ -1,5 +1,8 @@
 //! Payments owns intent, recipient, quote and orchestration state. Core alone owns money.
+pub mod approvals;
+pub mod atm;
 mod audit;
+pub mod batch;
 mod credits;
 pub mod finance;
 pub use credits::CreditStatus;
@@ -12,6 +15,7 @@ mod recipients;
 mod recovery;
 pub use recovery::{RecoveryAction, RecoveryRequest};
 mod reconciliation;
+pub mod routing;
 pub use reconciliation::ReconciliationBreak;
 mod submission;
 mod types;
@@ -50,14 +54,19 @@ pub struct Payments {
     pub rail_client: bank_rails::RailClient,
 }
 impl Payments {
+    /// WP-39: the client for one of the interchangeable simulated providers.
+    pub(crate) fn rail(&self, provider: &str) -> Result<bank_rails::RailClient> {
+        self.rail_client.with_provider(provider)
+    }
     pub(crate) async fn authorize(
         &self,
         actor: &ActorContext,
         account: AccountId,
         action: Action,
     ) -> Result<()> {
+        // WP-33: a consented partner acts for the owner; Controls re-checks the live grant at every decision.
         ensure!(
-            actor.trust == TrustContext::Customer,
+            matches!(actor.trust, TrustContext::Customer | TrustContext::Partner),
             "Customer payment context required"
         );
         let resource = self.core.authority(account, action).await?;
@@ -66,6 +75,43 @@ impl Payments {
                 .authorize(actor, action, Some(&resource), account.0)
                 .await?,
             ResourceUnavailable
+        );
+        Ok(())
+    }
+    /// WP-33 (FR-ACC-08): a delegate's payment amount must not exceed the delegation's per-payment limit.
+    /// Owners and consented partners (who act for the owner) are bounded by the ordinary product and rail rules.
+    pub(crate) async fn authorize_amount(
+        &self,
+        actor: &ActorContext,
+        account: AccountId,
+        amount: &bank_platform::domain::Money,
+    ) -> Result<()> {
+        ensure!(
+            matches!(actor.trust, TrustContext::Customer | TrustContext::Partner),
+            "Customer payment context required"
+        );
+        // One authority read serves both the Controls decision and the delegate limit (WP-41, CF-04).
+        let resource = self.core.authority(account, Action::CreatePayment).await?;
+        ensure!(
+            self.controls
+                .authorize(actor, Action::CreatePayment, Some(&resource), account.0)
+                .await?,
+            ResourceUnavailable
+        );
+        if actor.trust != TrustContext::Customer {
+            return Ok(());
+        }
+        let person = self.controls.person(actor).await?;
+        if resource.owners.contains(&person) {
+            return Ok(());
+        }
+        let delegate = resource.delegate(person).ok_or(ResourceUnavailable)?;
+        ensure!(
+            delegate.can_pay
+                && delegate
+                    .payment_limit_minor
+                    .is_some_and(|limit| amount.minor_units() <= limit),
+            "Delegated payment limit exceeded"
         );
         Ok(())
     }

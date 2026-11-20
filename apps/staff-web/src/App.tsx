@@ -17,8 +17,21 @@ import { ConfigurationView } from "./Configuration";
 import { RolesView } from "./Roles";
 import { FinanceView } from "./Finance";
 import { FinanceAudit } from "./FinanceAudit";
+import { FinancePeriodic } from "./FinancePeriodic";
 import { FinancePolicies } from "./FinancePolicies";
 import { FinanceCorrections } from "./FinanceCorrections";
+import { RecordsView } from "./Records";
+import { OperationsView } from "./Operations";
+import { SecurityView } from "./Security";
+import { PartnersView } from "./Partners";
+import { AssistedView } from "./Assisted";
+import { AnalyticsView } from "./Analytics";
+import { AtmView } from "./Atm";
+import { AudiencesView } from "./Audiences";
+import { BatchView } from "./Batch";
+import { LiquidityView } from "./Liquidity";
+import { OutcomesView } from "./Outcomes";
+import { RoutingView } from "./Routing";
 export type Access = Schema["StaffAccess"];
 export function Root() {
   const { identity, loading, problem, refresh } = useSession();
@@ -117,6 +130,12 @@ function Workbench() {
             ],
             ["/roles", "Access register", "shield", can("roles.")],
             ["/rails", "Rail controls", "accounts", can("rail.")],
+            [
+              "/finance/periodic",
+              "Periodic finance",
+              "accounts",
+              can("finance.inquire"),
+            ],
             ["/finance", "Finance & GL", "accounts", can("finance.inquire")],
             [
               "/finance/audit",
@@ -142,6 +161,49 @@ function Workbench() {
               "accounts",
               can("payment.inquire"),
             ],
+            ["/records", "Records & retention", "shield", can("records.")],
+            [
+              "/operations",
+              "Operations monitor",
+              "shield",
+              can("operations.view"),
+            ],
+            ["/assisted", "Assisted service", "support", true],
+            ["/atm", "ATM channel", "accounts", can("payment.inquire")],
+            ["/batch", "Batch rail", "accounts", can("payment.inquire")],
+            [
+              "/routing",
+              "Payment routing",
+              "accounts",
+              can("rail.manage") ||
+                can("rail.approve") ||
+                can("payment.inquire"),
+            ],
+            [
+              "/liquidity",
+              "Liquidity forecast",
+              "accounts",
+              can("finance.inquire"),
+            ],
+            [
+              "/outcomes",
+              "Outcome KPIs",
+              "shield",
+              can("data.steward") || can("finance.inquire"),
+            ],
+            [
+              "/analytics",
+              "Governed warehouse",
+              "shield",
+              can("data.steward") || can("finance.inquire"),
+            ],
+            [
+              "/audiences",
+              "Audiences & journeys",
+              "support",
+              can("data.steward"),
+            ],
+            ["/partners", "Partners & consent", "shield", true],
           ]
             .filter((n) => n[3])
             .map(([url, label, icon]) => (
@@ -151,7 +213,8 @@ function Workbench() {
                   route.startsWith(String(url)) &&
                   !(
                     url === "/finance" &&
-                    (route.startsWith("/finance/policies") ||
+                    (route.startsWith("/finance/periodic") ||
+                      route.startsWith("/finance/policies") ||
                       route.startsWith("/finance/corrections") ||
                       route.startsWith("/finance/audit"))
                   )
@@ -190,7 +253,31 @@ function Workbench() {
                       ? "Finance & GL"
                       : route.startsWith("/payments")
                         ? "Payment inquiry"
-                        : "Review queues"}
+                        : route.startsWith("/records")
+                          ? "Records & retention"
+                          : route.startsWith("/operations")
+                            ? "Operations monitor"
+                            : route.startsWith("/security")
+                              ? "Security"
+                              : route.startsWith("/partners")
+                                ? "Partners & consent"
+                                : route.startsWith("/assisted")
+                                  ? "Assisted service"
+                                  : route.startsWith("/atm")
+                                    ? "ATM channel"
+                                    : route.startsWith("/batch")
+                                      ? "Batch rail"
+                                      : route.startsWith("/analytics")
+                                        ? "Governed warehouse"
+                                        : route.startsWith("/audiences")
+                                          ? "Audiences & journeys"
+                                          : route.startsWith("/routing")
+                                            ? "Payment routing"
+                                            : route.startsWith("/liquidity")
+                                              ? "Liquidity forecast"
+                                              : route.startsWith("/outcomes")
+                                                ? "Outcome KPIs"
+                                                : "Review queues"}
             </strong>
           </span>
           <div>
@@ -209,7 +296,39 @@ function Workbench() {
             <Busy />
           ) : (
             <>
-              {route.startsWith("/configuration") ? (
+              {route.startsWith("/outcomes") ? (
+                <OutcomesView />
+              ) : route.startsWith("/liquidity") ? (
+                <LiquidityView />
+              ) : route.startsWith("/routing") ? (
+                <RoutingView />
+              ) : route.startsWith("/audiences") ? (
+                <AudiencesView />
+              ) : route.startsWith("/analytics") ? (
+                <AnalyticsView />
+              ) : route.startsWith("/batch") ? (
+                <BatchView />
+              ) : route.startsWith("/atm") ? (
+                <AtmView />
+              ) : route.startsWith("/assisted") ? (
+                <AssistedView />
+              ) : route.startsWith("/partners") ? (
+                <PartnersView />
+              ) : route.startsWith("/security") ? (
+                <SecurityView />
+              ) : route.startsWith("/operations") ? (
+                <OperationsView access={access} />
+              ) : route.startsWith("/records") ? (
+                <RecordsView
+                  key={route}
+                  access={access}
+                  accountId={
+                    /^\/records\/[a-f0-9-]{36}$/.test(route)
+                      ? route.split("/")[2]
+                      : undefined
+                  }
+                />
+              ) : route.startsWith("/configuration") ? (
                 <ConfigurationView access={access} />
               ) : route === "/rails" ? (
                 <RailsView access={access} />
@@ -229,6 +348,13 @@ function Workbench() {
                       ? route.split("/")[3]
                       : undefined
                   }
+                />
+              ) : route.startsWith("/finance/periodic") ? (
+                <FinancePeriodic
+                  key={route}
+                  access={access}
+                  kind={route.split("/")[3]}
+                  selected={route.split("/")[4]}
                 />
               ) : route.startsWith("/finance/policies") ? (
                 <FinancePolicies

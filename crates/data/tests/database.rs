@@ -1,3 +1,11 @@
+#[path = "cases/analytics.rs"]
+mod analytics;
+#[path = "cases/audiences.rs"]
+mod audiences;
+#[path = "cases/operations.rs"]
+mod operations;
+#[path = "cases/outcomes.rs"]
+mod outcomes;
 use bank_controls::{
     entitlements::Entitlements, evidence::EvidenceService, governance::ChangeKind,
 };

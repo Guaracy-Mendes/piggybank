@@ -1,0 +1,25 @@
+@startuml
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+title C4 L3 - WP-25 statements, retrieval, retention and legal holds
+Person(owner,"Current account owner","Generate, view once, request access/correction/deletion")
+Person(officer,"Records officer","Generate, retrieve, place holds, request disposal, process requests")
+Person(approver,"Independent records approver","Release a hold placed by someone else")
+Container_Boundary(api,"Rust bank-api") {
+ Component(http,"Documents routes","Axum + OIDC BFF","Customer / workforce trust, CSRF, idempotency keys; readiness and restriction returned as outcomes")
+ Component(records,"Records","bank-documents statements + retention","Typed calls; person resolved from the canonical identity link")
+ Component(pdf,"Printable version","Rust","Renders only the retrieved immutable version")
+}
+Container(worker,"bank-worker","Rust","Statement cycle every 60 s: latest closed month, only when ready")
+ContainerDb(docs,"Documents schema","PostgreSQL SECURITY DEFINER","Readiness, snapshot, versions, objects, single-use links, holds, disposals, requests, access evidence")
+ContainerDb(core,"Core journal","PostgreSQL","Immutable balanced journals; runtime booking date = Core UTC clock; periodic finality watermark")
+Rel(owner,http,"List, generate, link, redeem, submit request")
+Rel(officer,http,"Account records, hold, disposal, processing")
+Rel(approver,http,"Independent release")
+Rel(http,records,"Actor + resolved person")
+Rel(http,pdf,"Redeemed version")
+Rel(records,docs,"Authority rechecked in every function")
+Rel(worker,docs,"generate_due_statements(limit)")
+Rel(docs,core,"Read-only: lock account FOR SHARE, read entries, finalizations")
+SHOW_LEGEND()
+@enduml

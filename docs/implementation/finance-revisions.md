@@ -1,5 +1,7 @@
 # Controlled Finance report revisions
 
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
 This WP-24 increment publishes an independently approved link between two existing immutable observation reports. Both artifacts, their source memberships, controls, captured proofs and digests remain unchanged. It builds on [Finance observations](finance-reporting.md). Broader instruction/provider/fee matching and periodic fee/accrual commands remain within WP-24.
 
 ## Scope and accepted command

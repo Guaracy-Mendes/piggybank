@@ -1,0 +1,16 @@
+{
+  "dataset": "account_states",
+  "version": 1,
+  "source": "DATA_ACCOUNT_VIEWS",
+  "economicKey": ["accountId", "sourceVersion"],
+  "economicFields": ["partyId", "productVersionId", "state"],
+  "purposes": ["FINANCIAL_REPORTING", "OPERATIONS_ANALYTICS"],
+  "fields": [
+    {"name": "accountId", "type": "uuid", "required": true},
+    {"name": "partyId", "type": "uuid", "required": true},
+    {"name": "productVersionId", "type": "uuid", "required": true},
+    {"name": "state", "type": "text", "required": true},
+    {"name": "sourceVersion", "type": "bigint", "required": true},
+    {"name": "sourceAsOf", "type": "timestamp", "required": true}
+  ]
+}

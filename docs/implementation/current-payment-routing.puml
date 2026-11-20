@@ -1,0 +1,30 @@
+@startuml
+title UML sequence - fallback only on proven non-execution (WP-39)
+participant "Worker / Payments" as pay
+database "payments" as pdb
+participant "Core" as core
+participant "Provider A\n(SYNTHETIC_RAIL)" as a
+participant "Provider B\n(SYNTHETIC_RAIL_B)" as b
+
+pay -> pdb : route_decide(attempt 1)\nactive policy (+ shadow choice)
+pay -> core : route_external(A)
+pay -> a : submit instruction (payment id, digest)
+alt lost response / unknown
+  a --> pay : (no authenticated outcome)
+  note over pay : OUTCOME_UNKNOWN: inquire A only,\nnever re-route
+else signed REJECTED, ordinary reason
+  a --> pay : REJECTED
+  pay -> core : finalize (A is current) -> DECLINED, hold released
+else signed REJECTED, PROVIDER_CAPACITY_NOT_EXECUTED
+  a --> pay : REJECTED (non-execution)
+  pay -> pdb : route_fallback_allowed? (attempt-1 policy)
+  pay -> core : route_external(B, A's signed proof)
+  note over core : verifies proof with A's key;\nhold stays ACTIVE; route A>B
+  pay -> b : submit the same instruction
+  b --> pay : ACCEPTED ... SETTLED
+  pay -> core : finalize with B's evidence (B is current)\n-> books once
+  a -> pay : later "SETTLED" from A?
+  pay -> pdb : quarantine IMMUTABLE_PROVIDER_CONFLICT
+  note over core : finalize refuses A (not current route)
+end
+@enduml

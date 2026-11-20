@@ -84,7 +84,7 @@ def verify_clearing_provider(key, schema):
             assert signed['body']['request']==query and signed['body']['manifest']==sealed
             group_count+=1
     if schema>=46:
-        paths=['credit-reconciliations']+(['reconciliation-groups'] if schema>=47 else [])+(['periodic-policies'] if schema>=48 else [])+(['corrections'] if schema>=50 else [])+(['periodic-bases'] if schema>=51 else [])+(['audit-delivery'] if schema>=52 else [])
+        paths=['credit-reconciliations']+(['reconciliation-groups'] if schema>=47 else [])+(['periodic-policies'] if schema>=48 else [])+(['corrections'] if schema>=50 else [])+(['periodic-bases'] if schema>=51 else [])+(['audit-delivery'] if schema>=52 else [])+(['periodic-offers','periodic-activations','periodic-runs'] if schema>=56 else [])
         for port,expected,path in [(port,expected,path) for path in paths for port,expected in [(24300,403),(24301,401)]]:
             try:
                 with urllib.request.urlopen(f'http://127.0.0.1:{port}/api/v1/staff/finance/{path}',timeout=5) as response:status=response.status
@@ -142,6 +142,49 @@ def verify_disclosure_feature(manifest):
         except urllib.error.HTTPError as error:status=error.code;error.close()
         assert status==expected
     print('Actual archived customer periodic disclosure feature passed OpenAPI, bundle and channel guards.',flush=True)
+
+def verify_preview_review_feature(manifest):
+    if 'customer-periodic-preview-reviews-v1' not in manifest.get('features',[]):return
+    assert manifest['schemaVersion']>=53
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self,*args,**kwargs):return None
+    opener=urllib.request.build_opener(NoRedirect())
+    with opener.open('http://127.0.0.1:24180/openapi.json',timeout=5) as response:body=response.read(2097153)
+    assert len(body)<=2097152
+    path='/api/v1/accounts/{id}/periodic-disclosures/{policyId}/review'
+    assert set(json.loads(body)['paths'][path])=={'get','post'}
+    with opener.open('http://127.0.0.1:24300/',timeout=5) as response:page=response.read(65537)
+    script=re.search(rb'<script\b[^>]*\bsrc="([^"]+)"',page);assert script
+    asset=script.group(1).decode('ascii');assert asset.startswith('/assets/') and '..' not in asset and '?' not in asset
+    with opener.open('http://127.0.0.1:24300'+asset,timeout=5) as response:bundle=response.read(1048577)
+    assert len(bundle)<=1048576
+    assert all(label in bundle for label in [b'Review acknowledgment',b'Save review acknowledgment',b'Exact saved preview material',b'Attribution digest',b'PREVIEW_REVIEW_ONLY'])
+    for port,expected in [(24300,401),(24301,403)]:
+        try:
+            with opener.open(f'http://127.0.0.1:{port}'+path.replace('{id}',str(uuid.uuid4())).replace('{policyId}',str(uuid.uuid4())),timeout=5) as response:status=response.status
+        except urllib.error.HTTPError as error:status=error.code;error.close()
+        assert status==expected
+    print('Actual archived preview review feature passed schema, OpenAPI, customer bundle and channel guards.',flush=True)
+
+def verify_periodic_finance_feature(manifest):
+    if 'periodic-finance-r1-v1' not in manifest.get('features',[]):return
+    assert manifest['schemaVersion']>=56
+    with urllib.request.urlopen('http://127.0.0.1:24180/openapi.json',timeout=5) as r:spec=json.load(r)
+    for path,methods in {
+      '/api/v1/staff/finance/periodic-offers':{'get','post'},
+      '/api/v1/staff/finance/periodic-activations':{'get','post'},
+      '/api/v1/staff/finance/periodic-runs':{'get','post'},
+      '/api/v1/accounts/{id}/periodic-offers/{offerId}/enrollment':{'get','post'},
+      '/api/v1/accounts/{id}/periodic-offers/{offerId}/withdrawal':{'post'},
+    }.items():assert set(spec['paths'][path])==methods
+    for port,labels in [(24300,[b'Periodic financial offers',b'Request financial enrollment',b'Withdraw pending enrollment',b'Financial enrollment receipt']),
+                        (24301,[b'Periodic finance',b'Approve financial terms',b'Activate periodic finance',b'Queue due period'])]:
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}/',timeout=5) as r:page=r.read(65537)
+        script=re.search(rb'<script\b[^>]*\bsrc="([^"]+)"',page);assert script
+        path=script.group(1).decode('ascii');assert path.startswith('/assets/') and '..' not in path
+        with urllib.request.urlopen(f'http://127.0.0.1:{port}'+path,timeout=5) as r:bundle=r.read(1048577)
+        assert len(bundle)<=1048576 and all(label in bundle for label in labels)
+    print('Actual archived essential periodic finance passed schema, API, customer/staff bundles and channel guards.',flush=True)
 
 with tempfile.TemporaryDirectory(prefix='cloud-runtime-',dir=ROOT/'.local') as directory:
     directory=Path(directory)
@@ -202,7 +245,8 @@ with tempfile.TemporaryDirectory(prefix='cloud-runtime-',dir=ROOT/'.local') as d
             '-e','KC_HOSTNAME=http://127.0.0.1:18280','-e','KC_HEALTH_ENABLED=true',
             '-e','KC_BOOTSTRAP_ADMIN_USERNAME=local-admin',
             '-e','KC_BOOTSTRAP_ADMIN_PASSWORD='+control['KEYCLOAK_ADMIN_PASSWORD'],
-            '-v',str(deployment/'identity')+':/opt/keycloak/data/import:ro',images['keycloak'],
+            '-v',str(deployment/'identity')+':/opt/keycloak/data/import:ro',
+            '-v',str(deployment/'identity'/'themes'/'piggybank')+':/opt/keycloak/themes/piggybank:ro',images['keycloak'],
             'start-dev','--import-realm','--http-host=127.0.0.1','--http-port=18280','--http-management-host=127.0.0.1',stdout=subprocess.DEVNULL)
         subprocess.run(['python3',str(deployment/'wait.py'),'http://127.0.0.1:38280/realms/customers/.well-known/openid-configuration'],check=True)
         bootstrap.seed()
@@ -216,6 +260,8 @@ with tempfile.TemporaryDirectory(prefix='cloud-runtime-',dir=ROOT/'.local') as d
         verify_clearing_provider(app['BANK_FINANCE_SIGNING_KEY'],manifest['schemaVersion'])
         verify_periodic_portal(manifest['schemaVersion'])
         verify_disclosure_feature(manifest)
+        verify_preview_review_feature(manifest)
+        verify_periodic_finance_feature(manifest)
         if manifest['schemaVersion']>=50:
             usage=subprocess.run(['podman','run','--rm','--pod',name,'--env-file',str(directory/'state/runtime.env'),f'piggybank-runtime:{args.release}','bank-fund'],capture_output=True,text=True)
             assert usage.returncode==1 and 'Usage: bank-fund' in usage.stderr

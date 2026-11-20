@@ -12,7 +12,7 @@ if database!='piggybank' and not re.fullmatch(r'piggybank_http_test_[0-9a-f]{32}
 def sql(statement):
     return subprocess.check_output(['podman','exec','piggybank-postgres-1','psql','-U','dev_admin','-d',database,'-At','-v','ON_ERROR_STOP=1','-c',statement],text=True).strip()
 token=admin_token();issuer=BASE+'/realms/workforce';subjects={}
-roles={'reviewer':['product_admin','case_reviewer','finance_adjuster','account_support','payment_inquiry','payment_operator'],'approver':['product_approver','case_approver','finance_approver','security_approver','payment_approver'],'security':['security_admin','operations_replay']}
+roles={'reviewer':['product_admin','case_reviewer','finance_adjuster','account_support','payment_inquiry','payment_operator','records_officer','data_steward','assisted_service'],'approver':['product_approver','case_approver','finance_approver','security_approver','payment_approver','records_approver'],'security':['security_admin','operations_replay']}
 for username,grants in roles.items():
     subject=str(uuid.UUID(call(token,'workforce/users?exact=true&username='+username)[0]['id']));subjects[username]=subject
     person=str(uuid.uuid5(uuid.NAMESPACE_URL,issuer+'/'+subject))
@@ -25,6 +25,10 @@ for username,grants in roles.items():
         capability='REVIEW' if username=='reviewer' else 'APPROVE'
         for queue in ['controls-operations','support','payments-operations','finance-operations','data-operations']:
             sql(f"INSERT INTO controls.case_queue_members(queue,person_id,capability) VALUES('{queue}','{person}','{capability}') ON CONFLICT(queue,person_id,capability) DO UPDATE SET revoked_at=NULL")
+# WP-29 synthetic on-call roster: reviewer primary, approver secondary.
+for username,tier in [('reviewer','PRIMARY'),('approver','SECONDARY')]:
+    person=str(uuid.UUID(sql(f"SELECT person_id FROM controls.person_links WHERE issuer='{issuer}' AND subject='{subjects[username]}'")))
+    sql(f"INSERT INTO controls.oncall_roster(person_id,tier,active,actor_context) VALUES('{person}','{tier}',true,'{{\"seed\":true}}') ON CONFLICT(person_id) DO UPDATE SET tier=EXCLUDED.tier,active=true")
 # A balanced funding command uses this zero-valued synthetic settlement ledger account.
 sql("INSERT INTO core.ledger_accounts(id,kind,state,debit_blocked) VALUES('4f1a780b-3e31-48ef-a294-000000000003','SETTLEMENT','ACTIVE',false) ON CONFLICT(id) DO NOTHING")
 subprocess.run([str(ROOT/'target/debug/bank-seed')],input=json.dumps({'issuer':issuer,'makerSubject':subjects['reviewer'],'checkerSubject':subjects['approver']}),text=True,cwd=ROOT,env=os.environ,check=True)

@@ -33,8 +33,12 @@ impl Ingress {
             scope,
         }))
     }
+    /// Quota counters are advisory: a crash may lose the last few increments of the current minute, which only
+    /// under-counts. Every request from one address updates the same row, so the row lock must be held as briefly as
+    /// possible (WP-30 CF-02). That means one statement and one round trip, with the commit not waiting for a WAL
+    /// flush. `set_config(..., true)` scopes the setting to this statement's implicit transaction.
     async fn permitted(&self, ip: &str) -> Result<bool> {
-        let result=sqlx::query_scalar::<_,i32>("INSERT INTO platform.rate_limits(scope,window_start,requests) VALUES($1,date_trunc('minute',now()),1) ON CONFLICT(scope,window_start) DO UPDATE SET requests=platform.rate_limits.requests+1 WHERE platform.rate_limits.requests<$2 RETURNING requests")
+        let result=sqlx::query_scalar::<_,i32>("WITH relaxed AS (SELECT set_config('synchronous_commit','off',true)) INSERT INTO platform.rate_limits(scope,window_start,requests) SELECT $1,date_trunc('minute',now()),1 FROM relaxed ON CONFLICT(scope,window_start) DO UPDATE SET requests=platform.rate_limits.requests+1 WHERE platform.rate_limits.requests<$2 RETURNING requests")
             .bind(format!("{}:{ip}",self.scope)).bind(self.limit).fetch_optional(&self.pool).await?;
         Ok(result.is_some())
     }
@@ -56,6 +60,7 @@ pub fn error(status: StatusCode, id: Uuid) -> Response {
         }
         StatusCode::UNPROCESSABLE_ENTITY => ("INVALID_FIELDS", "The request fields are invalid."),
         StatusCode::TOO_MANY_REQUESTS => ("RATE_LIMITED", "The request limit has been reached."),
+        StatusCode::GONE => ("VERSION_SUNSET", "This API version is no longer supported."),
         StatusCode::GATEWAY_TIMEOUT => (
             "TIMEOUT",
             "The request outcome is not available. Check the existing operation before retrying.",
@@ -83,6 +88,8 @@ pub async fn boundary(State(state): State<Arc<Ingress>>, request: Request, next:
         .and_then(|s| Uuid::parse_str(s).ok())
         .unwrap_or_else(Uuid::new_v4);
     let method = request.method().clone();
+    let path = request.uri().path().to_owned();
+    let started = std::time::Instant::now();
     let exempt = request.uri().path().starts_with("/health/");
     let ip = request
         .extensions()
@@ -121,10 +128,18 @@ pub async fn boundary(State(state): State<Arc<Ingress>>, request: Request, next:
         };
         // Preserve diagnostic readiness JSON; all other errors use a safe envelope.
         if !exempt && (response.status().is_client_error() || response.status().is_server_error()) {
-            let allow = response.headers().get(header::ALLOW).cloned();
+            // Protocol headers a client needs to act on are kept; everything else is replaced (WP-33 adds
+            // Sunset and Deprecation for versioned partner contracts).
             let mut safe = error(response.status(), id);
-            if let Some(allow) = allow {
-                safe.headers_mut().insert(header::ALLOW, allow);
+            for name in [header::ALLOW, header::RETRY_AFTER] {
+                if let Some(value) = response.headers().get(&name).cloned() {
+                    safe.headers_mut().insert(name, value);
+                }
+            }
+            for name in ["sunset", "deprecation"] {
+                if let Some(value) = response.headers().get(name).cloned() {
+                    safe.headers_mut().insert(name, value);
+                }
             }
             safe
         } else {
@@ -147,6 +162,12 @@ pub async fn boundary(State(state): State<Arc<Ingress>>, request: Request, next:
     headers.insert(
         "content-security-policy",
         HeaderValue::from_static("default-src 'none'; frame-ancestors 'none'"),
+    );
+    crate::metrics::record(
+        method.as_str(),
+        &path,
+        response.status().as_u16(),
+        started.elapsed(),
     );
     tracing::info!(%id,%method,status=response.status().as_u16(),"request completed");
     response

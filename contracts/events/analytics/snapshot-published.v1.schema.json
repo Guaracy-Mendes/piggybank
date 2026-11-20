@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:piggybank:event:analytics.snapshot-published:v1",
+  "title": "analytics.snapshot-published v1 (producer: data) — envelope data payload",
+  "description": "Published once per immutable warehouse snapshot (WP-37, local adapter). Carries no personal data; consumers fetch the snapshot through the purpose-checked staff API.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["snapshotId", "transform", "transformVersion", "purpose", "businessFrom", "businessTo", "status", "resultDigest", "supersedes"],
+  "properties": {
+    "snapshotId": {"type": "string", "format": "uuid"},
+    "transform": {"type": "string", "minLength": 1},
+    "transformVersion": {"type": "integer", "minimum": 1},
+    "purpose": {"enum": ["FINANCIAL_REPORTING", "OPERATIONS_ANALYTICS", "MARKETING"]},
+    "businessFrom": {"type": "string", "format": "date"},
+    "businessTo": {"type": "string", "format": "date"},
+    "status": {"enum": ["COMPLETE", "INCOMPLETE"]},
+    "resultDigest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "supersedes": {"type": ["string", "null"], "format": "uuid"}
+  }
+}

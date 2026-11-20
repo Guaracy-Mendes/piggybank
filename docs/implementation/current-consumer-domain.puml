@@ -1,0 +1,120 @@
+@startuml
+hide methods
+title UML domain - authoritative consumer balances, securities and consent
+class CanonicalPerson {
+ personId : UUID
+}
+class BankAccount {
+ id : UUID
+ currentOwner : personId
+ booked / held : i64 minor TST
+}
+class Vault {
+ id : Core ledger UUID
+ targetMinor : positive i64
+ locked : boolean
+ mutual : boolean
+}
+class Membership {
+ state : INVITED / ACTIVE
+}
+class GroupWithdrawal {
+ id : UUID
+ state : PENDING / POSTED / CANCELLED
+ hold : original Core operation
+}
+class GroupApproval {
+ withdrawalId + personId : unique
+}
+class Brokerage {
+ cashAccountId : Core ledger UUID
+ consent : explicit synthetic terms
+}
+class Position {
+ units / reservedUnits : i64 microshares
+ cost / realized : i64 minor TST
+}
+class Asset {
+ symbol : fixture identifier
+ priceMinor : positive i64
+ source = SYNTHETIC_PRICE_FIXTURE
+}
+class Authorization {
+ id : UUID
+ fullDetails + digest : immutable
+ issuer / subject / client : bound
+ expiresAt : native time
+}
+class CommandReceipt {
+ actor + key : unique
+ action + input : immutable
+ result : original receipt
+}
+class Order {
+ authorizationId : unique
+ state : OPEN / FILLED / CANCELLED / EXPIRED
+ units : positive microshares
+ limitMinor : positive minor TST
+}
+class Fill {
+ orderId : unique
+ actualAmount + units + price
+ nativeBatchId : immutable
+}
+class Schedule {
+ authorizationId : unique retained mandate
+ kind : SAVE / INVEST
+ state : ACTIVE / PAUSED / CANCELLED
+ familyId + anchorDay : immutable terms
+}
+class ScheduleReplacement {
+ originalId / replacementId : unique
+ authorizationId : unique fresh consent
+ basis + basisDigest : immutable
+}
+class ScheduleRun {
+ scheduleId + dueDate : unique
+ nativeBatchId : immutable
+}
+class FamilyRun {
+ familyId + dueDate : unique across versions
+}
+class CorporateAction {
+ recordAt / payAt : immutable
+ perShareMinor : positive i64
+}
+class Dividend {
+ personId + actionId : unique
+ recordTimeUnits : immutable
+ nativeBatchId : immutable
+}
+class NativeJournal {
+ balanced entries + immutable batch
+ source outbox : atomic
+}
+class Statement {
+ full bounded facts + SHA256
+ owner : canonical person
+}
+CanonicalPerson "1" -- "0..*" BankAccount : current owner
+CanonicalPerson "1" -- "0..*" Membership
+Vault "1" -- "1..*" Membership
+Vault "1" -- "0..*" GroupWithdrawal
+GroupWithdrawal "1" -- "1..*" GroupApproval
+CanonicalPerson "1" -- "0..1" Brokerage
+Brokerage "1" -- "0..*" Position
+Asset "1" -- "0..*" Position
+Authorization "1" -- "0..1" Order
+Authorization "1" -- "0..1" Schedule
+Authorization "1" -- "0..1" CommandReceipt : approved instruction executes once
+Order "1" -- "0..1" Fill
+Schedule "1" -- "0..*" ScheduleRun
+Schedule "1" -- "0..1" ScheduleReplacement : replaced by
+ScheduleRun "1" -- "1" FamilyRun
+CorporateAction "1" -- "0..*" Dividend
+Fill --> NativeJournal
+ScheduleRun --> NativeJournal
+Dividend --> NativeJournal
+GroupWithdrawal --> NativeJournal
+Statement --> NativeJournal : immutable source facts
+@enduml

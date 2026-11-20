@@ -1,0 +1,822 @@
+{
+ "version": 1,
+ "scope": "Local synthetic R1 engineering qualification (WP-30). PASS means executable evidence passed in the recorded local pipeline; it is not production, provider or launch qualification.",
+ "referenceFormat": "path::test-name (Rust #[tokio::test] fn, Playwright test title, or Python suite result key)",
+ "scenarios": [
+  {
+   "id": "AT-01",
+   "title": "Mobile/desktop read and command; cross-customer substitution",
+   "branches": [
+    {
+     "id": "own-account-consistent-across-channels",
+     "status": "PASS",
+     "evidence": [
+      "tests/mobile/native_api.py::cross_channel_identities",
+      "tests/mobile/device.py::sign_in_and_matching_identity"
+     ]
+    },
+    {
+     "id": "cross-customer-denied-without-leakage",
+     "status": "PASS",
+     "evidence": [
+      "tests/mobile/native_api.py::cross_customer_denied",
+      "crates/documents/tests/cases/statements.rs::statements_are_ready_gated_versioned_reproducible_and_retrieved_once_by_the_owner"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-02",
+   "title": "Concurrent submit/resume, incomplete evidence, matching email",
+   "branches": [
+    {
+     "id": "required-fields-and-evidence-enforced-stable-identity",
+     "status": "PASS",
+     "evidence": [
+      "crates/journeys/tests/database.rs::onboarding_recovers_submissions_controls_terms_and_lost_core_response",
+      "tests/browser-customer/lifecycle.spec.ts::customer completes persistent onboarding, sees exact balances and manages owned servicing"
+     ]
+    },
+    {
+     "id": "no-unsafe-party-merge-on-matching-email",
+     "status": "PASS",
+     "evidence": [
+      "crates/core/tests/database.rs::canonical_parties_account_activation_and_closure_are_guarded"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-03",
+   "title": "Identity provider timeout, duplicate and out-of-order results",
+   "branches": [
+    {
+     "id": "pending-then-one-decision-expired-rejected",
+     "status": "PASS",
+     "evidence": [
+      "crates/controls/tests/database.rs::distinct_signed_controls_pending_conflicts_expiry_and_provider_restart",
+      "tests/integration/ingress.py::result"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-04",
+   "title": "Screening hit, information request, independent review",
+   "branches": [
+    {
+     "id": "blocking-state-evidence-backed-decision-no-self-approval",
+     "status": "PASS",
+     "evidence": [
+      "crates/controls/tests/database.rs::case_ownership_information_independent_disposition_and_escalation",
+      "crates/adapters/tests/database.rs::case_information_and_restricted_staff_retrieval_preserve_ownership",
+      "tests/browser-staff/workbench.spec.ts::workforce review, exact publication and entitlement administration require independent current authority"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-05",
+   "title": "Current, expired and changed accepted terms; repeated request",
+   "branches": [
+    {
+     "id": "invalid-gates-block-one-account-exact-terms",
+     "status": "PASS",
+     "evidence": [
+      "crates/documents/tests/database.rs::exact_terms_and_acceptance_remain_bound_immutable_and_current",
+      "crates/journeys/tests/database.rs::onboarding_recovers_submissions_controls_terms_and_lost_core_response"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-06",
+   "title": "Simultaneous debits exceed funds; projection attempts balance write",
+   "branches": [
+    {
+     "id": "only-authoritative-reservations-no-negative",
+     "status": "PASS",
+     "evidence": [
+      "crates/core/tests/database.rs::ledger_balances_holds_and_postings_remain_atomic",
+      "crates/payments/tests/database.rs::core_serializes_daily_limits_fees_and_authority_expiring_during_lock_wait",
+      "tests/load/run.py::core"
+     ]
+    },
+    {
+     "id": "projection-write-denied",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/database.rs::projections_replay_and_governed_aliases_cannot_change_financial_ownership",
+      "crates/data/tests/cases/operations.rs::seeded_data_defects_open_owned_alerts_and_repair_cannot_write_balances"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-07",
+   "title": "Internal transfer crash before/after commit; same and altered idempotency payload",
+   "branches": [
+    {
+     "id": "atomic-once-same-result-altered-conflicts",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::scoped_approval_controlled_posting_and_lost_ack_recover_one_economic_payment",
+      "crates/platform/tests/database.rs::durable_operations_deduplicate_and_fence_expired_workers",
+      "tests/resilience/drills.py::D2_api_crash_durable_commands"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-08",
+   "title": "External provider accepts, response lost",
+   "branches": [
+    {
+     "id": "one-instruction-reconciled-no-premature-release",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::external_lost_response_restart_pause_and_independent_resume_keep_one_reserved_instruction",
+      "crates/payments/tests/database.rs::operator_inquiry_repairs_aged_unknown_false_failure_and_lost_booking_ack_without_resubmission",
+      "tests/browser-payments/internal.spec.ts::owned overdue payments recover through operator inquiry and confirmed cancellation preserves exact balances"
+     ]
+    },
+    {
+     "id": "cross-provider-unknown-outcome-no-second-execution",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::routing_falls_back_only_on_proven_nonexecution_books_once_and_policies_need_independent_shadowed_approval",
+      "tests/acceptance/routing/routing.py::unknown_outcome_never_falls_back",
+      "tests/acceptance/routing/routing.py::nonexecution_fallback_same_identity_books_once",
+      "tests/acceptance/routing/routing.py::stale_provider_repeat_has_no_effect"
+     ],
+     "note": "WP-39 template with two simulated providers (user decision 2026-11-18): an unknown outcome never re-routes; only signed non-execution moves the same instruction; Core books once and only from the current route's provider; a contradicting earlier provider is quarantined."
+    }
+   ]
+  },
+  {
+   "id": "AT-09",
+   "title": "Forged/replayed callback, conflicting late settlement",
+   "branches": [
+    {
+     "id": "forgery-rejected-replay-deduplicated-conflict-quarantined",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::authenticated_finality_books_once_after_freeze_recovers_lost_ack_and_releases_only_definitive_failure",
+      "crates/payments/tests/database.rs::provider_deduplicates_rejects_conflicts_and_cancellation_tombstone_blocks_delayed_submission",
+      "tests/integration/ingress.py::result"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-10",
+   "title": "Rejection, confirmed/failed cancellation, later return",
+   "branches": [
+    {
+     "id": "hold-handling-no-false-cancellation-linked-return",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::durable_cancellation_covers_unsubmitted_release_loss_and_unknown_provider_tombstone",
+      "crates/payments/tests/database.rs::incoming_and_partial_returns_use_suspense_exact_credit_and_atomic_original_principal_caps",
+      "tests/browser-payments/internal.spec.ts::external payments retain held funds until settlement and expose authenticated incoming funds, linked returns and quarantine"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-11",
+   "title": "Inbound twice or to closed/restricted account",
+   "branches": [
+    {
+     "id": "one-credit-or-controlled-suspense",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::credit_ingress_controls_owned_suspense_closed_destinations_and_lost_allocation_ack_are_recoverable"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-12",
+   "title": "Settlement file differences; GL export replay",
+   "branches": [
+    {
+     "id": "classified-owned-breaks",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/cases/reconciliation.rs::reconciliation_authentic_file_differences_are_partitioned_owned_and_frozen",
+      "crates/finance/tests/cases/group_reconciliation.rs::group_reconciliation_retains_cross_file_duplicate_and_currency_fee_claims_with_provenance"
+     ]
+    },
+    {
+     "id": "balanced-unique-gl-effects-on-replay",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/database.rs::independent_chart_sealed_exact_export_and_provider_dedup",
+      "crates/finance/tests/database.rs::lost_gl_ack_restart_inquiry_and_exact_not_found_replay"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-13",
+   "title": "Commit then crash before publication; replay backlog",
+   "branches": [
+    {
+     "id": "event-eventually-published-no-duplicate-effects",
+     "status": "PASS",
+     "evidence": [
+      "crates/platform/tests/database.rs::transactional_events_survive_redelivery_gaps_and_replay",
+      "tests/resilience/drills.py::D1_worker_crash_outbox_replay",
+      "tests/resilience/drills.py::D3_broker_outage"
+     ]
+    },
+    {
+     "id": "data-quality-owned-alerts-and-safe-repair",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/operations.rs::seeded_data_defects_open_owned_alerts_and_repair_cannot_write_balances"
+     ]
+    },
+    {
+     "id": "warehouse-backfill-replay-economic-dedup",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/analytics.rs::backfill_correction_schema_upgrade_and_master_conflicts_preserve_financial_history",
+      "tests/acceptance/analytics/analytics.py::backfill_replay_dedups_economically",
+      "tests/acceptance/analytics/analytics.py::missing_or_stale_sources_flagged"
+     ],
+     "note": "WP-37 local warehouse adapter (user decision 2026-11-18): replayed or re-delivered postings are economic duplicates; different content for the same identity is quarantined; late rows surface as STALE_SOURCE."
+    }
+   ]
+  },
+  {
+   "id": "AT-14",
+   "title": "Disable identity, revoke delegation, change payment after step-up, self-approval",
+   "branches": [
+    {
+     "id": "revocation-propagates",
+     "status": "PASS",
+     "evidence": [
+      "tests/integration/identity.py::refresh_and_revocation",
+      "tests/acceptance/security/security.py::self_device_revocation"
+     ]
+    },
+    {
+     "id": "changed-approval-invalid-maker-checker",
+     "status": "PASS",
+     "evidence": [
+      "crates/controls/tests/database.rs::authority_maker_checker_and_action_proofs_hold",
+      "tests/mobile/native_api.py::native_step_up"
+     ]
+    },
+    {
+     "id": "delegation-revocation",
+     "status": "PASS",
+     "evidence": [
+      "crates/core/tests/cases/partners.rs::delegation_grants_bounded_authority_and_revocation_is_prospective",
+      "tests/acceptance/partners/partners.py::delegation_bounded_and_revocable"
+     ],
+     "note": "WP-33 local synthetic delegation (R2 capability); production enablement requires WP-32 and DEC-06/DEC-11 policy."
+    },
+    {
+     "id": "revocation-objective-60s-measured",
+     "status": "PENDING",
+     "reason": "NFR-09 timing is bounded by 30 s access tokens and immediate grant checks, but no timed propagation measurement has been recorded."
+    },
+    {
+     "id": "routing-policy-maker-checker",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::routing_falls_back_only_on_proven_nonexecution_books_once_and_policies_need_independent_shadowed_approval",
+      "tests/acceptance/routing/routing.py::policy_change_independent_and_shadowed",
+      "tests/browser-consumer/consumer.spec.ts::payment routing: operator proposes a shadow policy, a different approver applies it, and measured health is shown"
+     ],
+     "note": "WP-39: routing-policy changes need a different person with the payment approver role, including against a same-person alias."
+    }
+   ]
+  },
+  {
+   "id": "AT-15",
+   "title": "Statement twice, corrected period, cross-customer/expired download",
+   "branches": [
+    {
+     "id": "versioned-totals-supersession-denied-retrieval",
+     "status": "PASS",
+     "evidence": [
+      "crates/documents/tests/cases/statements.rs::statements_are_ready_gated_versioned_reproducible_and_retrieved_once_by_the_owner",
+      "tests/browser-consumer/consumer.spec.ts::monthly statements are readiness-gated, retrieved once, and held or restricted by independent records staff"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-16",
+   "title": "Access/correction/deletion vs retention and legal hold",
+   "branches": [
+    {
+     "id": "traceable-allowed-restricted-outcomes",
+     "status": "PASS",
+     "evidence": [
+      "crates/documents/tests/cases/statements.rs::retention_legal_holds_disposal_and_data_requests_produce_traceable_outcomes",
+      "crates/documents/tests/cases/security.rs::privacy_restriction_and_personal_export_honour_purpose_and_subject_boundaries"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-17",
+   "title": "Zone failure under load; regional restore",
+   "branches": [
+    {
+     "id": "local-backup-restore-with-reconciliation-before-reopen",
+     "status": "PASS",
+     "evidence": [
+      "tests/integration/deployment/operations.py::restored_api_balance_matches"
+     ]
+    },
+    {
+     "id": "fenced-writers",
+     "status": "PASS",
+     "evidence": [
+      "crates/platform/tests/database.rs::durable_operations_deduplicate_and_fence_expired_workers",
+      "tests/resilience/drills.py::D2_api_crash_durable_commands"
+     ]
+    },
+    {
+     "id": "multi-zone-rpo0-and-regional-rto",
+     "status": "PENDING",
+     "reason": "NFR-06/07 need a multi-zone or multi-region deployment (DEC-05, WP-31). Local single-host drills are not production recovery evidence."
+    }
+   ]
+  },
+  {
+   "id": "AT-18",
+   "title": "Load, burst, slow dependencies, stale projection",
+   "branches": [
+    {
+     "id": "sustained-latency-and-throughput",
+     "status": "PASS",
+     "evidence": [
+      "tests/load/run.py::NFR-02 reads p95<=500ms",
+      "tests/load/run.py::NFR-03 commands p95<=1000ms",
+      "tests/load/run.py::NFR-05 sustained read rate achieved"
+     ],
+     "note": "600 s at 200 reads/s and 50 commands/s on the local single-host fixture (final report .local/load/20261118T002830Z): read p95 18.2 ms, command p95 46.9 ms, 0 errors; Core transfers 958/s p95 20.1 ms. See docs/implementation/local-qualification.md."
+    },
+    {
+     "id": "burst-3x-without-errors",
+     "status": "FAIL",
+     "evidence": [
+      "tests/load/run.py::Burst 3x without 5xx or timeouts"
+     ],
+     "reason": "CF-04: in WP-30 the 5-minute 3x burst timed out 21,769 of 22,501 payment intents (504). WP-41 removed the duplicate validation pass in intent creation. With the WP-30 parameters (600 s sustained, 300 s burst; report .local/load/20261119T204944Z) every request returned successfully: 22,500 of 22,500 intents returned 201, intent p95 4.05 s, max 4.96 s; the before run on the same host had 21,970 timeouts (.local/load/20261119T201637Z). The branch stays FAIL because the single host could not deliver the full 3x schedule: the burst phase took 349 s to issue 300 s of requests, so every kind ran at 86% of 3x (about 2.6x), and burst p50 latencies show queueing. Demonstrating 3x needs a separate load generator or the production topology (DEC-07). The host also ran an unrelated k3s server during both measurements."
+    },
+    {
+     "id": "stale-projection-shown-spend-uses-core",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/operations.rs::seeded_data_defects_open_owned_alerts_and_repair_cannot_write_balances"
+     ]
+    },
+    {
+     "id": "slow-or-failed-dependency",
+     "status": "PASS",
+     "evidence": [
+      "tests/resilience/drills.py::D3_broker_outage",
+      "tests/resilience/drills.py::D4_issuer_outage",
+      "tests/resilience/drills.py::D5_provider_outage_submission",
+      "tests/integration/foundation.py::liveness_during_broker_outage",
+      "crates/payments/tests/database.rs::external_lost_response_restart_pause_and_independent_resume_keep_one_reserved_instruction",
+      "crates/finance/tests/database.rs::lost_gl_ack_restart_inquiry_and_exact_not_found_replay"
+     ]
+    },
+    {
+     "id": "one-hour-sustained-production-capacity",
+     "status": "PENDING",
+     "reason": "The measured run was 600 s sustained plus 300 s burst; the one-hour NFR-05 duration was not executed (make test-load-measured with --sustained 3600). Production capacity needs the chosen deployment (DEC-07)."
+    },
+    {
+     "id": "intent-path-capacity-change-measured",
+     "status": "PASS",
+     "evidence": [
+      "tests/load/run.py::Burst 3x without 5xx or timeouts",
+      "crates/payments/tests/database.rs::external_lost_response_restart_pause_and_independent_resume_keep_one_reserved_instruction"
+     ],
+     "note": "WP-41: one measured change (create_intent no longer re-validates the quote it just validated; one Core authority read serves the Controls decision and the delegate limit). Same host, same parameters: sustained intent p95 65.9 to 38.3 ms; burst intents 61.1/s with 21,970 timeouts to 67.9/s with 0 (60 s plus 300 s runs). Confirmation still re-validates everything before any reservation or posting; the full regression passed."
+    }
+   ]
+  },
+  {
+   "id": "AT-19",
+   "title": "Keyboard and screen reader; seeded sensitive logs",
+   "branches": [
+    {
+     "id": "automated-accessibility",
+     "status": "PASS",
+     "evidence": [
+      "tests/browser-consumer/consumer.spec.ts::security lifecycle: customer signs out everywhere, staff recovery executes, access is recertified and findings are independently disposed",
+      "tests/mobile/device.py::sign_in_and_matching_identity"
+     ]
+    },
+    {
+     "id": "no-sensitive-telemetry",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/security/security.py::seeded_values_absent"
+     ]
+    },
+    {
+     "id": "manual-screen-reader-walkthrough",
+     "status": "PENDING",
+     "reason": "Human TalkBack, VoiceOver and NVDA walkthroughs are not automated (DEC-10)."
+    }
+   ]
+  },
+  {
+   "id": "AT-20",
+   "title": "Provider outage, key rotation, rail pause, overdue case",
+   "branches": [
+    {
+     "id": "staff-alert-and-escalation",
+     "status": "PASS",
+     "evidence": [
+      "tests/integration/deployment/operations.py::page_delivery_seconds",
+      "crates/data/tests/cases/operations.rs::critical_alerts_page_the_primary_escalate_to_the_secondary_and_need_the_paged_person"
+     ]
+    },
+    {
+     "id": "pause-blocks-new-existing-continue",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::external_lost_response_restart_pause_and_independent_resume_keep_one_reserved_instruction"
+     ]
+    },
+    {
+     "id": "callback-key-rotation",
+     "status": "PENDING",
+     "reason": "The simulator HMAC key is a fixed synthetic constant (SF-002). Dual-key callback rotation belongs to real provider adapters (WP-31)."
+    }
+   ]
+  },
+  {
+   "id": "AT-21",
+   "title": "Partner consent revocation",
+   "branches": [
+    {
+     "id": "new-unauthorized-calls-fail",
+     "status": "PASS",
+     "evidence": [
+      "crates/core/tests/cases/partners.rs::partner_consent_scopes_accounts_quota_and_revocation_hold",
+      "tests/acceptance/partners/partners.py::AT21_revocation_in_flight",
+      "tests/browser-consumer/consumer.spec.ts::partner consent and account sharing"
+     ]
+    },
+    {
+     "id": "submitted-payment-lifecycle-traceable",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/partners/partners.py::AT21_revocation_in_flight"
+     ],
+     "note": "Customer-approved partner draft settles once after revocation; intent records partner client and PARTNER trust as initiator and the customer as authorizing actor."
+    },
+    {
+     "id": "versioned-contract-quota-and-signed-callbacks",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/partners/partners.py::sunset_version_410",
+      "tests/acceptance/partners/partners.py::quota_and_client_isolation",
+      "tests/acceptance/partners/partners.py::signed_callback_verified"
+     ]
+    },
+    {
+     "id": "real-partner-contracts-and-certification",
+     "status": "PENDING",
+     "reason": "Synthetic partner clients only; real partner contracts, certification and production enablement need WP-32 and DEC-09."
+    }
+   ]
+  },
+  {
+   "id": "AT-22",
+   "title": "Assisted channel / ATM",
+   "branches": [
+    {
+     "id": "assisted-actor-and-customer-traced",
+     "status": "PASS",
+     "evidence": [
+      "crates/core/tests/cases/partners.rs::assisted_sessions_need_customer_authorization_and_channel_policy",
+      "tests/acceptance/assisted/assisted.py::audit_staff_customer_channel",
+      "tests/browser-consumer/consumer.spec.ts::assisted call center session"
+     ]
+    },
+    {
+     "id": "common-restrictions-across-channels",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/assisted/assisted.py::common_restriction_applies_to_customer",
+      "tests/acceptance/assisted/assisted.py::confirmed_operations_only"
+     ]
+    },
+    {
+     "id": "channel-certification-and-confirmed-operations",
+     "status": "PENDING",
+     "reason": "DEC-09 has not confirmed operations per channel; only read and protective freeze are enabled as synthetic fixtures, and no real channel is certified."
+    },
+    {
+     "id": "atm-common-restrictions-and-bounded-effects",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/atm/atm.py::duplicate_completion_posts_once",
+      "tests/acceptance/atm/atm.py::restriction_and_blocked_card_declined",
+      "tests/acceptance/atm/atm.py::unsupported_operations_declined_without_effect",
+      "tests/browser-consumer/consumer.spec.ts::ATM access"
+     ],
+     "note": "Local network simulator role only (WP-35)."
+    },
+    {
+     "id": "atm-network-certification",
+     "status": "PENDING",
+     "reason": "No real ATM network chosen (DEC-04/DEC-09); certification is required before enablement."
+    }
+   ]
+  },
+  {
+   "id": "AT-23",
+   "title": "Marketing withdrawal, audiences, analytics replay, master data",
+   "branches": [
+    {
+     "id": "purpose-restriction-upheld",
+     "status": "PASS",
+     "evidence": [
+      "crates/documents/tests/cases/security.rs::privacy_restriction_and_personal_export_honour_purpose_and_subject_boundaries"
+     ]
+    },
+    {
+     "id": "no-automatic-merge-or-balance-write",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/database.rs::projections_replay_and_governed_aliases_cannot_change_financial_ownership",
+      "crates/data/tests/cases/analytics.rs::analytical_principals_cannot_post_or_mutate_core_balances",
+      "crates/data/tests/cases/analytics.rs::backfill_correction_schema_upgrade_and_master_conflicts_preserve_financial_history",
+      "tests/acceptance/analytics/analytics.py::analytics_cannot_change_core"
+     ]
+    },
+    {
+     "id": "analytics-replay-lineage-and-purpose",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/analytics.rs::warehouse_snapshots_trace_to_source_schema_transform_and_authorized_purpose",
+      "tests/acceptance/analytics/analytics.py::purpose_denial_recorded",
+      "tests/acceptance/analytics/analytics.py::aggregate_traces_to_source_schema_transform_purpose",
+      "tests/browser-consumer/consumer.spec.ts::governed warehouse: staff backfill, purpose-checked snapshot with lineage and control totals, row trace, reproduction and recorded denial"
+     ],
+     "note": "WP-37: marketing use refused and recorded; ANALYTICS restriction excludes the party from optional analytics, never from mandatory reporting; master conflicts flagged with no automatic merge."
+    },
+    {
+     "id": "selected-analytical-products",
+     "status": "PENDING",
+     "reason": "Only the local warehouse adapter exists (user decision 2026-11-18). Analytical storage/processing products and regulatory report formats need DEC-05/DEC-06/DEC-08."
+    },
+    {
+     "id": "audience-export",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/audiences.rs::consented_audiences_minimized_exports_advisory_partners_and_withdrawal_preserve_evidence",
+      "tests/acceptance/journeys/journeys.py::consented_audience_build",
+      "tests/acceptance/journeys/journeys.py::withdrawal_hides_and_withholds",
+      "tests/acceptance/journeys/journeys.py::export_pseudonymous_signed",
+      "tests/browser-consumer/consumer.spec.ts::audiences and journey partner: consented build, pseudonymous export, partner advice with why, dismissal, withdrawal and outcome report"
+     ],
+     "note": "WP-38 local journey-partner simulator (SIM_JOURNEY): marketing withdrawal excludes members at build, export and delivery, hides suggestions and suppresses new advice; evidence is kept."
+    },
+    {
+     "id": "selected-journey-partners",
+     "status": "PENDING",
+     "reason": "Only the local journey-partner simulator role exists (user direction 2026-11-18). Real journey and audience partners need DEC-05/DEC-06/DEC-09, contracts and managed keys."
+    }
+   ]
+  },
+  {
+   "id": "AT-24",
+   "title": "Late liquidity feed, version changes, operator correction",
+   "branches": [
+    {
+     "id": "staleness-history-correction-trail",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/database.rs::liquidity_requires_current_authenticated_scope_and_never_falls_back_to_old_or_core_cash",
+      "crates/core/tests/database.rs::published_product_pricing_is_versioned_and_independently_approved",
+      "crates/finance/tests/cases/corrections.rs::exact_independent_native_correction_recovers_registration_execution_ack_and_replay"
+     ]
+    },
+    {
+     "id": "routing-policy-versions-shadow-and-rollback",
+     "status": "PASS",
+     "evidence": [
+      "crates/payments/tests/database.rs::routing_falls_back_only_on_proven_nonexecution_books_once_and_policies_need_independent_shadowed_approval",
+      "tests/acceptance/routing/routing.py::policy_change_independent_and_shadowed"
+     ],
+     "note": "WP-39: versioned routing policies; activation needs shadow decisions; rollback re-activates a prior version; in-flight instructions keep the policy they were decided under."
+    },
+    {
+     "id": "liquidity-breach-restricts-and-escalates",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/cases/liquidity.rs::liquidity_forecasts_restrict_on_breach_escalate_reproduce_and_automate_only_with_independent_confirmed_approval",
+      "tests/acceptance/liquidity/liquidity.py::missing_evidence_degraded_and_escalated",
+      "tests/acceptance/liquidity/liquidity.py::breach_stops_external_submission",
+      "tests/browser-consumer/consumer.spec.ts::liquidity forecast: a confirmed breach restricts, an independent approver books the automated action and lifts the restriction"
+     ],
+     "note": "WP-40 (FR-FIN-05): missing or stale liquidity evidence gives a degraded forecast with no confirmed funds and an owned Finance case; a confirmed breach restricts new external submissions (no hold, nothing sent) until an independent approver lifts it on a current within-limits forecast."
+    },
+    {
+     "id": "automated-finance-action-approved-limited-unique",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/cases/liquidity.rs::liquidity_forecasts_restrict_on_breach_escalate_reproduce_and_automate_only_with_independent_confirmed_approval",
+      "tests/acceptance/liquidity/liquidity.py::automated_action_independent_and_booked_once",
+      "tests/acceptance/liquidity/liquidity.py::independent_lift_resumes_payment"
+     ],
+     "note": "WP-40: settlement prefunding is proposed only by a current confirmed breach forecast, capped by the approved per-action limit, confirmed by a Finance maker, approved by a different approver and booked once by Core, which re-checks the approval and the per-action and daily limits. Policy versions are maker/checker."
+    },
+    {
+     "id": "liquidity-forecast-against-real-baseline",
+     "status": "PENDING",
+     "reason": "Forecast accuracy and automation benefit are measured only against local synthetic history (rolling backtest with a previous-day baseline). Real treasury feeds, limits and outcomes need DEC-03, DEC-06, DEC-07 and DEC-12."
+    }
+   ]
+  },
+  {
+   "id": "AT-25",
+   "title": "Full journey and evidence reconstruction",
+   "branches": [
+    {
+     "id": "consistent-ids-and-totals",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/operations.rs::seeded_data_defects_open_owned_alerts_and_repair_cannot_write_balances",
+      "crates/finance/tests/database.rs::report_membership_exact_totals_and_missing_evidence_are_immutable_across_replay",
+      "tests/browser-payments/internal.spec.ts::Periodic financial terms, explicit consent, independent activation and native posting complete with linked correction"
+     ]
+    },
+    {
+     "id": "warehouse-lineage-and-control-totals",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/analytics.rs::warehouse_snapshots_trace_to_source_schema_transform_and_authorized_purpose",
+      "tests/acceptance/analytics/analytics.py::aggregate_traces_to_source_schema_transform_purpose",
+      "tests/browser-consumer/consumer.spec.ts::governed warehouse: staff backfill, purpose-checked snapshot with lineage and control totals, row trace, reproduction and recorded denial"
+     ],
+     "note": "WP-37: each aggregate traces to source rows, schema version, ingestion run, transform digest, purpose and adapter; Core journal = warehouse input = output + purpose exclusions."
+    },
+    {
+     "id": "liquidity-forecast-reproduction",
+     "status": "PASS",
+     "evidence": [
+      "crates/finance/tests/cases/liquidity.rs::liquidity_forecasts_restrict_on_breach_escalate_reproduce_and_automate_only_with_independent_confirmed_approval",
+      "tests/acceptance/liquidity/liquidity.py::forecast_reproduces"
+     ],
+     "note": "WP-40: each forecast stores its liquidity observation, warehouse watermark, policy version and fact cut; reproduction recomputes the digest from them, also after later facts arrive."
+    },
+    {
+     "id": "kpi-snapshots-explicit-denominators",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/outcomes.rs::kpi_snapshots_state_numerators_denominators_and_exclusions_and_are_labelled_local",
+      "tests/acceptance/outcomes/outcomes.py::payment_success_separates_provider_failures",
+      "tests/acceptance/outcomes/outcomes.py::snapshot_labelled_local",
+      "tests/browser-consumer/consumer.spec.ts::outcome KPIs: staff compute a labelled local snapshot with numerators, denominators and exclusions"
+     ],
+     "note": "WP-41: KPI-01..08 as immutable digested snapshots, each with numerator, denominator, exclusions (immature items) and breakdowns; provider and bank payment failures separated; KPI-07 reported as needing a manual sample."
+    },
+    {
+     "id": "reconciliation-timeliness-nfr14",
+     "status": "PENDING",
+     "reason": "NFR-14 needs the approved settlement timezone and a real provider calendar (DEC-04, WP-31)."
+    },
+    {
+     "id": "production-kpi-outcomes-and-cost",
+     "status": "PENDING",
+     "reason": "KPI targets, SLAs, cohorts by risk tier and cost measurement need production data and ratified owners (DEC-07, DEC-12). Local snapshots are labelled local synthetic and are not outcome evidence."
+    }
+   ]
+  },
+  {
+   "id": "AT-26",
+   "title": "Offer version, interrupted flow, profile change, paged history, support case",
+   "branches": [
+    {
+     "id": "resume-and-stable-references",
+     "status": "PASS",
+     "evidence": [
+      "tests/browser-customer/lifecycle.spec.ts::customer completes persistent onboarding, sees exact balances and manages owned servicing",
+      "tests/mobile/device.py::process_death_recovers_persisted_payment",
+      "crates/finance/tests/cases/disclosures.rs::upcoming_version_and_ended_rule_do_not_rewrite_a_saved_disclosure"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-27",
+   "title": "Malformed, oversized, over-quota; control outage; safe errors",
+   "branches": [
+    {
+     "id": "bounded-denial-no-side-effects",
+     "status": "PASS",
+     "evidence": [
+      "tests/integration/ingress.py::result",
+      "crates/controls/tests/database.rs::distinct_signed_controls_pending_conflicts_expiry_and_provider_restart"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "AT-28",
+   "title": "Additional rail, advisory journey, rolling schema upgrade",
+   "branches": [
+    {
+     "id": "rolling-schema-upgrade-compatibility",
+     "status": "PASS",
+     "evidence": [
+      "scripts/migrations.py::check",
+      "crates/core/tests/cases/consumer.rs::forward_upgrade_keeps_original_runs_and_monthly_anchors_survive_short_and_leap_months",
+      "crates/finance/tests/cases/audit_delivery.rs::forward_upgrade_preserves_legacy_time_and_requires_original_native_evidence",
+      "crates/data/tests/cases/analytics.rs::backfill_correction_schema_upgrade_and_master_conflicts_preserve_financial_history",
+      "tests/acceptance/analytics/analytics.py::schema_upgrade_backward_compatible"
+     ]
+    },
+    {
+     "id": "additional-rail-synthetic-batch",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/batch/batch.py::settlement_posts_once",
+      "tests/acceptance/batch/batch.py::return_inside_window_posts_once_linked",
+      "tests/acceptance/batch/batch.py::late_return_flagged_not_posted",
+      "tests/browser-consumer/consumer.spec.ts::next-day batch transfer"
+     ],
+     "note": "One synthetic ACH-style batch credit rail (user decision 2026-11-18); cut-offs, settlement calendar and returns per its supplement."
+    },
+    {
+     "id": "additional-rail-certification-and-other-rails",
+     "status": "PENDING",
+     "reason": "Real ACH, checks, debit, bill pay, wire, lockbox, SWIFT and P2P need selection (DEC-04/DEC-09), individual supplements and certification."
+    },
+    {
+     "id": "routing-benefit-real-baseline",
+     "status": "PENDING",
+     "reason": "Routing benefit (outcomes, fees, latency) against a real baseline needs real providers and production evidence (DEC-03/DEC-04/DEC-07/DEC-11). The local shadow report is labelled LOCAL_SIMULATOR_ONLY."
+    },
+    {
+     "id": "advisory-journey",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/audiences.rs::consented_audiences_minimized_exports_advisory_partners_and_withdrawal_preserve_evidence",
+      "tests/acceptance/journeys/journeys.py::partner_advice_only_boundary",
+      "tests/browser-consumer/consumer.spec.ts::audiences and journey partner: consented build, pseudonymous export, partner advice with why, dismissal, withdrawal and outcome report"
+     ],
+     "note": "WP-38: partner recommendations become advisory insights only; approval, entitlement, foreign action routes and markup are rejected and recorded; Core, entitlements and applications are unchanged."
+    }
+   ]
+  },
+  {
+   "id": "AT-29",
+   "title": "Factor recovery, credential rotation, data export, incident exercise",
+   "branches": [
+    {
+     "id": "recovery-and-rotation",
+     "status": "PASS",
+     "evidence": [
+      "tests/acceptance/security/security.py::staff_reset_independent_approval",
+      "tests/acceptance/security/security.py::secret_rotated_without_restart",
+      "tests/integration/identity.py::issuer_signing_key_rotation"
+     ]
+    },
+    {
+     "id": "export-and-incident-closure",
+     "status": "PASS",
+     "evidence": [
+      "crates/documents/tests/cases/security.rs::access_review_and_findings_need_independent_attributable_decisions"
+     ]
+    },
+    {
+     "id": "real-mfa-and-hsm-custody",
+     "status": "PENDING",
+     "reason": "Phishing-resistant factors and KMS/HSM custody are DEC-10 and WP-31 inputs."
+    }
+   ]
+  },
+  {
+   "id": "AT-30",
+   "title": "Monitoring pattern with duplicate durable events",
+   "branches": [
+    {
+     "id": "one-economic-alert-attributable-disposition",
+     "status": "PASS",
+     "evidence": [
+      "crates/data/tests/cases/operations.rs::duplicate_durable_events_and_replay_produce_one_economic_alert_with_independent_disposition"
+     ]
+    }
+   ]
+  }
+ ]
+}

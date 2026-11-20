@@ -1,13 +1,16 @@
 //! Authoritative synthetic ledger. Channels must resolve current entitlements before invoking commands.
 pub mod accounts;
 pub mod accruals;
+pub mod consumer;
 pub mod corrections;
 pub mod credit;
 pub mod credit_accounting;
+pub mod delegation;
 pub mod finality;
 pub mod finance;
 pub mod finance_snapshot;
 pub mod inquiry;
+pub mod liquidity;
 pub mod payment_accounting;
 pub mod payments;
 pub mod products;
@@ -120,6 +123,91 @@ impl Core {
             self.posted(&mut tx, id, operation).await?;
             if let Some(hold) = hold {
                 self.hold_fact(&mut tx, hold).await?;
+            }
+        }
+        tx.commit().await?;
+        Ok(id)
+    }
+    /// WP-35: posts a completed ATM withdrawal to the ATM settlement account, consuming the authorization hold.
+    /// The operation is the authorization id, so a duplicate completion has exactly one financial effect.
+    pub async fn atm_withdrawal(
+        &self,
+        authorization: Uuid,
+        account: AccountId,
+        amount: Money,
+    ) -> Result<Uuid> {
+        amount.require_positive()?;
+        let mut tx = self.pool.begin().await?;
+        let row = sqlx::query("SELECT * FROM core.atm_withdrawal($1,$2,$3)")
+            .bind(authorization)
+            .bind(account.0)
+            .bind(amount.minor_units())
+            .fetch_one(&mut *tx)
+            .await?;
+        let id = row.get("batch_id");
+        if row.get("created") {
+            self.posted(&mut tx, id, authorization).await?;
+            self.hold_fact(&mut tx, authorization).await?;
+        }
+        tx.commit().await?;
+        Ok(id)
+    }
+    /// WP-36: settles an accepted batch credit once, consuming the entry's hold (operation = entry id).
+    pub async fn batch_credit(
+        &self,
+        entry: Uuid,
+        account: AccountId,
+        amount: Money,
+    ) -> Result<Uuid> {
+        self.batch_post(
+            "SELECT * FROM core.batch_credit($1,$2,$3)",
+            entry,
+            account,
+            amount,
+            None,
+        )
+        .await
+    }
+    /// WP-36: credits a returned batch entry back once, linked to its original settlement batch.
+    pub async fn batch_return(
+        &self,
+        entry: Uuid,
+        account: AccountId,
+        amount: Money,
+        original: Uuid,
+    ) -> Result<Uuid> {
+        self.batch_post(
+            "SELECT * FROM core.batch_return($1,$2,$3,$4)",
+            entry,
+            account,
+            amount,
+            Some(original),
+        )
+        .await
+    }
+    async fn batch_post(
+        &self,
+        statement: &'static str,
+        entry: Uuid,
+        account: AccountId,
+        amount: Money,
+        original: Option<Uuid>,
+    ) -> Result<Uuid> {
+        amount.require_positive()?;
+        let mut tx = self.pool.begin().await?;
+        let mut query = sqlx::query(statement)
+            .bind(entry)
+            .bind(account.0)
+            .bind(amount.minor_units());
+        if let Some(original) = original {
+            query = query.bind(original);
+        }
+        let row = query.fetch_one(&mut *tx).await?;
+        let id = row.get("batch_id");
+        if row.get("created") {
+            self.posted(&mut tx, id, entry).await?;
+            if original.is_none() {
+                self.hold_fact(&mut tx, entry).await?;
             }
         }
         tx.commit().await?;

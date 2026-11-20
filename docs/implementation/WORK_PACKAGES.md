@@ -4,7 +4,7 @@
 
 Read the [implementation plan](../IMPLEMENTATION_PLAN.md), [technical baseline](../decisions/0001-local-implementation-baseline.md), [PRD](../PRD.md) and [architecture](../ARCHITECTURE.md) before coding. Dependencies determine execution order; numeric identifiers alone do not.
 
-**Status:** 41 packages; 17 planned, 1 in progress, 0 blocked, 23 done. **Next:** WP-24.
+**Status:** 41 packages; 0 planned, 0 in progress, 2 blocked, 39 done. **Next:** no ready package.
 
 Requirements below are primary accountability assignments, with supporting packages linked through dependencies and acceptance coverage. There are 77 functional requirements plus 47 business/security/quality/outcome items. Planned coverage is not evidence of implementation.
 
@@ -37,24 +37,24 @@ Sizes S/M/L/XL express relative complexity, not elapsed time. Activation decisio
 | WP-21 — Implement simulated outgoing rail submission and durable intent | S2 / R1 | XL | done | WP-09, WP-20 |
 | WP-22 — Implement evidence ingress, settlement, inbound and linked returns | S2 / R1 | XL | done | WP-07, WP-13, WP-21 |
 | WP-23 — Implement unknown-outcome recovery, cancellation and payment reconciliation | S2 / R1 | XL | done | WP-10, WP-14, WP-21, WP-22 |
-| WP-24 — Implement finance, GL uniqueness, reporting and liquidity | S2 / R1 | XL | in_progress | WP-09, WP-10, WP-23 |
-| WP-25 — Implement statements, secure retrieval, retention and legal holds | S2 / R1 | L | planned | WP-07, WP-16, WP-17, WP-24 |
-| WP-26 — Implement alerts, transaction monitoring and data-quality operations | S2 / R1 | L | planned | WP-09, WP-13, WP-14, WP-17, WP-23, WP-24 |
-| WP-27 — Deliver dedicated native mobile banking | S2 / R1 | XL | planned | WP-18, WP-20, WP-23, WP-25, WP-26 |
-| WP-28 — Qualify security, privacy, account recovery and audit lifecycle | S3 / R1 | L | planned | WP-04, WP-05, WP-07, WP-14, WP-25, WP-26, WP-27 |
-| WP-29 — Package deployment, CI, observability and operations tooling | S3 / R1 | L | planned | WP-01, WP-06, WP-09, WP-18, WP-19, WP-25, WP-26 |
-| WP-30 — Run local acceptance, capacity, fault and recovery qualification | S3 / R1 | XL | planned | WP-23, WP-24, WP-27, WP-28, WP-29 |
-| WP-31 — Integrate chosen real providers and qualify production boundaries | S4 / R1 | XL | planned | WP-13, WP-21, WP-22, WP-23, WP-24, WP-25, WP-26, WP-29, WP-30 |
-| WP-32 — Assemble controlled R1 readiness and launch evidence | S4 / R1 | L | planned | WP-30, WP-31 |
-| WP-33 — Implement consented partner APIs and delegated account authority | S5 / R2 | XL | planned | WP-30 |
-| WP-34 — Implement branch, private banker and call center adapters | S5 / R2 | L | planned | WP-19, WP-28, WP-30 |
-| WP-35 — Implement ATM integration and channel certification | S5 / R2 | XL | planned | WP-23, WP-30, WP-34 |
-| WP-36 — Implement additional payment rails with individual supplements | S5 / R2 | XL | planned | WP-21, WP-22, WP-23, WP-24, WP-30 |
-| WP-37 — Implement governed warehouse, mastered assets and big-data ingestion | S5 / R2 | XL | planned | WP-09, WP-17, WP-24, WP-28, WP-30 |
-| WP-38 — Implement audiences, insights and journey partner orchestration | S5 / R2 | L | planned | WP-26, WP-33, WP-37 |
-| WP-39 — Implement advanced routing and approval optimization | S6 / R3 | XL | planned | WP-23, WP-30, WP-33, WP-36 |
-| WP-40 — Implement liquidity forecasting and controlled finance automation | S6 / R3 | XL | planned | WP-24, WP-30, WP-37 |
-| WP-41 — Measure product outcomes and optimize capacity/cost | S6 / R3 | L | planned | WP-38, WP-39, WP-40 |
+| WP-24 — Implement finance, GL uniqueness, reporting and liquidity | S2 / R1 | XL | done | WP-09, WP-10, WP-23 |
+| WP-25 — Implement statements, secure retrieval, retention and legal holds | S2 / R1 | L | done | WP-07, WP-16, WP-17, WP-24 |
+| WP-26 — Implement alerts, transaction monitoring and data-quality operations | S2 / R1 | L | done | WP-09, WP-13, WP-14, WP-17, WP-23, WP-24 |
+| WP-27 — Deliver dedicated native mobile banking | S2 / R1 | XL | done | WP-18, WP-20, WP-23, WP-25, WP-26 |
+| WP-28 — Qualify security, privacy, account recovery and audit lifecycle | S3 / R1 | L | done | WP-04, WP-05, WP-07, WP-14, WP-25, WP-26, WP-27 |
+| WP-29 — Package deployment, CI, observability and operations tooling | S3 / R1 | L | done | WP-01, WP-06, WP-09, WP-18, WP-19, WP-25, WP-26 |
+| WP-30 — Run local acceptance, capacity, fault and recovery qualification | S3 / R1 | XL | done | WP-23, WP-24, WP-27, WP-28, WP-29 |
+| WP-31 — Integrate chosen real providers and qualify production boundaries | S4 / R1 | XL | blocked | WP-13, WP-21, WP-22, WP-23, WP-24, WP-25, WP-26, WP-29, WP-30 |
+| WP-32 — Assemble controlled R1 readiness and launch evidence | S4 / R1 | L | blocked | WP-30, WP-31 |
+| WP-33 — Implement consented partner APIs and delegated account authority | S5 / R2 | XL | done | WP-30 |
+| WP-34 — Implement branch, private banker and call center adapters | S5 / R2 | L | done | WP-19, WP-28, WP-30 |
+| WP-35 — Implement ATM integration and channel certification | S5 / R2 | XL | done | WP-23, WP-30, WP-34 |
+| WP-36 — Implement additional payment rails with individual supplements | S5 / R2 | XL | done | WP-21, WP-22, WP-23, WP-24, WP-30 |
+| WP-37 — Implement governed warehouse, mastered assets and big-data ingestion | S5 / R2 | XL | done | WP-09, WP-17, WP-24, WP-28, WP-30 |
+| WP-38 — Implement audiences, insights and journey partner orchestration | S5 / R2 | L | done | WP-26, WP-33, WP-37 |
+| WP-39 — Implement advanced routing and approval optimization | S6 / R3 | XL | done | WP-23, WP-30, WP-33, WP-36 |
+| WP-40 — Implement liquidity forecasting and controlled finance automation | S6 / R3 | XL | done | WP-24, WP-30, WP-37 |
+| WP-41 — Measure product outcomes and optimize capacity/cost | S6 / R3 | L | done | WP-38, WP-39, WP-40 |
 
 ## Primary requirement allocation
 
@@ -1093,7 +1093,7 @@ Verification required:
 
 ## WP-24 — Implement finance, GL uniqueness, reporting and liquidity
 
-**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** XL. **Status:** in_progress.
+**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-09, WP-10, WP-23.
 
@@ -1128,11 +1128,13 @@ Verification required:
 
 - AT-12/24/25, business-calendar cut-off, repeated accrual job and GL timeout/replay cases.
 
-**Evidence entries recorded:** 8.
+**Completion notes:** Completed the user-approved essential synthetic R1 scope: unique GL, reports/revisions/liquidity and owned reconciliation; independently approved financial terms, explicit owner consent/pending withdrawal, independently approved native activation, sequential immutable UTC account-period finality, exact monthly fee/daily accrual jobs and linked corrections. See wp24-essential-scope.md for deliberate deferrals. This is not production R1 qualification. Stop before WP-25 per user instruction.
+
+**Evidence entries recorded:** 10.
 
 ## WP-25 — Implement statements, secure retrieval, retention and legal holds
 
-**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** L. **Status:** planned.
+**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-07, WP-16, WP-17, WP-24.
 
@@ -1167,11 +1169,13 @@ Verification required:
 
 - AT-15/16 plus object/metadata partial failure, correction and period-boundary cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local synthetic scope (migration 0062, schema 62): readiness-gated immutable monthly statement versions from native Core journals (month ended in Core UTC clock, enrolled periodic finality complete; exact opening/movements/closing; idempotent, concurrency-safe; LINKED_CORRECTION supersession with identical totals, visible SOURCE_CHANGED); two-minute single-use actor-bound retrieval with append-only access evidence; versioned fixture retention, account/person legal holds with independent release, evidence-first permitted disposal with tombstones; verified data-subject requests with per-record allowed/restricted outcomes; customer Statements & documents, staff Records & retention, worker statement cycle. See docs/implementation/statements-retention.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-26 — Implement alerts, transaction monitoring and data-quality operations
 
-**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** L. **Status:** planned.
+**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-09, WP-13, WP-14, WP-17, WP-23, WP-24.
 
@@ -1205,11 +1209,13 @@ Verification required:
 
 - AT-13/20/25/30 with duplicate events, late feeds, consent preferences and redacted notification capture.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local synthetic scope (migration 0063, schema 63): fixture transaction-monitoring rules over durable projected journal facts with one alert per economic episode, non-customer MONITORING cases and independent attributable disposition; eight data-quality checks with owned DATA cases, next actions, auto-clear and steward acknowledgement; read-model-only projection repair; REPEATABLE READ operations snapshots and durable-identifier traces; deduplicated purpose-scoped safe notifications with synthetic capture, outage retries and failure alerts; staff Operations monitor, customer Messages/preferences and worker loops. See docs/implementation/operations-monitoring.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-27 — Deliver dedicated native mobile banking
 
-**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** XL. **Status:** planned.
+**Stage:** S2 — Money, records and R1 channels. **Release:** R1. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-18, WP-20, WP-23, WP-25, WP-26.
 
@@ -1242,11 +1248,13 @@ Verification required:
 
 - Native/emulator lifecycle, redirect/secure storage, accessibility, payment timeout and document authorization tests.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local scope on an Android emulator (iOS explicitly pending): Expo SDK 54 / React Native 0.81 app on the generated API contract; system-browser PKCE for bank-mobile, Keystore-held rotating refresh tokens, sign-out/device removal with issuer revocation; native action-bound step-up (migration 0064, schema 64) verifying fresh ID token nonce/audience/auth_time; persisted payment operations recovered after process death; offline command blocking; background privacy cover; accessible accounts/onboarding/payments/statements/support/profile screens. See docs/implementation/native-mobile.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-28 — Qualify security, privacy, account recovery and audit lifecycle
 
-**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** L. **Status:** planned.
+**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-04, WP-05, WP-07, WP-14, WP-25, WP-26, WP-27.
 
@@ -1280,11 +1288,13 @@ Verification required:
 
 - AT-14/16/19/27/29 including actual issuer revocation, credential rotation and sensitive-data inspection.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local synthetic scope (migration 0065, schema 65): issuer-backed lost-device and credential-reset recovery with recorded ownership verification, durable risk signals and independent security approval; least-privilege executor client with file-based rotatable secret; AES-256-GCM row-bound sealing of server-held session tokens with rotatable key ring (SF-001 resolved); privacy restriction and own-subject personal export; access recertification and findings register with independent disposition; sensitive-log inspection; sanitized threat model and incident runbook. See docs/implementation/security-lifecycle.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-29 — Package deployment, CI, observability and operations tooling
 
-**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** L. **Status:** planned.
+**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-01, WP-06, WP-09, WP-18, WP-19, WP-25, WP-26.
 
@@ -1319,11 +1329,13 @@ Verification required:
 
 - Image/build/Compose, rolling compatibility, configuration failure, alert delivery and runbook smoke.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local synthetic scope (migration 0066, schema 66): fail-closed runtime and secret-file validation; checksum-locked expand-only migrations; local CI-equivalent gated pipeline with sanitized evidence (no remote CI host chosen, DEC-05); token-gated Prometheus metrics including unbalanced-journal gauge; durable paging with escalation, audited acknowledgement and recorded on-call roster; backup/restore drill with invariant and chain-head equality; upgrade/rollback, backup and on-call runbooks. Remote CI, deployed policies, real pager and staffed on-call remain DEC-05/DEC-12/WP-31 inputs. See docs/implementation/operations-tooling.md and evidence/WP-29.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-30 — Run local acceptance, capacity, fault and recovery qualification
 
-**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** XL. **Status:** planned.
+**Stage:** S3 — R1 engineering qualification. **Release:** R1. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-23, WP-24, WP-27, WP-28, WP-29.
 
@@ -1357,11 +1369,13 @@ Verification required:
 
 - Full local acceptance plus database concurrency, loss/replay and measured load/restore reports.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed local single-host qualification: branch-level acceptance manifest (30 scenarios, 54 branches: PASS 41, FAIL 1, PENDING 7, NOT_APPLICABLE_R1 5) validated by make acceptance; reproducible load (bank-load http/core, tests/load/run.py) with invariants and peak-connection budget; resilience drills D1-D5 (worker, API, broker, issuer, provider) gated in CI. Sustained 600 s NFR-02/03/04/05 rates passed (read p95 18.2 ms, command p95 46.9 ms, 0 errors). The 5-minute 3x burst FAILS for payment intents (~69/s of 75/s on this host; CF-04, recorded as AT-18 FAIL) after fixing two serializations found here (CF-01 single audit-chain streams sharded into 16 chains; CF-02 quota hot row single-statement async commit) and adding BANK_DB_POOL_MAX. One-hour duration, production capacity, multi-zone/regional recovery, real providers, iOS and manual accessibility remain unverified. See docs/implementation/local-qualification.md and evidence/WP-30.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-31 — Integrate chosen real providers and qualify production boundaries
 
-**Stage:** S4 — Provider integration and controlled R1. **Release:** R1. **Size:** XL. **Status:** planned.
+**Stage:** S4 — Provider integration and controlled R1. **Release:** R1. **Size:** XL. **Status:** blocked.
 
 **Implementation dependencies:** WP-13, WP-21, WP-22, WP-23, WP-24, WP-25, WP-26, WP-29, WP-30.
 
@@ -1397,11 +1411,13 @@ Verification required:
 
 - Provider-specific contract/certification suites, real deployment recovery and production configuration validation.
 
+**Blocker:** No real providers, market or production decisions are available: DEC-01 (legal entity/market), DEC-03 (real terms/chart), DEC-04 (selected rail/provider, settlement accounts, certification), DEC-05 (production cloud/storage/issuer architecture), DEC-06 (control/retention inventory), DEC-07 (ratified workload/recovery budget), DEC-10 (devices/MFA/KMS-HSM custody), DEC-11 (business replay/hold rules) and DEC-12 (owners/launch authority) are open, and no provider sandbox credentials exist. Simulator results cannot satisfy this package.
+
 **Evidence entries recorded:** 0.
 
 ## WP-32 — Assemble controlled R1 readiness and launch evidence
 
-**Stage:** S4 — Provider integration and controlled R1. **Release:** R1. **Size:** L. **Status:** planned.
+**Stage:** S4 — Provider integration and controlled R1. **Release:** R1. **Size:** L. **Status:** blocked.
 
 **Implementation dependencies:** WP-30, WP-31.
 
@@ -1436,11 +1452,13 @@ Verification required:
 
 - Complete R1 evidence/requirement audit, operational rehearsal and actual qualified deployment/pilot verification.
 
+**Blocker:** Depends on WP-31, which is blocked on real providers, market and production decisions, and requires DEC-01 to DEC-08 and DEC-10 to DEC-12 (legal entity, approved terms and policies, certified rails, production architecture, ratified workload, staffing and launch authority). R1 readiness cannot be assembled from local simulator results.
+
 **Evidence entries recorded:** 0.
 
 ## WP-33 — Implement consented partner APIs and delegated account authority
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-30.
 
@@ -1475,11 +1493,13 @@ Verification required:
 
 - AT-21 plus scoped client, account delegation, quota and version-transition cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed as a local synthetic R2 capability (migration 0067, schema 67): separate partners issuer realm with client-credentials tokens accepted only for registry-ACTIVE clients under maker/checker approval and immediate suspension; scoped, expiring, prospectively revocable customer consent authorized in a bank channel and re-checked by Controls at every decision; non-disclosing errors; versioned contract with Sunset/Deprecation; per-client quotas; HMAC-signed consent callbacks with once-shown sealed secrets; partner-drafted payments approved only by the customer, with a write-once authorized_actor so revocation cannot strand an approved payment (AT-21); delegated VIEW/PAY-up-to-limit account authority with immediate revocation and preserved actor evidence. Production enablement requires WP-32 and DEC-06/DEC-09/DEC-11. See docs/implementation/partner-consents.md and evidence/WP-33.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-34 — Implement branch, private banker and call center adapters
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** L. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-19, WP-28, WP-30.
 
@@ -1513,11 +1533,13 @@ Verification required:
 
 - AT-22 and assisted customer handoff, restrictions and staff-audience negative tests.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed as a local synthetic R2 capability (migration 0068, schema 68): assisted sessions for branch, private banker and call center staff with channel-permitted verification, customer authorization in a bank channel, staff actor plus represented customer plus channel on every decision, immutable per-channel policy enabling only read and protective freeze (payments disabled until DEC-09), common account restrictions, recorded decision reasons and handoff refusal. Real channel integration and certification remain DEC-09/WP-32 inputs; ATM is WP-35. See docs/implementation/assisted-channels.md and evidence/WP-34.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-35 — Implement ATM integration and channel certification
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-23, WP-30, WP-34.
 
@@ -1551,11 +1573,13 @@ Verification required:
 
 - AT-22/28 plus ATM-specific lost response, duplicate, reversal and network certification cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed as a local synthetic R2 capability against a network simulator role (migration 0069, schema 69): immutable ATM channel supplement (balance inquiry and cash withdrawal enabled, all other operations explicitly declined), HMAC-signed network messages and responses with PIN assertion, owner-linked synthetic card tokens, authorization holds keyed by authorization id with a single ATM_WITHDRAWAL posting, stored-response replay for duplicate messages, reversal before completion, late reversals flagged for review, timeout expiry, per-withdrawal and daily limits, Core-enforced common restrictions, and signed settlement reconciliation listing every difference. Real network, certification, card issuing and cash logistics remain out of scope (DEC-04/DEC-09/WP-32). See docs/implementation/atm-channel.md and evidence/WP-35.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-36 — Implement additional payment rails with individual supplements
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-21, WP-22, WP-23, WP-24, WP-30.
 
@@ -1590,11 +1614,13 @@ Verification required:
 
 - Per-rail AT-08/09/10/11/12/28 branches and certification evidence.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed with user-approved scope (2026-11-18): one synthetic ACH-style batch credit rail (SIM_BATCH, migration 0070, schema 70) as the template for later rails — immutable supplement (cutoff, business calendar, T+1, per-entry limit, R02/R03/R04 returns, 2-day return window), common action-bound approval before any hold, entry-keyed hold/BATCH_CREDIT/linked BATCH_RETURN, cancellation before cutoff, immutable outbound files sealed by worker or operator, signed network acknowledgement/settlement/return with replayable responses, late returns flagged. Real ACH and checks, debit, bill pay, wire, lockbox, SWIFT and P2P remain pending selection and certification (DEC-04/DEC-09). Also fixed a latent WP-27 native step-up timestamp race. See docs/implementation/batch-rail.md and evidence/WP-36.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-37 — Implement governed warehouse, mastered assets and big-data ingestion
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-09, WP-17, WP-24, WP-28, WP-30.
 
@@ -1629,11 +1655,13 @@ Verification required:
 
 - AT-13/23/25/28 lineage, backfill, purpose denial and schema compatibility cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed with user-approved scope (2026-11-18): one local warehouse adapter (LOCAL_WAREHOUSE, migration 0071, schema 71) as the template for later analytical storage/processing adapters — versioned datasets with backward-compatible schema registration, append-only facts keyed by economic identity with duplicate/conflict/reject handling, worker incremental ingestion and evidenced steward backfill, versioned digest-carrying transforms, immutable snapshots with fact/master cuts, schema/run/transform/purpose/adapter lineage, reproduction and row tracing, completeness flags (missing/stale sources, economic and master conflicts, Core control-total mismatch), purpose checks with recorded denials and WP-28 restriction exclusion, corrections and approved master merges without rewriting history, and a Data role with no Core schema usage. Analytical products and regulatory formats remain pending (DEC-05/06/08). See docs/implementation/governed-warehouse.md and evidence/WP-37.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-38 — Implement audiences, insights and journey partner orchestration
 
-**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** L. **Status:** planned.
+**Stage:** S5 — R2 capability expansion. **Release:** R2. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-26, WP-33, WP-37.
 
@@ -1668,11 +1696,13 @@ Verification required:
 
 - AT-23/28 plus purpose-revocation, export restriction and advisory-boundary cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed with user-directed scope (2026-11-18): one local journey-partner simulator role (SIM_JOURNEY, migration 0072, schema 72) as the template for selected partners — minimized warehouse signals, versioned digested segments (marketing and SERVICE_OUTREACH), consent and restriction checks at build, export, delivery, receipt and display, per-audience pseudonymous tokens, advisory insights with provenance and a customer-facing why, signed advice-only partner channel with recorded rejections and replay, withdrawal that hides and withholds without deleting evidence, and outcome reports with denominators, watermarks and late-data flags. Real audience/journey partners remain pending (DEC-05/06/09). See docs/implementation/audiences-journeys.md and evidence/WP-38.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-39 — Implement advanced routing and approval optimization
 
-**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** XL. **Status:** planned.
+**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-23, WP-30, WP-33, WP-36.
 
@@ -1706,11 +1736,13 @@ Verification required:
 
 - Cross-provider unknown-outcome, approval independence and shadow/rollback invariant cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed with user-directed scope (2026-11-18): template with two simulated providers for the same rail (SYNTHETIC_RAIL and SYNTHETIC_RAIL_B, migration 0073, schema 73) — versioned, validated route policies with maker/checker changes by independent staff, health measured from recorded simulator outcomes, attributable route decisions with shadow choices, a Core-owned route log that allows fallback only on signed, single-use proof of non-execution from the current provider with the same operation, amount and hold, inquiry (never re-route) on unknown outcomes, and shadow evaluation with a minimum sample before activation and compatible rollback. Benefit against a real baseline remains pending (AT-28 PENDING; DEC-03/04/07/11). Known limits: settlement-statement reconciliation, inbound credits and recipient verification use provider A only. See docs/implementation/payment-routing.md and evidence/WP-39.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-40 — Implement liquidity forecasting and controlled finance automation
 
-**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** XL. **Status:** planned.
+**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** XL. **Status:** done.
 
 **Implementation dependencies:** WP-24, WP-30, WP-37.
 
@@ -1744,11 +1776,13 @@ Verification required:
 
 - AT-24/25 plus forecast reproducibility, stale input and limit-breach automation cases.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed locally (2026-11-19, migration 0074, schema 74): reproducible liquidity forecasts from the WP-24 signed observation, warehouse watermark and WP-37 settlement-outflow history at a recorded fact cut; confirmed funds only from fresh signed evidence; versioned maker/checker policies (model, limits, restricted actions, automation, escalation); a breach restricts new external submissions (no hold, nothing sent) and opens an owned Finance case, degraded forecasts escalate but cannot justify automation; settlement prefunding proposed only by a current confirmed breach, capped by the per-action limit, confirmed by a Finance maker, approved by a different approver and booked once by Core after re-checking approval and per-action/daily limits; independently approved lifts on a current within-limits forecast; rolling backtest against actual outflow labelled local synthetic only. Real treasury feeds, limits and accuracy against real outcomes remain pending (AT-24 real-baseline PENDING; DEC-03/06/07/12). Known limits: only the single-payment external submission path is gated. See docs/implementation/liquidity-forecasting.md and evidence/WP-40.md.
+
+**Evidence entries recorded:** 1.
 
 ## WP-41 — Measure product outcomes and optimize capacity/cost
 
-**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** L. **Status:** planned.
+**Stage:** S6 — R3 optimization. **Release:** R3. **Size:** L. **Status:** done.
 
 **Implementation dependencies:** WP-38, WP-39, WP-40.
 
@@ -1785,4 +1819,6 @@ Verification required:
 
 - Before/after load/outcome/cost report plus affected full financial/security/recovery regression.
 
-**Evidence entries recorded:** 0.
+**Completion notes:** Completed within the user-chosen local capacity template (2026-11-19, migration 0075, schema 75): KPI-01..08 as immutable digested snapshots with explicit numerators, denominators, exclusions and breakdowns (provider vs bank payment failures; KPI-07 manual sample; no-denominator KPIs never met), labelled local synthetic; one measured CF-04 change (intent creation no longer re-validates its just-validated quote; one authority read per amount check) taking burst intent timeouts from 21,970 to 0 on the same host; ADR 0002 keeps the modular monolith and PostgreSQL. Not production measurement: KPI targets/SLAs/cohorts, cost and production capacity remain pending (DEC-07, DEC-12); AT-18 burst stays FAIL because the single host delivered only 86% of the 3x schedule. See docs/implementation/outcomes-capacity.md and evidence/WP-41.md.
+
+**Evidence entries recorded:** 1.

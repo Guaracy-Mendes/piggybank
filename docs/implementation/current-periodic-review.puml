@@ -1,0 +1,35 @@
+@startuml
+title UML - explicit preview review, atomic proof and post-commit response loss
+actor Customer
+boundary "Customer disclosure view" as UI
+control "Customer BFF / API" as API
+participant "Controls / native ownership" as Authority
+participant "Documents native review" as Documents
+participant "Core V1 material" as Core
+database "Immutable review / requests / outbox" as DB
+Customer -> UI : Read exact approved preview and check explicit review statement
+UI -> API : POST exact disclosure digest + acknowledged=true\nOriginal Idempotency-Key / Origin / CSRF
+API -> Authority : Authenticate current customer / canonical account owner
+API -> Documents : Account + native policy + original actor/person/key/digest
+Documents -> Documents : Lock issuer/subject/client/key then canonical person/account/policy
+Documents -> Authority : Recheck and SHARE-lock current person link and active OWNER
+alt First reviewed material
+ Documents -> Core : Derive original native V1 material; verify policy integrity/product
+ Core --> Documents : Exact full material
+ Documents -> Documents : Require displayed digest; fixed statement and server UTC clock
+ Documents -> DB : Atomically retain receipt + private attribution + request mapping + redacted event
+else Exact retry or canonical alias
+ Documents -> DB : Verify original immutable receipt / scope / private attribution
+end
+Documents --> API : Independently verified original receipt
+API -> API : Validate full typed V1 proof before transaction commit
+API --> UI : Response lost after native commit
+UI -> API : Retry original key/body or GET own saved review
+API -> Authority : Current owner still required
+API -> DB : Verify exact retained record; no current-policy regeneration
+DB --> UI : Same original receipt UUID / reviewed time / material / hashes
+note over Customer,DB
+PREVIEW_REVIEW_ONLY. No financial consent, enrollment, activation or posting.
+Saved historical material does not certify current live policy validity.
+end note
+@enduml

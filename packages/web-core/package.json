@@ -1,1 +1,21 @@
-{"name":"@piggybank/web-core","version":"0.1.0","private":true,"type":"module","exports":{".":"./src/index.tsx","./style.css":"./src/style.css"},"dependencies":{"@piggybank/api-client":"0.1.0","react":"19.3.1"},"devDependencies":{"@types/react":"19.3.0"},"scripts":{"check":"tsc --noEmit"}}
+{
+  "name": "@piggybank/web-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./style.css": "./src/style.css",
+    "./official.css": "./src/official.css"
+  },
+  "dependencies": {
+    "@piggybank/api-client": "0.1.0",
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit"
+  }
+}

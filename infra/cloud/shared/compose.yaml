@@ -52,7 +52,7 @@ services:
       KC_HEALTH_ENABLED: 'true'
       KC_BOOTSTRAP_ADMIN_USERNAME: local-admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?required}
-    volumes: [./identity:/opt/keycloak/data/import:ro]
+    volumes: [./identity:/opt/keycloak/data/import:ro, ./identity/themes/piggybank:/opt/keycloak/themes/piggybank:ro]
     logging: *logs
   api:
     <<: *app

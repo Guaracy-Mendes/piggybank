@@ -14,6 +14,8 @@ pub enum Trust {
     Customer,
     Workforce,
     Service,
+    /// WP-33 registered partner applications (client credentials). Never a browser login trust.
+    Partner,
 }
 impl Trust {
     pub fn parse(value: &str) -> Result<Self, StatusCode> {
@@ -21,6 +23,7 @@ impl Trust {
             "customer" => Ok(Self::Customer),
             "workforce" => Ok(Self::Workforce),
             "service" => Ok(Self::Service),
+            // "partner" is deliberately not parseable: partners have no interactive login or session.
             _ => Err(StatusCode::NOT_FOUND),
         }
     }
@@ -29,13 +32,14 @@ impl Trust {
             Self::Customer => "customer",
             Self::Workforce => "workforce",
             Self::Service => "service",
+            Self::Partner => "partner",
         }
     }
     pub fn realm(self) -> &'static str {
-        if self == Self::Customer {
-            "customers"
-        } else {
-            "workforce"
+        match self {
+            Self::Customer => "customers",
+            Self::Partner => "partners",
+            Self::Workforce | Self::Service => "workforce",
         }
     }
     pub fn audience(self) -> &'static str {
@@ -43,13 +47,16 @@ impl Trust {
             Self::Customer => "bank-customer",
             Self::Workforce => "bank-workforce",
             Self::Service => "bank-service",
+            Self::Partner => "bank-partner",
         }
     }
+    /// The fixed first-party client. Partner clients are dynamic and checked against the registry instead.
     pub fn client(self) -> &'static str {
         match self {
             Self::Customer => "customer-web",
             Self::Workforce => "staff-web",
             Self::Service => "bank-worker",
+            Self::Partner => "",
         }
     }
     pub fn client_secret(self) -> String {
@@ -64,6 +71,7 @@ impl Trust {
             Self::Customer => TrustContext::Customer,
             Self::Workforce => TrustContext::Workforce,
             Self::Service => TrustContext::Service,
+            Self::Partner => TrustContext::Partner,
         }
     }
 }
@@ -175,7 +183,9 @@ impl Verifier {
     }
     pub async fn verify(&self, token: &str, trust: Trust) -> Result<Identity, StatusCode> {
         let claims = self.claims(token, trust, trust.audience()).await?;
-        let allowed = claims.azp == trust.client()
+        // Partner tokens name a registered client in `azp`; the caller must confirm it is ACTIVE in the registry.
+        let allowed = (trust == Trust::Partner && claims.azp.starts_with("partner-"))
+            || (trust != Trust::Partner && claims.azp == trust.client())
             || (trust == Trust::Customer && claims.azp == "bank-mobile");
         if !allowed || claims.exp.saturating_sub(claims.iat) > 60 {
             return Err(StatusCode::UNAUTHORIZED);

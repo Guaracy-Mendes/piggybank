@@ -38,6 +38,8 @@ def main():
         (stage / 'deployment/release.env').write_text(f'RELEASE_ID={args.release}\n')
         paths=json.loads((ROOT/'contracts/openapi/implemented.json').read_text())['paths']
         features=['customer-periodic-disclosures-v1'] if '/api/v1/accounts/{id}/periodic-disclosures/{policyId}' in paths else []
+        if '/api/v1/accounts/{id}/periodic-disclosures/{policyId}/review' in paths:features.append('customer-periodic-preview-reviews-v1')
+        if '/api/v1/staff/finance/periodic-activations' in paths:features.append('periodic-finance-r1-v1')
         manifest = {'release': args.release, 'platform': 'linux/amd64', 'profile': 'synthetic-local',
                     'schemaVersion': max(int(p.name.split('_')[0]) for p in (ROOT / 'migrations').glob('*.sql')),
                     'files': {}, 'features': features}

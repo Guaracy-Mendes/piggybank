@@ -1,118 +1,65 @@
 # Implementation completion status
 
-Snapshot: the current [authoritative backlog](backlog.json) and latest accepted release, `cloud-20261112-02`. The latest checkpoint evidence was recorded at **2026-11-13 00:02 UTC**, or **2026-11-12 20:02 America/Porto_Velho**. This report summarizes implemented scope and recorded validation; the complete target remains in the [PRD](../PRD.md) and [execution board](WORK_PACKAGES.md).
+A separate user-authorized [official UI and wealth extension](ui/ARCHITECTURE.md) is now in progress. Schema 76 (2026-11-19) adds expense splits with paid-request linking, favourites, merchant saving rules and a labelled safe-to-spend figure; schema 77 adds vault photo goals; QR payment codes complete UI-22 sharing (no migration); schema 78 counts merchant saving rules toward saving streaks and badges; self-service registration at the issuer completes UI-02; schema 79 adds email verification by one-time code with simulated delivery (UI-03); 24 of 32 screens are now locally implemented ([evidence](ui/EVIDENCE.md)). Its [32-screen coverage](ui/SCREEN_COVERAGE.md) and [local CX test](ui/LOCAL_CX_TEST.md) are tracked separately from the 41-package roadmap below. The new source does not change the historical essential WP-24 completion or the sealed schema-56 archive.
 
-## Overall completion
+Updated 2026-11-19. **WP-41 is complete** within the user-chosen local capacity template. KPI-01..08 are immutable snapshots with explicit denominators and exclusions, labelled local synthetic. One measured change took burst intent timeouts from 21,970 to 0 on the same host. ADR 0002 keeps the modular monolith ([evidence](evidence/WP-41.md), [specification](outcomes-capacity.md)). Production KPIs, cost and capacity remain pending (DEC-07, DEC-12). AT-18 burst stays FAIL: the host delivered only 86% of the 3x schedule. **WP-32 is blocked** behind WP-31 and launch decisions. **WP-40 is complete** locally: reproducible liquidity forecasts from signed liquidity evidence and warehouse history at a recorded cut, with confirmed funds only from fresh signed evidence. Policies are versioned and maker/checker. A breach restricts new external submissions and opens an owned Finance case. Settlement prefunding is proposed only by a confirmed breach and needs a maker and a different approver; Core books it once within approved per-action and daily limits ([evidence](evidence/WP-40.md), [specification](liquidity-forecasting.md)). Real treasury feeds and accuracy against real outcomes remain pending (DEC-03/06/07/12). **WP-39 is complete** with user-directed scope: a template with two simulated providers for the same rail. Route policies are versioned and changed by maker/checker. Provider health is measured from recorded simulator outcomes. Fallback happens only on signed, single-use proof that the original instruction was not executed, with the same operation, amount and hold, so a payment cannot run on two providers. Unknown outcomes are inquired, never re-routed. Shadow evaluation and compatible rollback precede activation ([evidence](evidence/WP-39.md), [specification](payment-routing.md)). Benefit against a real baseline remains pending (AT-28, DEC-03/04/07/11). **WP-38 is complete** with user-directed scope: one local journey-partner simulator role as the template for selected partners. Consent-checked audiences use minimized signals and pseudonymous tokens. Advisory insights carry provenance and a customer-facing why. The signed partner channel accepts advice only. Withdrawal hides and withholds without deleting evidence, and outcome reports state denominators, watermarks and late data ([evidence](evidence/WP-38.md), [specification](audiences-journeys.md)). Real partners remain pending (DEC-05/06/09). **WP-37 is complete** with user-approved scope: one local warehouse adapter as the template for later analytical adapters. It has versioned datasets with backward-compatible schemas, ingestion deduplicated by economic identity, reproducible snapshots with lineage, purpose checks, completeness flags and Core control totals, and no Core write path ([evidence](evidence/WP-37.md), [specification](governed-warehouse.md)). Analytical products remain pending selection (DEC-05/06/08). **WP-36 is complete** with user-approved scope: one synthetic ACH-style batch credit rail as the template for later rails. It has a cutoff, calendar, T+1 settlement and returns, with common approval and entry-keyed postings ([evidence](evidence/WP-36.md), [supplement](batch-rail.md)). Other rails remain pending selection. **WP-35 is complete** against a local ATM network simulator role: a confirmed-operations supplement, signed channel messages, holds and single postings keyed by authorization, duplicate replay, reversal and timeout handling, and item-by-item settlement reconciliation ([evidence](evidence/WP-35.md), [supplement](atm-channel.md)). **WP-34 is complete** as a local synthetic R2 capability: assisted branch, private-banker and call-center sessions the customer authorizes in a bank channel, with only confirmed operations (read and protective freeze; no payments until DEC-09), common restrictions and recorded staff/customer/channel authority ([evidence](evidence/WP-34.md), [specification](assisted-channels.md)). **WP-33 is complete** as a local synthetic R2 capability: registered partner clients with maker/checker approval, scoped and revocable customer consent re-checked at every decision, a versioned contract, quotas, signed callbacks, partner-drafted payments that only the customer can approve and that survive revocation (AT-21), and bounded delegated account authority ([evidence](evidence/WP-33.md), [specification](partner-consents.md)). Production enablement still requires WP-32. **WP-30 is complete** as a local single-host qualification. The branch-level acceptance manifest has 30 scenarios and 54 branches: PASS 41, FAIL 1, PENDING 7, NOT_APPLICABLE_R1 5. The sustained NFR-02 to NFR-05 workload passed for 600 s, and resilience drills D1–D5 passed. **The 5-minute 3x burst fails for payment intents on this host** (CF-04, recorded as AT-18 FAIL), after two serializations found during qualification were fixed. See the [qualification report](local-qualification.md) and [evidence](evidence/WP-30.md). **WP-29 is complete** within its local synthetic scope: fail-closed configuration, locked expand-only migrations, a gated local CI-equivalent pipeline, metrics, paging with escalation, and a backup/restore drill ([evidence](evidence/WP-29.md), [specification](operations-tooling.md)). **WP-31 is blocked** on real provider, market and production decisions (DEC-01, DEC-03 to DEC-07, DEC-10 to DEC-12); simulator results cannot satisfy it. WP-32 depends on it. **WP-28 is complete** within its local synthetic scope: issuer-backed recovery with independent approval, sealed session tokens, privacy restriction/export, access recertification and an independently dispositioned findings register ([evidence](evidence/WP-28.md), [specification](security-lifecycle.md), [threat model](../security/threat-model.md)). **WP-27 is complete** on an Android emulator with iOS explicitly pending: native app with system-browser PKCE, Keystore-held rotating tokens, native action-bound step-up and persisted-operation recovery ([evidence](evidence/WP-27.md), [specification](native-mobile.md), [runbook](../runbooks/mobile-development.md)). **WP-26 is complete** within its local synthetic scope: transaction monitoring with independent disposition, owned data-quality alerts with balance-safe repair, fixed-snapshot operations reports, traces and safe notifications ([evidence](evidence/WP-26.md), [specification](operations-monitoring.md), [runbook](../runbooks/event-replay.md)). **WP-25 is complete** within its local synthetic scope: readiness-gated statement versions, single-use retrieval, fixture retention, legal holds, evidenced disposal and data-subject requests. See the [WP-25 evidence](evidence/WP-25.md), [specification](statements-retention.md), [runbook](../runbooks/statements-retention.md) and [authoritative board](WORK_PACKAGES.md). WP-24 remains complete for its [user-approved essential scope](wp24-essential-scope.md) ([evidence](evidence/WP-24-complete.md)). No package is ready: WP-31 and WP-32 need external decisions.
 
-| Work-package status | Count | Packages |
+| Status | Count | Packages |
 | --- | ---: | --- |
-| Complete | 23 | WP-01–WP-23 |
-| In progress | 1 | WP-24 |
-| Planned | 17 | WP-25–WP-41 |
-| Total | 41 | Full R0–R3 roadmap |
+| Complete within documented local scope | 39 | WP-01–WP-30, WP-33–WP-41 |
+| In progress | 0 | None |
+| Blocked | 2 | WP-31 (external decisions and providers), WP-32 (depends on WP-31 and launch decisions) |
+| Planned | 0 | None |
+| Total | 41 | Full roadmap |
 
-**23 / 41 = 56.1% complete by work-package count.** Packages have different sizes, so this is an unweighted delivery measure, not an estimate of effort remaining or production readiness. Partial WP-24 work is not counted as complete.
+39/41 = **95.1% by unweighted package count**. Package sizes differ; this is not an effort or production-readiness percentage. R0 has 9/9 packages complete; R1 has 21/23 complete; WP-31 and WP-32 are blocked. R2 has 6/6 complete locally (WP-33 to WP-38). R3 has 3/3 complete locally (WP-39 to WP-41; WP-41 as a local template). The full R1 release remains incomplete.
 
-The application is a working **synthetic evaluation system**. Real local OIDC authentication is integrated; banking/control/provider scenarios use the documented synthetic profile. Production launch remains outstanding.
+## Implemented essentials
 
-| Delivery area | Packages | Status |
-| --- | --- | --- |
-| Runtime, contracts, identity, authorization, audit, durable operations and events | WP-01–WP-09 | Complete within local synthetic scope |
-| Ledger, products, parties/accounts, controls, onboarding, terms, servicing and web portals | WP-10–WP-19 | Complete within local synthetic scope |
-| Internal transfers, simulated external payments, settlement, incoming funds, returns and recovery | WP-20–WP-23 | Complete within local synthetic scope |
-| Finance, GL, reporting, liquidity and periodic accounting | WP-24 | In progress; implemented increments listed below |
-| Statements, alerts/monitoring and dedicated native mobile | WP-25–WP-27 | Planned |
-| Security qualification, operations/CI, capacity/recovery, real providers and R1 launch evidence | WP-28–WP-32 | Planned; deployment scaffolding already exists |
-| Partner APIs, additional channels/rails, enterprise data and later optimization | WP-33–WP-41 | Planned R2/R3 scope |
+- Platform contracts, identity/session/CSRF/current authority, immutable audit/evidence, durable operations and events.
+- Native balanced ledger, exact money, holds/restrictions, versioned products, parties/accounts, onboarding, account-opening terms, servicing, customer/staff web.
+- Internal transfers; simulated external reservation/submission/settlement; incoming suspense/allocation; linked returns, cancellation and native receipt recovery.
+- Unique balanced GL exports/authenticated recovery; immutable reports/revisions; explicit liquidity freshness/completeness; outgoing/incoming/grouped reconciliation with owned differences.
+- Issuer-backed account recovery with risk signals and independent approval; AES-256-GCM sealing of server-held session tokens; privacy restriction and personal export; access recertification and an independently dispositioned findings register.
+- Native Android app (iOS pending) sharing the API contract, with system-browser PKCE, OS-protected rotating credentials, native action-bound step-up and persisted-operation recovery.
+- Retrospective transaction monitoring with one alert per economic episode and independent disposition; owned data-quality alerts with read-model-only repair; fixed-snapshot operations reports, durable-identifier traces and deduplicated safe notifications.
+- Monthly statement versions from native journals with readiness gates and supersession; two-minute single-use retrieval with access evidence; fixture retention, independently released legal holds, evidenced disposal and per-record data-subject outcomes.
+- Independently approved periodic financial terms, explicit attributable owner consent and pending withdrawal, separate native activation approval, sequential immutable account-period finality, exact fees/accruals, automatic durable processing, one native effect and linked approved corrections.
 
-## Completed implementation
+## Deferred enhancements and remaining roadmap
 
-- **Platform and access:** Rust/Axum API and worker, module-owned PostgreSQL schemas, OIDC/PKCE, separate customer/workforce browser sessions, refresh/revocation, CSRF protection, current entitlements, independent maker/checker approval, ingress quotas and safe errors.
-- **Durability and evidence:** immutable audit/evidence, scoped idempotency, recoverable generation-fenced jobs, transactional outbox, JetStream/inbox processing and controlled replay.
-- **Banking foundation:** authoritative balanced journals, exact amounts, booked/held/available balances, holds and restrictions, versioned products/pricing, parties, account ownership and lifecycle, synthetic control decisions, cases and restricted actions.
-- **Customer and staff journeys:** acquisition, persistent onboarding/account opening, exact account-opening terms acceptance, inquiry/history, owned servicing/support, customer web, staff review and controlled administration.
-- **Payments:** beneficiaries/receiving references, exact quotes, action-bound reauthentication, internal posting, simulated external reservations/submission, authenticated settlement, incoming suspense/allocation and principal-capped linked returns.
-- **Recovery:** original-identity inquiry after unknown outcomes, submission pause/independent resume, durable cancellation tombstones, native receipt recovery and owned reconciliation without releasing uncertain funds.
+The [scope decision](wp24-essential-scope.md) explicitly defers non-UTC/DST, more complex product rules, scale beyond 1,000 source facts, global close/restatement, resuming stopped enrollment, real legal certification and production/provider/cloud qualification. Historical preview acknowledgments remain distinct from financial consent. No requirement is silently removed from the full PRD.
 
-The [implementation overview](README.md) links the executable specifications, runbooks, C4/UML sources and per-package evidence. Completed account-opening terms acceptance is distinct from the periodic-rule acceptance/enrollment still required below.
-
-## WP-24: implemented Finance increments
-
-| Capability | Implemented behavior and boundary |
+| Packages | Remaining work |
 | --- | --- |
-| GL export | Independently approved chart/mapping, sealed balanced batches, unique simulated booking, authenticated acknowledgments, original receipt recovery and owned exceptions |
-| Reports and revisions | Immutable observations, exact source/GL totals and lineage, independently approved linear report revisions |
-| Liquidity | Independently signed synthetic positions with explicit missing, stale and completeness states |
-| Clearing reconciliation | Outgoing, incoming and linked-return matching; closed signed groups of up to ten files / 1,000 provider rows; retained row provenance and owned differences; observation-only |
-| Periodic policies | Independently approved immutable product-bound preview rules, finite UTC calendars and exact monthly-fee/daily-accrual calculations; PREVIEW_ONLY |
-| Native periodic basis | Immutable committed Core journal observations, saved observation clock, original replay and fresh later observations; no global book-close certification |
-| Controlled corrections | Independently approved full synthetic funding reversal, native financial receipt recovery and linked GL lineage; funding-only scope |
-| Audit delivery | Durable progress beyond malformed pending records, immutable attempts, independently confirmed native Controls receipts and verified legacy upgrade |
-| Customer disclosures | Owned-account policy material, exact text, stable account/policy/material hashes, current/upcoming/ended version reads, saved URLs and mobile display; no consent or enrollment |
+| WP-31–WP-32 | Real providers and production boundaries (blocked), controlled R1 readiness |
+| CF-04 | 3x burst capacity for payment intents beyond this single host (DEC-07, WP-41) |
+| WP-37–WP-41 | Data and insights, and later optimization; further rails need selection |
 
-Evidence: [GL](evidence/WP-24-progress.md), [reporting](evidence/WP-24-reporting.md), [revisions](evidence/WP-24-revisions.md), [outgoing reconciliation](evidence/WP-24-reconciliation.md), [incoming/returns](evidence/WP-24-credit-reconciliation.md), [grouped clearing](evidence/WP-24-group-reconciliation.md), [policies](evidence/WP-24-periodic-policies.md), [funding corrections](evidence/WP-24-corrections.md), [native basis](evidence/WP-24-native-basis.md), [audit delivery](evidence/WP-24-audit-delivery.md) and [customer disclosures](evidence/WP-24-disclosures.md).
+## Current verification
 
-## WP-24: required work before completion
+Latest local run: 2026-11-18, schema 70. Gated pipeline `.local/ci/20261118T194505Z` passed 32 of 32 steps ([WP-36 evidence](evidence/WP-36.md)). The load stage last ran in `.local/ci/20261118T004715Z` ([WP-30 evidence](evidence/WP-30.md)). The cloud archive row still refers to the sealed schema-56 release.
 
-1. Complete periodic legal/material document publication and retention controls where required, with attributable acceptance of the exact material/version and explicit account enrollment.
-2. Implement current financial activation and eligibility controls. Reading a disclosure or publishing a PREVIEW_ONLY rule must not activate a charge or interest credit.
-3. Establish authoritative economic-period uniqueness and finalization. A saved ledger observation, including an ended-period observation, does not establish global book close.
-4. Implement guarded native Core fee/accrual commands, counter-account mappings and durable posting jobs, with exact-once economic effects, restart/timeout recovery and linked GL export.
-5. Extend controlled corrections to periodic financial postings and complete their end-to-end native, worker, browser, reconciliation and failure/recovery acceptance.
-
-WP-24 remains the next active package. No percentage is assigned to its internal progress because its remaining financial controls have different complexity and risk.
-
-## Remaining roadmap
-
-| Packages | Outstanding delivery |
+| Check | Executed result |
 | --- | --- |
-| WP-25 | Statements, secure retrieval, retention and legal holds |
-| WP-26 | Alerts, transaction monitoring and data-quality operations |
-| WP-27 | Dedicated native mobile banking; responsive web is already implemented |
-| WP-28 | Security/privacy, account recovery and audit lifecycle qualification |
-| WP-29 | Complete deployment/CI, observability and operational qualification; existing AWS/GCP packages are partial artifacts toward this scope |
-| WP-30 | Full local acceptance, capacity, fault and recovery qualification |
-| WP-31 | Chosen real provider integrations and production-boundary qualification |
-| WP-32 | Controlled R1 readiness and launch evidence |
-| WP-33–WP-38 | Consented partner APIs; branch/private banker/call center; ATM certification; additional rails; governed warehouse/data ingestion; audiences/insights/partner orchestration |
-| WP-39–WP-41 | Advanced routing/approval optimization, liquidity forecasting/finance automation and measured product/capacity/cost optimization |
+| Integration suite | 164 passed, 0 failed |
+| Library tests | 20 passed, plus 1 API binary test |
+| Acceptance manifest | Valid: 30 scenarios, 63 branches (PASS 49, FAIL 1, PENDING 11, NOT_APPLICABLE_R1 2) |
+| Partner consent (WP-33) | Real-issuer partner acceptance passed, including AT-21 in-flight revocation and delegation |
+| Assisted channels (WP-34) | AT-22 acceptance passed: customer authorization, confirmed operations only, common restriction, staff/customer audit |
+| ATM channel (WP-35) | Network-simulator acceptance passed: unsupported operations declined, single posting per authorization, reversal/timeout, limits, reconciliation |
+| Batch rail (WP-36) | Acceptance passed: common approval before hold, cancellation, rejection, single credit and linked return, late return flagged |
+| Load (local single host) | Sustained 600 s at 200 reads/s and 50 commands/s passed: read p95 18.2 ms, command p95 46.9 ms. Core 958 transfers/s, p95 20.1 ms. The 5-minute 3x burst **failed** for payment intents (about 69/s of 75). Invariants held. |
+| Resilience | D1 worker crash, D2 API crash, D3 broker pause, D4 issuer pause and D5 provider kill all passed, with invariants held |
+| Native mobile | Native API contract and Android emulator device journey passed; iOS pending |
+| Security | Real-issuer identity and security acceptance passed |
+| Browser regression | 28 flows passed: 11 consumer (including partner consent, sharing, assisted service, ATM access and next-day transfers), 14 payment/Finance, customer, workforce and issuer |
+| HTTP acceptance | All 220 implemented ingress patterns passed |
+| Source / contracts / portals | Formatting, locked Clippy with warnings denied, implemented OpenAPI, generated client, strict web types and both portal builds passed |
+| Cloud / infrastructure | Last verified for the sealed schema-56 archive on 2026-11-16; not rerun since |
+| Models / documents | All 79 C4/UML sources passed the PlantUML syntax check; requirement, UI-source and local-link checks passed |
+| Immutable history | 70 migrations locked by SHA-384 (`make migrations-check`) |
 
-R0 has **9 / 9** packages complete. R1 has **14 / 23** complete, one in progress and eight planned. R2 has six planned packages; R3 has three planned packages. A completed foundation does not replace the outstanding R1 qualification and launch gates.
+## Deployment boundary
 
-## Latest recorded validation
-
-These results belong to the accepted disclosure checkpoint and its source. Generating this status report does not rerun the full application suites.
-
-| Check | Recorded result |
-| --- | --- |
-| Integration suite | 113 passed across nine targets, including 80 Finance cases; 112 database-backed cases and one pure exact-total case |
-| Library tests | 19 passed |
-| Browser regression | 15 distinct flows passed: twelve payment/Finance plus independent customer, staff and issuer flows; focused disclosure checks also passed |
-| Ingress | 113 implemented route patterns passed |
-| HTTP acceptance | Foundation restart/readiness, identity/PKCE/rotation/step-up, events and lifecycle checks passed |
-| Source/client/portals | Rust formatting and locked Clippy, OpenAPI/generated-client consistency, strict web types and both portal builds passed |
-| Cloud configuration/archive tests | Six passed |
-| Terraform | Format/validate passed for both providers; one mock plan passed per provider |
-| Diagrams | All 50 PlantUML sources rendered and syntax/XML checked: 22 target and 28 implementation/deployment views |
-| Schema history | Schema 52; all 52 applied migration SHA384 checksums matched immutable source at the checkpoint |
-| Packaged runtime | Actual checksum-verified archive/images passed local disposable acceptance with randomized installation credentials |
-
-The [validation record](../VALIDATION.md), [latest checkpoint evidence](evidence/WP-24-disclosures.md) and [cloud validation history](../deployment/VALIDATION.md) preserve the scope and reproduction details. The 77 functional requirements and 30 acceptance scenarios are traceability inventory, not a claim that the full PRD has been implemented or qualified.
-
-## Deployment completion
-
-| Item | Status |
-| --- | --- |
-| Current immutable release | `cloud-20261112-02` |
-| Profile / platform / schema | `synthetic-local` / `linux/amd64` / 52 |
-| Archive | `.local/cloud/releases/cloud-20261112-02.tgz`, 84,374,476 bytes |
-| Archive SHA256 | `92d2354c50539b4bf3429640cc35712d7f966fd2585a555e63f89c9a48dad611` |
-| Deployment manifest | 21 files; `customer-periodic-disclosures-v1` feature declared |
-| GCP | [Step-by-step runbook](../deployment/gcp/RUNBOOK.md), Terraform and shared runtime/operator files available; local validation passed |
-| AWS | [Step-by-step runbook](../deployment/aws/RUNBOOK.md), Terraform and shared runtime/operator files available; local validation passed |
-| Live GCP/AWS apply | Not performed |
-| Real-provider / production qualification | Outstanding |
-
-The cloud package supports a single-VM synthetic evaluation using loopback access and operator tunnels. Public HTTPS/Secure-cookie operation, managed/multi-node infrastructure, real provider certification, capacity and disaster-recovery objectives remain subsequent work. See the [deployment scope](../deployment/README.md).
-
-When generating this report, the authoritative plan was checked, the current archive and checksum were reverified, and the recorded browser/archive acceptance success markers were inspected. Earlier historical evidence is retained; this report does not change package completion states.
+`cloud-20261115-01` is the accepted schema-56 synthetic Linux/amd64 archive. Its SHA256 is `b2bdb5d49570fe2c5ea1d6012d11a635f5acb6cead70f28aa7b4f9917ac66bd2`. The [GCP](../deployment/gcp/RUNBOOK.md) and [AWS](../deployment/aws/RUNBOOK.md) runbooks and deployment files are ready for evaluation; the actual sealed images passed local acceptance. No live cloud infrastructure was applied and no production launch was qualified. Historical releases and migrations remain sealed.

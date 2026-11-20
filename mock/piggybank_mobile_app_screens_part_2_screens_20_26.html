@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PiggyBank Mobile App Screens — Part 2 (Screens 20–26)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pb: {
+              primary: '#1D6E4E',
+              secondary: '#288C64',
+              mint: '#E6F4EE',
+              canvas: '#F6F9F8',
+              card: '#FFFFFF',
+              slateTeal: '#1E2D2F',
+              charcoal: '#0F1F1C',
+              muted: '#64748B',
+              border: '#E2E8F0',
+              gold: '#F59E0B',
+            }
+          },
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom scrollbar hiding for sleek mobile carousels & scroll areas */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Authentic iPhone X/14 375x812 frame silhouette */
+    .ios-device-frame {
+      width: 375px;
+      height: 812px;
+      border-radius: 44px;
+      box-shadow:
+        0 25px 50px -12px rgba(15, 31, 28, 0.16),
+        0 0 0 10px #0F1F1C,
+        0 0 0 12px #2D3E3B;
+      overflow: hidden;
+      position: relative;
+      background-color: #F6F9F8;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    /* Subtle glass highlight on debit cards */
+    .card-sheen {
+      background: linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 60%);
+    }
+
+    /* Custom smooth toggle transition */
+    .toggle-knob {
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Toast notification animation */
+    @keyframes slideUpFade {
+      from { opacity: 0; transform: translate(-50%, 16px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .toast-animate {
+      animation: slideUpFade 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-[#EDF3F1] text-pb-charcoal font-sans antialiased min-h-screen pb-16">
+
+  <!-- ==================== STICKY TOP SCREEN SWITCHER BAR ==================== -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-pb-border shadow-sm">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <!-- Brand & Bundle Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-pb-primary flex items-center justify-center text-white shadow-sm">
+          <!-- PiggyBank Geometric Logo -->
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/>
+            <path d="M2 9v1c0 1.1.9 2 2 2h1"/>
+            <circle cx="16" cy="11" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-base sm:text-lg text-pb-charcoal tracking-tight">PiggyBank Mobile UI — Bundle 4</h1>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-pb-mint text-pb-primary border border-pb-primary/20">Screens 20–26 (Final)</span>
+          </div>
+          <p class="text-xs text-pb-muted">375×812px iOS Frames • Interactive Controls • Modular Extractable HTML</p>
+        </div>
+      </div>
+
+      <!-- Screen Switcher Pills -->
+      <nav aria-label="Screen Switcher" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+        <button onclick="filterScreens('all')" id="btn-filter-all" class="filter-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-pb-primary text-white shadow-sm transition whitespace-nowrap">
+          All Screens Grid (7)
+        </button>
+        <button onclick="filterScreens('20')" id="btn-filter-20" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          20 • Money & Cards
+        </button>
+        <button onclick="filterScreens('21')" id="btn-filter-21" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          21 • Wallet & Auto-Save
+        </button>
+        <button onclick="filterScreens('22')" id="btn-filter-22" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          22 • Treasure Vaults
+        </button>
+        <button onclick="filterScreens('23')" id="btn-filter-23" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          23 • Shared Pools
+        </button>
+        <button onclick="filterScreens('24')" id="btn-filter-24" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          24 • Favorites
+        </button>
+        <button onclick="filterScreens('25')" id="btn-filter-25" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          25 • Analytics
+        </button>
+        <button onclick="filterScreens('26')" id="btn-filter-26" class="filter-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-pb-canvas text-pb-muted hover:bg-pb-mint hover:text-pb-primary border border-pb-border transition whitespace-nowrap">
+          26 • Receipt & Alerts
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== SCREENS SHOWCASE GRID ==================== -->
+  <main id="screens-grid" class="max-w-[1440px] mx-auto px-4 sm:px-8 pt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center">
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 20: MONEY & SAVED CARDS                                  -->
+    <!-- ===================================================================== -->
+    <section data-screen="20" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 20</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Money & Saved Cards</h2>
+        </div>
+        <button onclick="copyScreenHTML('20')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-20-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm-4.9-2.3l1.4 1.4C9.4 16.4 10.6 16 12 16s2.6.4 3.5 1.1l1.4-1.4C15.6 14.6 13.9 14 12 14s-3.6.6-4.9 1.7zm-2.8-2.8l1.4 1.4C7.3 13 9.5 12 12 12s4.7 1 6.3 2.3l1.4-1.4C17.7 11.1 15 10 12 10s-5.7 1.1-7.7 2.9z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Navigated back to Home Hub')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Money</span>
+          </button>
+          <button onclick="showToast('Add New Card modal opened')" class="px-3 py-1.5 rounded-full bg-pb-mint text-pb-primary text-xs font-bold flex items-center gap-1 hover:bg-pb-primary hover:text-white transition">
+            <span>+ Add Card</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Segmented Card Toggle -->
+          <div class="bg-white p-1 rounded-2xl border border-pb-border flex items-center text-xs font-semibold">
+            <button onclick="selectCardTab(20, 'primary', this)" class="card-tab-20 flex-1 py-1.5 rounded-xl bg-pb-primary text-white shadow-sm transition">Primary Debit</button>
+            <button onclick="selectCardTab(20, 'secondary', this)" class="card-tab-20 flex-1 py-1.5 rounded-xl text-pb-muted hover:text-pb-charcoal transition">Vault Reserve</button>
+          </div>
+
+          <!-- Horizontal Saved Cards Carousel -->
+          <div id="cards-carousel-20" class="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+            <!-- Card 1: Emerald Primary Debit Card ending in 4821 -->
+            <div class="min-w-[292px] h-[168px] rounded-[24px] bg-gradient-to-br from-pb-primary via-[#227D59] to-pb-secondary p-5 text-white flex flex-col justify-between shadow-lg shadow-pb-primary/20 snap-center relative overflow-hidden">
+              <div class="card-sheen absolute inset-0 pointer-events-none"></div>
+              <div class="flex items-center justify-between relative z-10">
+                <div class="flex items-center gap-2">
+                  <!-- EMV Gold/Silver Metallic Chip -->
+                  <div class="w-9 h-7 rounded-md bg-gradient-to-tr from-amber-200 to-amber-100 border border-amber-300/60 flex items-center justify-center">
+                    <div class="w-5 h-3.5 border border-amber-500/40 rounded-[2px]"></div>
+                  </div>
+                  <!-- Contactless NFC Waves -->
+                  <svg class="w-5 h-5 text-white/80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" d="M8.5 14.5a3.5 3.5 0 0 1 0-5M11.5 16.5a6.5 6.5 0 0 1 0-9M14.5 18.5a9.5 9.5 0 0 1 0-13"/>
+                  </svg>
+                </div>
+                <span class="text-[11px] font-bold uppercase tracking-widest bg-white/15 px-2.5 py-0.5 rounded-full">Emerald Debit</span>
+              </div>
+
+              <div class="relative z-10">
+                <p class="text-[11px] text-white/75 font-medium">Available Balance</p>
+                <p class="font-display font-extrabold text-2xl tracking-tight">$8,640.50</p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs font-medium text-white/90 relative z-10">
+                <span class="tracking-widest font-mono">•••• •••• •••• 4821</span>
+                <span class="text-[11px]">EXP 09/29</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Dark Slate-Teal Secondary Card ending in 9034 -->
+            <div class="min-w-[292px] h-[168px] rounded-[24px] bg-gradient-to-br from-pb-slateTeal via-[#26393C] to-[#142022] p-5 text-white flex flex-col justify-between shadow-lg snap-center relative overflow-hidden">
+              <div class="card-sheen absolute inset-0 pointer-events-none"></div>
+              <div class="flex items-center justify-between relative z-10">
+                <div class="flex items-center gap-2">
+                  <div class="w-9 h-7 rounded-md bg-gradient-to-tr from-slate-300 to-slate-100 border border-slate-400/50"></div>
+                  <svg class="w-5 h-5 text-emerald-300/80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" d="M8.5 14.5a3.5 3.5 0 0 1 0-5M11.5 16.5a6.5 6.5 0 0 1 0-9"/>
+                  </svg>
+                </div>
+                <span class="text-[11px] font-bold uppercase tracking-widest bg-emerald-400/20 text-emerald-300 px-2.5 py-0.5 rounded-full">Virtual Metal</span>
+              </div>
+
+              <div class="relative z-10">
+                <p class="text-[11px] text-slate-300 font-medium">Vault Spend Limit</p>
+                <p class="font-display font-extrabold text-2xl tracking-tight">$3,775.22</p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs font-medium text-slate-200 relative z-10">
+                <span class="tracking-widest font-mono">•••• •••• •••• 9034</span>
+                <span class="text-[11px]">EXP 11/28</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart Vault Transfer Emerald Promo Pill -->
+          <button onclick="showToast('Smart Vault Auto-Sweep activated (+1.5% APY boost)!')" class="w-full p-3.5 rounded-2xl bg-pb-mint border border-pb-primary/25 flex items-center justify-between text-left hover:bg-pb-primary/10 transition group">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-pb-primary text-white flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-pb-charcoal">Smart Vault Transfer</p>
+                <p class="text-[11px] text-pb-primary font-medium">Sweep idle card change into 4.85% APY</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-pb-primary text-white text-[11px] font-bold group-hover:scale-105 transition">Boost</span>
+          </button>
+
+          <!-- Fast Reminders Horizontal Contact Chips -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Fast Reminders</h3>
+              <span class="text-[11px] font-semibold text-pb-primary">Tap to nudge</span>
+            </div>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <button onclick="showToast('Payment reminder sent to Elena V.')" class="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-white border border-pb-border hover:border-pb-primary transition shrink-0">
+                <span class="w-6 h-6 rounded-full bg-emerald-100 text-pb-primary font-bold text-[11px] flex items-center justify-center">EV</span>
+                <span class="text-xs font-semibold text-pb-charcoal">Elena • $45</span>
+              </button>
+              <button onclick="showToast('Payment reminder sent to Marcus K.')" class="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-white border border-pb-border hover:border-pb-primary transition shrink-0">
+                <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] flex items-center justify-center">MK</span>
+                <span class="text-xs font-semibold text-pb-charcoal">Marcus • $120</span>
+              </button>
+              <button onclick="showToast('Payment reminder sent to Priya S.')" class="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-white border border-pb-border hover:border-pb-primary transition shrink-0">
+                <span class="w-6 h-6 rounded-full bg-teal-100 text-teal-800 font-bold text-[11px] flex items-center justify-center">PS</span>
+                <span class="text-xs font-semibold text-pb-charcoal">Priya • $60</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Saved Peers List ($210.00, $350.00, $95.00) -->
+          <div class="bg-white rounded-2xl border border-pb-border p-3.5 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-display font-bold text-sm text-pb-charcoal">Recent Saved Peers</h3>
+              <span class="text-xs font-semibold text-pb-primary">See All</span>
+            </div>
+
+            <!-- Peer 1: $210.00 -->
+            <div class="flex items-center justify-between py-1 border-b border-pb-border/60">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-pb-mint text-pb-primary font-bold text-xs flex items-center justify-center">CL</div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Camila Laurent</p>
+                  <p class="text-[11px] text-pb-muted">@camila.pay • Instant</p>
+                </div>
+              </div>
+              <button onclick="showToast('Quick-sent $210.00 to Camila Laurent')" class="text-right group">
+                <p class="font-display font-bold text-xs text-pb-charcoal group-hover:text-pb-primary">$210.00</p>
+                <span class="text-[10px] font-semibold text-pb-primary bg-pb-mint px-2 py-0.5 rounded-full">Send Again</span>
+              </button>
+            </div>
+
+            <!-- Peer 2: $350.00 -->
+            <div class="flex items-center justify-between py-1 border-b border-pb-border/60">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-slate-100 text-pb-slateTeal font-bold text-xs flex items-center justify-center">DR</div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Devon Brooks</p>
+                  <p class="text-[11px] text-pb-muted">@devon.b • Rent Split</p>
+                </div>
+              </div>
+              <button onclick="showToast('Quick-sent $350.00 to Devon Brooks')" class="text-right group">
+                <p class="font-display font-bold text-xs text-pb-charcoal group-hover:text-pb-primary">$350.00</p>
+                <span class="text-[10px] font-semibold text-pb-primary bg-pb-mint px-2 py-0.5 rounded-full">Send Again</span>
+              </button>
+            </div>
+
+            <!-- Peer 3: $95.00 -->
+            <div class="flex items-center justify-between pt-0.5">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-full bg-emerald-50 text-pb-secondary font-bold text-xs flex items-center justify-center">NT</div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Noah Takahashi</p>
+                  <p class="text-[11px] text-pb-muted">@noah.t • Dinner</p>
+                </div>
+              </div>
+              <button onclick="showToast('Quick-sent $95.00 to Noah Takahashi')" class="text-right group">
+                <p class="font-display font-bold text-xs text-pb-charcoal group-hover:text-pb-primary">$95.00</p>
+                <span class="text-[10px] font-semibold text-pb-primary bg-pb-mint px-2 py-0.5 rounded-full">Send Again</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+              <span>Cards</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 20                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 21: MOBILE WALLET & AUTO-SAVE                            -->
+    <!-- ===================================================================== -->
+    <section data-screen="21" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 21</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Mobile Wallet & Auto-Save</h2>
+        </div>
+        <button onclick="copyScreenHTML('21')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-21-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Returned to Money Overview')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Mobile Wallet</span>
+          </button>
+          <span class="px-2.5 py-1 rounded-full bg-pb-mint text-pb-primary text-[11px] font-bold">FDIC Insured</span>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Master Wallet Balance Card ($12,415.72) + Auto-Roundup Savings Toggle -->
+          <div class="rounded-[24px] bg-white border border-pb-border p-5 shadow-sm space-y-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-semibold text-pb-muted">Master Wallet Balance</p>
+                <p id="wallet-balance-21" class="font-display font-extrabold text-3xl text-pb-charcoal tracking-tight mt-0.5">$12,415.72</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-pb-mint text-pb-primary text-xs font-bold">+4.85% APY</span>
+            </div>
+
+            <!-- Interactive Auto-Roundup Savings Green Toggle Switch -->
+            <div class="p-3 rounded-2xl bg-pb-canvas border border-pb-border flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-pb-primary text-white flex items-center justify-center">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Auto-Roundup Savings</p>
+                  <p id="roundup-status-21" class="text-[11px] text-pb-primary font-semibold">Active • 2× Spare Change Multiplier</p>
+                </div>
+              </div>
+              <button type="button" role="switch" aria-checked="true" onclick="toggleAutoRoundup(this)" class="w-12 h-7 rounded-full bg-pb-primary p-1 flex items-center transition-colors focus:outline-none">
+                <span class="toggle-knob w-5 h-5 rounded-full bg-white shadow transform translate-x-5"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Linked Bank Accounts Cards -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Linked Bank Accounts</h3>
+              <button onclick="showToast('Plaid Instant Bank Link ready')" class="text-xs font-bold text-pb-primary">+ Link Bank</button>
+            </div>
+
+            <!-- Chase Checking •••• 4410 -->
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#117ACA]/10 text-[#117ACA] font-display font-extrabold text-xs flex items-center justify-center">CHASE</div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Chase Checking •••• 4410</p>
+                  <p class="text-[11px] text-pb-muted">Instant ACH • Verified</p>
+                </div>
+              </div>
+              <button onclick="instantDeposit(250, 'Chase Checking')" class="px-3 py-1.5 rounded-xl bg-pb-mint hover:bg-pb-primary text-pb-primary hover:text-white text-xs font-bold transition">
+                +$250
+              </button>
+            </div>
+
+            <!-- Bank of America •••• 8821 -->
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 font-display font-extrabold text-xs flex items-center justify-center">BofA</div>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">Bank of America •••• 8821</p>
+                  <p class="text-[11px] text-pb-muted">Primary Funding • Zero Fee</p>
+                </div>
+              </div>
+              <button onclick="instantDeposit(500, 'Bank of America')" class="px-3 py-1.5 rounded-xl bg-pb-mint hover:bg-pb-primary text-pb-primary hover:text-white text-xs font-bold transition">
+                +$500
+              </button>
+            </div>
+          </div>
+
+          <!-- Completed & Scheduled Deposits Collapsible Rows -->
+          <div class="bg-white rounded-2xl border border-pb-border overflow-hidden">
+            <button onclick="toggleCollapsibleDeposits()" class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-pb-canvas/60 transition">
+              <div>
+                <h3 class="font-display font-bold text-xs text-pb-charcoal">Completed & Scheduled Deposits</h3>
+                <p class="text-[11px] text-pb-muted">3 active rules • Next auto-save Fri</p>
+              </div>
+              <svg id="deposits-chevron-21" class="w-4 h-4 text-pb-muted transform rotate-180 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+
+            <div id="deposits-list-21" class="px-4 pb-3.5 pt-1 space-y-2.5 border-t border-pb-border/60">
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-pb-primary"></span>
+                  <span class="font-semibold text-pb-charcoal">Weekly Payday Auto-Save</span>
+                </div>
+                <span class="font-bold text-pb-primary">+$400.00</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-pb-secondary"></span>
+                  <span class="font-semibold text-pb-charcoal">Coffee & Dining Roundups</span>
+                </div>
+                <span class="font-bold text-pb-primary">+$38.45</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <span class="font-medium text-pb-muted">Scheduled • Nov 20</span>
+                </div>
+                <span class="font-semibold text-pb-muted">$400.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+              <span>Wallet</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 21                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 22: SAVINGS & TREASURE CHESTS (331,000.00)               -->
+    <!-- ===================================================================== -->
+    <section data-screen="22" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 22</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Savings & Treasure Chests</h2>
+        </div>
+        <button onclick="copyScreenHTML('22')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-22-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Back to Wallet Overview')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Savings Vaults</span>
+          </button>
+          <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">Tier: Emerald</span>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Hero Emerald Vault Card displaying 331,000.00 + Custom 3D-Style SVG Treasure Chest -->
+          <div class="rounded-[26px] bg-gradient-to-br from-pb-primary via-[#237E5A] to-pb-secondary p-5 text-white shadow-lg shadow-pb-primary/20 relative overflow-hidden">
+            <div class="flex items-center justify-between gap-2 relative z-10">
+              <div>
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-bold uppercase tracking-wider mb-1.5">Total Vault Reserve</span>
+                <p class="font-display font-extrabold text-[28px] leading-tight tracking-tight">331,000.00</p>
+                <p class="text-xs text-emerald-100 font-medium mt-0.5">+$14,250.00 earned in yield</p>
+              </div>
+
+              <!-- Custom 3D-Style SVG Treasure Chest, Stacked Gold Coins & Botanical Mint Leaves -->
+              <svg class="w-24 h-24 shrink-0 drop-shadow-md" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Botanical Mint Leaves Backdrop -->
+                <path d="M22 86C10 74 12 54 28 48C32 64 28 78 22 86Z" fill="#6EE7B7" fill-opacity="0.75"/>
+                <path d="M98 84C110 72 108 52 92 46C88 62 92 76 98 84Z" fill="#A7F3D0" fill-opacity="0.8"/>
+                <!-- Chest Shadow -->
+                <ellipse cx="60" cy="102" rx="38" ry="6" fill="#0F1F1C" fill-opacity="0.28"/>
+                <!-- Treasure Chest Base (3D Isometric Perspective) -->
+                <rect x="26" y="56" width="68" height="40" rx="8" fill="#78350F"/>
+                <rect x="26" y="56" width="68" height="36" rx="8" fill="#92400E"/>
+                <!-- Gold Trim Bands -->
+                <rect x="32" y="56" width="7" height="38" fill="#FBBF24"/>
+                <rect x="81" y="56" width="7" height="38" fill="#FBBF24"/>
+                <!-- Open Lid with Golden Glow -->
+                <path d="M24 54C24 38 38 28 60 28C82 28 96 38 96 54H24Z" fill="#B45309"/>
+                <path d="M28 54C28 42 40 34 60 34C80 34 92 42 92 54H28Z" fill="#FDE68A"/>
+                <!-- Stacked Gold Coins Overflowing -->
+                <ellipse cx="48" cy="54" rx="9" ry="4.5" fill="#F59E0B" stroke="#FEF3C7" stroke-width="1.2"/>
+                <ellipse cx="62" cy="51" rx="10" ry="5" fill="#FBBF24" stroke="#FEF3C7" stroke-width="1.2"/>
+                <ellipse cx="74" cy="55" rx="8.5" ry="4" fill="#F59E0B" stroke="#FEF3C7" stroke-width="1.2"/>
+                <!-- Front Gold Lock Clasp -->
+                <rect x="53" y="52" width="14" height="16" rx="4" fill="#FBBF24" stroke="#78350F" stroke-width="1.5"/>
+                <circle cx="60" cy="60" r="2.2" fill="#78350F"/>
+                <!-- Floating Coin Sparkles -->
+                <circle cx="38" cy="24" r="3" fill="#FDE047"/>
+                <circle cx="85" cy="22" r="2.5" fill="#A7F3D0"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Active Goal Vaults List -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Active Goal Vaults</h3>
+              <span class="text-xs font-bold text-pb-primary">3 Active</span>
+            </div>
+
+            <!-- Goal 1: Emergency Reserve 85% -->
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-pb-mint text-pb-primary flex items-center justify-center font-bold text-sm">🛡️</span>
+                  <div>
+                    <p class="text-xs font-bold text-pb-charcoal">Emergency Reserve</p>
+                    <p class="text-[11px] text-pb-muted">$170,000 / $200,000 goal</p>
+                  </div>
+                </div>
+                <span class="font-display font-extrabold text-xs text-pb-primary">85%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-mint overflow-hidden">
+                <div class="h-full bg-pb-primary rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+
+            <!-- Goal 2: Dream Home 62% -->
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-pb-mint text-pb-primary flex items-center justify-center font-bold text-sm">🏡</span>
+                  <div>
+                    <p class="text-xs font-bold text-pb-charcoal">Dream Home</p>
+                    <p class="text-[11px] text-pb-muted">$124,000 / $200,000 goal</p>
+                  </div>
+                </div>
+                <span class="font-display font-extrabold text-xs text-pb-primary">62%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-mint overflow-hidden">
+                <div class="h-full bg-pb-secondary rounded-full" style="width: 62%"></div>
+              </div>
+            </div>
+
+            <!-- Goal 3: Travel Fund 40% -->
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-pb-mint text-pb-primary flex items-center justify-center font-bold text-sm">✈️</span>
+                  <div>
+                    <p class="text-xs font-bold text-pb-charcoal">Travel Fund</p>
+                    <p class="text-[11px] text-pb-muted">$37,000 / $92,500 goal</p>
+                  </div>
+                </div>
+                <span class="font-display font-extrabold text-xs text-pb-primary">40%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-mint overflow-hidden">
+                <div class="h-full bg-pb-primary rounded-full" style="width: 40%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- + Create New Vault Button -->
+          <button onclick="showToast('New Treasure Vault builder launched!')" class="w-full py-3 rounded-2xl bg-pb-primary hover:bg-pb-secondary text-white font-display font-bold text-xs shadow-md shadow-pb-primary/20 flex items-center justify-center gap-2 transition">
+            <span>+ Create New Vault</span>
+          </button>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+              <span>Cards</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 22                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 23: POOLS & SHARED GROUP FUNDS                           -->
+    <!-- ===================================================================== -->
+    <section data-screen="23" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 23</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Pools & Shared Group Funds</h2>
+        </div>
+        <button onclick="copyScreenHTML('23')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-23-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Returned to Savings Vaults')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Pools</span>
+          </button>
+          <button onclick="showToast('Invite link copied for Summer Villa Trip!')" class="px-3 py-1 rounded-full bg-pb-mint text-pb-primary text-xs font-bold">Share Pool</button>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Active Shared Pool Summary Card ("Summer Villa Trip • $4,250 / $5,000") -->
+          <div class="rounded-[24px] bg-white border border-pb-border p-4 shadow-sm space-y-3.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-2xl bg-pb-mint text-pb-primary flex items-center justify-center text-lg">🏝️</div>
+                <div>
+                  <h3 class="font-display font-bold text-sm text-pb-charcoal">Summer Villa Trip</h3>
+                  <p class="text-[11px] text-pb-muted">4 Friends • Target Dec 15</p>
+                </div>
+              </div>
+              <span id="pool-pct-23" class="px-2.5 py-1 rounded-full bg-pb-mint text-pb-primary font-display font-extrabold text-xs">85%</span>
+            </div>
+
+            <div>
+              <div class="flex items-baseline justify-between mb-1.5">
+                <p id="pool-amount-23" class="font-display font-extrabold text-xl text-pb-charcoal">$4,250 <span class="text-xs font-semibold text-pb-muted">/ $5,000</span></p>
+                <span id="pool-remaining-23" class="text-[11px] font-semibold text-pb-primary">$750 left</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-pb-mint overflow-hidden">
+                <div id="pool-bar-23" class="h-full bg-pb-primary rounded-full transition-all duration-300" style="width: 85%"></div>
+              </div>
+            </div>
+
+            <!-- Interactive "+ Contribute Now" Quick-Add Pill -->
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex -space-x-2">
+                <span class="w-7 h-7 rounded-full bg-pb-primary text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">EV</span>
+                <span class="w-7 h-7 rounded-full bg-pb-slateTeal text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">MK</span>
+                <span class="w-7 h-7 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">PS</span>
+                <span class="w-7 h-7 rounded-full bg-pb-secondary text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">YO</span>
+              </div>
+              <button onclick="contributeToPool(150)" class="px-4 py-2 rounded-full bg-pb-primary hover:bg-pb-secondary text-white text-xs font-bold shadow-sm transition active:scale-95">
+                + Contribute Now ($150)
+              </button>
+            </div>
+          </div>
+
+          <!-- Contributor Breakdown ($1,400, $1,250, $900, $700) -->
+          <div class="bg-white rounded-2xl border border-pb-border p-3.5 space-y-2.5">
+            <h4 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Member Contributions</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="p-2.5 rounded-xl bg-pb-canvas border border-pb-border/70 flex items-center justify-between">
+                <span class="text-xs font-semibold text-pb-charcoal">Elena V.</span>
+                <span class="font-display font-bold text-xs text-pb-primary">$1,400</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-pb-canvas border border-pb-border/70 flex items-center justify-between">
+                <span class="text-xs font-semibold text-pb-charcoal">Marcus K.</span>
+                <span class="font-display font-bold text-xs text-pb-primary">$1,250</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-pb-canvas border border-pb-border/70 flex items-center justify-between">
+                <span class="text-xs font-semibold text-pb-charcoal">Priya S.</span>
+                <span class="font-display font-bold text-xs text-pb-primary">$900</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-pb-mint/60 border border-pb-primary/20 flex items-center justify-between">
+                <span class="text-xs font-bold text-pb-charcoal">You</span>
+                <span id="pool-you-23" class="font-display font-extrabold text-xs text-pb-primary">$700</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pool Activity Feed -->
+          <div class="bg-white rounded-2xl border border-pb-border p-3.5 space-y-2.5">
+            <h4 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Pool Activity Feed</h4>
+            <div id="pool-feed-23" class="space-y-2.5 text-xs">
+              <div class="flex items-center justify-between">
+                <p class="text-pb-charcoal"><span class="font-bold">Elena Vance</span> added funds</p>
+                <span class="font-bold text-pb-primary">+$250.00</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <p class="text-pb-charcoal"><span class="font-bold">Marcus K.</span> auto-contributed</p>
+                <span class="font-bold text-pb-primary">+$150.00</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <p class="text-pb-charcoal"><span class="font-bold">Priya S.</span> split deposit</p>
+                <span class="font-bold text-pb-primary">+$200.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Pools</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 23                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 24: FAVORITES & STARRED RECIPIENTS                       -->
+    <!-- ===================================================================== -->
+    <section data-screen="24" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 24</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Favorites & Starred Recipients</h2>
+        </div>
+        <button onclick="copyScreenHTML('24')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-24-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Returned to Contacts & Pools')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Favorites</span>
+          </button>
+          <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">★ 6 Starred</span>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Interactive Search Favorites Input Bar -->
+          <div class="relative">
+            <svg class="w-4 h-4 text-pb-muted absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" oninput="filterFavorites24(this.value)" placeholder="Search starred friends or merchants..." class="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-white border border-pb-border text-xs font-medium text-pb-charcoal placeholder:text-pb-muted focus:outline-none focus:border-pb-primary transition" />
+          </div>
+
+          <!-- Top Starred Recipients Grid with Gold Star Badges & Instant Send -->
+          <div id="starred-grid-24" class="grid grid-cols-3 gap-2.5">
+            <div data-fav-name="elena vance" class="fav-card-24 p-3 rounded-2xl bg-white border border-pb-border flex flex-col items-center text-center relative">
+              <span class="absolute top-2 right-2 text-amber-400 text-xs">★</span>
+              <div class="w-11 h-11 rounded-full bg-pb-mint text-pb-primary font-display font-extrabold text-sm flex items-center justify-center mb-1.5">EV</div>
+              <p class="text-xs font-bold text-pb-charcoal truncate w-full">Elena V.</p>
+              <button onclick="showToast('Instant Send opened for Elena Vance')" class="mt-2 w-full py-1 rounded-xl bg-pb-primary text-white text-[11px] font-bold hover:bg-pb-secondary transition">Send</button>
+            </div>
+
+            <div data-fav-name="marcus kane" class="fav-card-24 p-3 rounded-2xl bg-white border border-pb-border flex flex-col items-center text-center relative">
+              <span class="absolute top-2 right-2 text-amber-400 text-xs">★</span>
+              <div class="w-11 h-11 rounded-full bg-slate-100 text-pb-slateTeal font-display font-extrabold text-sm flex items-center justify-center mb-1.5">MK</div>
+              <p class="text-xs font-bold text-pb-charcoal truncate w-full">Marcus K.</p>
+              <button onclick="showToast('Instant Send opened for Marcus Kane')" class="mt-2 w-full py-1 rounded-xl bg-pb-primary text-white text-[11px] font-bold hover:bg-pb-secondary transition">Send</button>
+            </div>
+
+            <div data-fav-name="blue bottle coffee" class="fav-card-24 p-3 rounded-2xl bg-white border border-pb-border flex flex-col items-center text-center relative">
+              <span class="absolute top-2 right-2 text-amber-400 text-xs">★</span>
+              <div class="w-11 h-11 rounded-full bg-sky-50 text-sky-700 font-display font-extrabold text-sm flex items-center justify-center mb-1.5">☕</div>
+              <p class="text-xs font-bold text-pb-charcoal truncate w-full">Blue Bottle</p>
+              <button onclick="showToast('Pay Merchant: Blue Bottle Coffee')" class="mt-2 w-full py-1 rounded-xl bg-pb-primary text-white text-[11px] font-bold hover:bg-pb-secondary transition">Send</button>
+            </div>
+          </div>
+
+          <!-- 5-Star Verified Merchants & Friends Rating Card -->
+          <div class="rounded-2xl bg-gradient-to-r from-pb-mint to-white border border-pb-primary/25 p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1 text-amber-400 text-sm tracking-tight" aria-label="5 Gold Stars">
+                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                <span class="text-xs font-extrabold text-pb-charcoal ml-1">4.9 / 5</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-pb-primary text-white text-[10px] font-bold uppercase tracking-wider">Instant Zero-Fee</span>
+            </div>
+            <p class="font-display font-bold text-xs text-pb-charcoal">5-Star Verified Merchants & Friends</p>
+            <p class="text-[11px] text-pb-muted leading-relaxed">All starred recipients are identity-verified with instant P2P settlement and 2% cashback on partner merchants.</p>
+          </div>
+
+          <!-- Quick Recurring Transfers List -->
+          <div class="bg-white rounded-2xl border border-pb-border p-3.5 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Quick Recurring Transfers</h3>
+              <span class="text-[11px] font-bold text-pb-primary">Auto-Active</span>
+            </div>
+            <div class="flex items-center justify-between py-1 border-b border-pb-border/60 text-xs">
+              <div>
+                <p class="font-bold text-pb-charcoal">Oakwood Properties (Rent)</p>
+                <p class="text-[11px] text-pb-muted">1st of every month • Verified</p>
+              </div>
+              <span class="font-display font-extrabold text-pb-charcoal">$1,650.00</span>
+            </div>
+            <div class="flex items-center justify-between pt-0.5 text-xs">
+              <div>
+                <p class="font-bold text-pb-charcoal">Mom • Family Support</p>
+                <p class="text-[11px] text-pb-muted">Every 15th • Instant</p>
+              </div>
+              <span class="font-display font-extrabold text-pb-charcoal">$300.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>Starred</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 24                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 25: MOBILE ANALYTICS & SPENDING INSIGHTS                 -->
+    <!-- ===================================================================== -->
+    <section data-screen="25" class="screen-wrapper flex flex-col items-center">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 25</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Analytics & Spending Insights</h2>
+        </div>
+        <button onclick="copyScreenHTML('25')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-25-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Returned to Home Overview')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Analytics</span>
+          </button>
+          <!-- Monthly Period Selector ("Nov 2026") -->
+          <button onclick="cycleAnalyticsMonth()" id="month-selector-25" class="px-3 py-1 rounded-full bg-white border border-pb-border text-xs font-bold text-pb-charcoal flex items-center gap-1.5 hover:border-pb-primary transition">
+            <span>Nov 2026</span>
+            <svg class="w-3.5 h-3.5 text-pb-primary" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-4">
+          <!-- Hero Total Monthly Spend Card ($3,840.50) + Dual-Wave Smooth SVG Area Chart -->
+          <div class="rounded-[24px] bg-white border border-pb-border p-4 shadow-sm space-y-2">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-[11px] font-semibold text-pb-muted uppercase tracking-wider">Total Monthly Spend</p>
+                <p id="spend-total-25" class="font-display font-extrabold text-2xl text-pb-charcoal tracking-tight">$3,840.50</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-pb-mint text-pb-primary text-[11px] font-bold">-8.4% vs Oct</span>
+            </div>
+
+            <!-- Dual-Wave Smooth SVG Area Chart -->
+            <div class="pt-1">
+              <svg class="w-full h-24 overflow-visible" viewBox="0 0 300 85" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="emeraldWaveGrad" x1="0" y1="0" x2="0" y2="85" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#1D6E4E" stop-opacity="0.32"/>
+                    <stop offset="100%" stop-color="#1D6E4E" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Subtle Horizontal Gridlines -->
+                <line x1="0" y1="20" x2="300" y2="20" stroke="#E2E8F0" stroke-dasharray="3 3"/>
+                <line x1="0" y1="50" x2="300" y2="50" stroke="#E2E8F0" stroke-dasharray="3 3"/>
+                <!-- Secondary Comparison Wave (Last Month) -->
+                <path d="M0 58 C 45 45, 75 68, 120 46 C 165 24, 210 52, 255 36 C 278 28, 290 32, 300 30" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+                <!-- Primary Current Month Area Fill -->
+                <path d="M0 65 C 40 62, 70 30, 115 38 C 160 46, 195 14, 240 22 C 270 28, 288 16, 300 12 L 300 80 L 0 80 Z" fill="url(#emeraldWaveGrad)"/>
+                <!-- Primary Current Month Smooth Curve -->
+                <path d="M0 65 C 40 62, 70 30, 115 38 C 160 46, 195 14, 240 22 C 270 28, 288 16, 300 12" stroke="#1D6E4E" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+                <!-- Active Data Point Node -->
+                <circle cx="240" cy="22" r="4.5" fill="#1D6E4E" stroke="#FFFFFF" stroke-width="2"/>
+              </svg>
+              <div class="flex justify-between text-[10px] font-semibold text-pb-muted px-1">
+                <span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Breakdown Horizontal Progress Bars -->
+          <div class="bg-white rounded-2xl border border-pb-border p-3.5 space-y-2.5">
+            <h3 class="font-display font-bold text-xs uppercase tracking-wider text-pb-muted">Category Breakdown</h3>
+
+            <!-- Housing & Bills 42% -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="font-semibold text-pb-charcoal">Housing & Bills</span>
+                <span class="font-bold text-pb-charcoal">42% <span class="text-pb-muted font-normal">($1,613)</span></span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-canvas overflow-hidden">
+                <div class="h-full bg-pb-primary rounded-full" style="width: 42%"></div>
+              </div>
+            </div>
+
+            <!-- Dining & Groceries 26% -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="font-semibold text-pb-charcoal">Dining & Groceries</span>
+                <span class="font-bold text-pb-charcoal">26% <span class="text-pb-muted font-normal">($998)</span></span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-canvas overflow-hidden">
+                <div class="h-full bg-pb-secondary rounded-full" style="width: 26%"></div>
+              </div>
+            </div>
+
+            <!-- Travel & Transport 18% -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="font-semibold text-pb-charcoal">Travel & Transport</span>
+                <span class="font-bold text-pb-charcoal">18% <span class="text-pb-muted font-normal">($691)</span></span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-canvas overflow-hidden">
+                <div class="h-full bg-pb-slateTeal rounded-full" style="width: 18%"></div>
+              </div>
+            </div>
+
+            <!-- Savings Auto-Save 14% -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs">
+                <span class="font-semibold text-pb-primary">Savings Auto-Save</span>
+                <span class="font-bold text-pb-primary">14% <span class="text-pb-muted font-normal">($538)</span></span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-pb-mint overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full" style="width: 14%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Smart Budget Alert Mint Banner -->
+          <div class="p-3 rounded-2xl bg-pb-mint border border-pb-primary/25 flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-xl bg-pb-primary text-white flex items-center justify-center text-xs font-bold shrink-0">✓</span>
+            <p class="text-[11px] font-semibold text-pb-charcoal leading-snug">
+              <span class="text-pb-primary font-bold">Smart Budget Alert:</span> You are $312 under your November dining cap!
+            </p>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              <span>Insights</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Vaults</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 25                                                         -->
+    <!-- ===================================================================== -->
+
+
+    <!-- ===================================================================== -->
+    <!-- BEGIN SCREEN 26: MOBILE NOTIFICATIONS, SUPPORT & RECEIPT              -->
+    <!-- ===================================================================== -->
+    <section data-screen="26" class="screen-wrapper flex flex-col items-center md:col-span-2 xl:col-span-1">
+      <!-- Developer Meta Toolbar -->
+      <div class="w-[375px] flex items-center justify-between mb-3 px-1">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pb-primary">Screen 26</span>
+          <h2 class="font-display font-bold text-sm text-pb-charcoal">Notifications, Support & Receipt</h2>
+        </div>
+        <button onclick="copyScreenHTML('26')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-pb-mint text-pb-charcoal hover:text-pb-primary border border-pb-border text-xs font-semibold shadow-sm transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy Screen HTML
+        </button>
+      </div>
+
+      <!-- iOS 375x812 Mobile Frame -->
+      <div id="screen-26-frame" class="ios-device-frame">
+        <!-- iOS Status Bar -->
+        <div class="h-11 px-6 pt-2 flex items-center justify-between text-xs font-semibold text-pb-charcoal bg-pb-canvas shrink-0 select-none">
+          <span>9:41</span>
+          <div class="w-24 h-5 bg-pb-charcoal rounded-full"></div>
+          <div class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V10H2v10zm4 0h2V7H6v13zm4 0h2V4h-2v16zm4 0h2V1h-2v19z"/></svg>
+            <div class="w-5 h-2.5 border border-pb-charcoal rounded-[3px] p-[1px] flex items-center"><div class="w-full h-full bg-pb-charcoal rounded-[1px]"></div></div>
+          </div>
+        </div>
+
+        <!-- App Navigation Header -->
+        <div class="px-5 py-2.5 flex items-center justify-between bg-pb-canvas shrink-0">
+          <button onclick="showToast('Returned to Activity Feed')" class="flex items-center gap-1 text-pb-charcoal font-display font-bold text-lg hover:text-pb-primary transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <span>Activity & Receipt</span>
+          </button>
+          <button onclick="showToast('24/7 PiggyBank Concierge Support connected')" class="px-2.5 py-1 rounded-full bg-white border border-pb-border text-[11px] font-bold text-pb-charcoal hover:border-pb-primary transition">
+            Help ?
+          </button>
+        </div>
+
+        <!-- Scrollable Screen Content -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pb-4 space-y-3.5">
+          <!-- Interactive Tab Toggle ("Transaction Receipt" vs "Notifications") -->
+          <div class="bg-white p-1 rounded-2xl border border-pb-border flex items-center text-xs font-semibold">
+            <button id="tab-26-receipt" onclick="switchTab26('receipt')" class="flex-1 py-1.5 rounded-xl bg-pb-primary text-white shadow-sm transition">Transaction Receipt</button>
+            <button id="tab-26-alerts" onclick="switchTab26('alerts')" class="flex-1 py-1.5 rounded-xl text-pb-muted hover:text-pb-charcoal transition">Notifications (3)</button>
+          </div>
+
+          <!-- VIEW A: Crisp Digital Transfer Receipt Card -->
+          <div id="view-26-receipt" class="space-y-3">
+            <div class="rounded-[24px] bg-white border border-pb-border p-4 shadow-sm relative overflow-hidden">
+              <!-- Emerald Checkmark Badge -->
+              <div class="flex flex-col items-center text-center pb-3 border-b border-dashed border-pb-border">
+                <div class="w-12 h-12 rounded-full bg-pb-mint text-pb-primary flex items-center justify-center mb-2 ring-4 ring-pb-mint/50">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full bg-pb-mint text-pb-primary text-[10px] font-bold uppercase tracking-wider">Instant Transfer Completed</span>
+                <h3 class="font-display font-extrabold text-2xl text-pb-charcoal mt-1.5">$1,250.00</h3>
+                <p class="text-xs font-semibold text-pb-muted">Sent to <span class="text-pb-charcoal font-bold">Elena Vance</span> (@elena.v)</p>
+              </div>
+
+              <!-- Receipt Metadata Breakdown -->
+              <div class="py-3 space-y-2 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-pb-muted">Transaction ID</span>
+                  <span class="font-mono font-bold text-pb-charcoal">#PB-994821</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-pb-muted">Timestamp</span>
+                  <span class="font-semibold text-pb-charcoal">Nov 13, 2026 • 5:10 PM</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-pb-muted">Funding Source</span>
+                  <span class="font-semibold text-pb-charcoal">Emerald Debit •••• 4821</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-pb-muted">Transfer Fee</span>
+                  <span class="font-bold text-pb-primary">$0.00 (Zero Fee)</span>
+                </div>
+              </div>
+
+              <!-- Download PDF Receipt & Share Receipt Buttons -->
+              <div class="grid grid-cols-2 gap-2 pt-2 border-t border-pb-border">
+                <button onclick="showToast('Receipt #PB-994821.pdf downloaded!')" class="py-2.5 px-3 rounded-xl bg-pb-primary hover:bg-pb-secondary text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+                  <span>Download PDF</span>
+                </button>
+                <button onclick="showToast('Verified receipt link copied to share!')" class="py-2.5 px-3 rounded-xl bg-pb-mint hover:bg-pb-primary/15 text-pb-primary text-[11px] font-bold flex items-center justify-center gap-1.5 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                  <span>Share Receipt</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Security & Cashback Notification Strip -->
+            <div class="p-3 rounded-2xl bg-white border border-pb-border flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-xl bg-pb-mint text-pb-primary flex items-center justify-center text-xs font-bold">🛡️</span>
+                <div>
+                  <p class="text-xs font-bold text-pb-charcoal">2FA Biometric Shield Verified</p>
+                  <p class="text-[11px] text-pb-muted">+$6.25 Cashback credited to Vault</p>
+                </div>
+              </div>
+              <button onclick="switchTab26('alerts')" class="text-[11px] font-bold text-pb-primary">All Alerts</button>
+            </div>
+          </div>
+
+          <!-- VIEW B: Recent Security & Cashback Notification Items -->
+          <div id="view-26-alerts" class="hidden space-y-2.5">
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded-full bg-pb-mint text-pb-primary text-[10px] font-bold">Cashback Reward</span>
+                <span class="text-[10px] text-pb-muted">2m ago</span>
+              </div>
+              <p class="text-xs font-bold text-pb-charcoal">+$18.40 Emerald Cashback Deposited</p>
+              <p class="text-[11px] text-pb-muted">Automatically swept into your Emergency Reserve Vault.</p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded-full bg-slate-100 text-pb-slateTeal text-[10px] font-bold">Security Alert</span>
+                <span class="text-[10px] text-pb-muted">1h ago</span>
+              </div>
+              <p class="text-xs font-bold text-pb-charcoal">New FaceID Login Approved</p>
+              <p class="text-[11px] text-pb-muted">Verified iOS device session • Zero suspicious activity.</p>
+            </div>
+
+            <div class="p-3.5 rounded-2xl bg-white border border-pb-border space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">Pool Milestone</span>
+                <span class="text-[10px] text-pb-muted">Yesterday</span>
+              </div>
+              <p class="text-xs font-bold text-pb-charcoal">Summer Villa Trip reached 85%!</p>
+              <p class="text-[11px] text-pb-muted">Only $750 remaining to unlock group booking discount.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon Bottom Tab Bar + iOS Home Indicator -->
+        <div class="bg-white border-t border-pb-border px-4 pt-2 pb-1.5 shrink-0">
+          <div class="flex items-center justify-around text-[10px] font-semibold text-pb-muted">
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1V9.5z"/></svg>
+              <span>Home</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+              <span>Cards</span>
+            </div>
+            <div class="w-11 h-11 -mt-5 rounded-full bg-pb-primary text-white flex items-center justify-center shadow-md shadow-pb-primary/30">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="flex flex-col items-center gap-0.5 text-pb-primary">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span>Alerts</span>
+            </div>
+            <div class="flex flex-col items-center gap-0.5">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+              <span>Profile</span>
+            </div>
+          </div>
+          <div class="w-32 h-1 bg-pb-charcoal/80 rounded-full mx-auto mt-2"></div>
+        </div>
+      </div>
+    </section>
+    <!-- ===================================================================== -->
+    <!-- END SCREEN 26                                                         -->
+    <!-- ===================================================================== -->
+
+  </main>
+
+  <!-- Floating Interactive Feedback Toast -->
+  <div id="pb-toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-full bg-pb-charcoal text-white text-xs font-semibold shadow-xl flex items-center gap-2 border border-white/10">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="pb-toast-msg">Action completed</span>
+  </div>
+
+  <!-- ==================== INTERACTIVE JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // 1. Toast Notification Helper
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('pb-toast');
+      const msgEl = document.getElementById('pb-toast-msg');
+      msgEl.textContent = message;
+      toast.classList.remove('hidden', 'toast-animate');
+      void toast.offsetWidth; // trigger reflow
+      toast.classList.add('toast-animate');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2800);
+    }
+
+    // 2. Top Screen Switcher Bar Filter ("All Screens Grid (7)" or isolate single screen)
+    function filterScreens(target) {
+      const wrappers = document.querySelectorAll('.screen-wrapper');
+      const grid = document.getElementById('screens-grid');
+      const pills = document.querySelectorAll('.filter-pill');
+
+      pills.forEach(pill => {
+        pill.classList.remove('bg-pb-primary', 'text-white', 'shadow-sm');
+        pill.classList.add('bg-pb-canvas', 'text-pb-muted');
+      });
+
+      const activeBtn = document.getElementById(`btn-filter-${target}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-pb-canvas', 'text-pb-muted');
+        activeBtn.classList.add('bg-pb-primary', 'text-white', 'shadow-sm');
+      }
+
+      if (target === 'all') {
+        grid.className = 'max-w-[1440px] mx-auto px-4 sm:px-8 pt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center';
+        wrappers.forEach(w => w.classList.remove('hidden'));
+      } else {
+        grid.className = 'max-w-[1440px] mx-auto px-4 sm:px-8 pt-8 flex justify-center';
+        wrappers.forEach(w => {
+          if (w.dataset.screen === target) {
+            w.classList.remove('hidden');
+          } else {
+            w.classList.add('hidden');
+          }
+        });
+      }
+    }
+
+    // 3. Copy Screen HTML (uses document.execCommand('copy') for iframe compatibility)
+    function copyScreenHTML(screenNum) {
+      const frameEl = document.getElementById(`screen-${screenNum}-frame`);
+      if (!frameEl) return;
+      const snippet = `<!-- BEGIN SCREEN ${screenNum} -->\n${frameEl.outerHTML}\n<!-- END SCREEN ${screenNum} -->`;
+
+      const textarea = document.createElement('textarea');
+      textarea.value = snippet;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Screen ${screenNum} standalone HTML copied to clipboard!`);
+      } catch (err) {
+        showToast('Unable to copy HTML automatically');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // 4. Screen 20: Segmented Card Carousel Switcher
+    function selectCardTab(screenId, type, btnEl) {
+      const tabs = document.querySelectorAll(`.card-tab-${screenId}`);
+      tabs.forEach(t => {
+        t.classList.remove('bg-pb-primary', 'text-white', 'shadow-sm');
+        t.classList.add('text-pb-muted');
+      });
+      btnEl.classList.remove('text-pb-muted');
+      btnEl.classList.add('bg-pb-primary', 'text-white', 'shadow-sm');
+
+      const carousel = document.getElementById(`cards-carousel-${screenId}`);
+      if (carousel) {
+        carousel.scrollTo({
+          left: type === 'primary' ? 0 : 304,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    // 5. Screen 21: Auto-Roundup Savings Toggle, Instant Bank Transfer & Collapsible Deposits
+    let walletBalance21 = 12415.72;
+    function toggleAutoRoundup(btn) {
+      const isChecked = btn.getAttribute('aria-checked') === 'true';
+      const nextState = !isChecked;
+      btn.setAttribute('aria-checked', String(nextState));
+      const knob = btn.querySelector('.toggle-knob');
+      const statusText = document.getElementById('roundup-status-21');
+
+      if (nextState) {
+        btn.classList.remove('bg-slate-300');
+        btn.classList.add('bg-pb-primary');
+        knob.classList.add('translate-x-5');
+        statusText.textContent = 'Active • 2× Spare Change Multiplier';
+        statusText.classList.replace('text-pb-muted', 'text-pb-primary');
+        showToast('Auto-Roundup Savings enabled');
+      } else {
+        btn.classList.remove('bg-pb-primary');
+        btn.classList.add('bg-slate-300');
+        knob.classList.remove('translate-x-5');
+        statusText.textContent = 'Paused • Tap switch to resume';
+        statusText.classList.replace('text-pb-primary', 'text-pb-muted');
+        showToast('Auto-Roundup Savings paused');
+      }
+    }
+
+    function instantDeposit(amount, bankName) {
+      walletBalance21 += amount;
+      const el = document.getElementById('wallet-balance-21');
+      el.textContent = '$' + walletBalance21.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      showToast(`Instant +$${amount} transferred from ${bankName}`);
+    }
+
+    function toggleCollapsibleDeposits() {
+      const list = document.getElementById('deposits-list-21');
+      const chevron = document.getElementById('deposits-chevron-21');
+      list.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+
+    // 6. Screen 23: Interactive Pool Quick-Add Contribution
+    let poolTotal23 = 4250;
+    let userContribution23 = 700;
+    const poolGoal23 = 5000;
+    function contributeToPool(amount) {
+      if (poolTotal23 >= poolGoal23) {
+        showToast('Summer Villa Trip pool is 100% funded!');
+        return;
+      }
+      poolTotal23 = Math.min(poolGoal23, poolTotal23 + amount);
+      userContribution23 += amount;
+      const pct = Math.round((poolTotal23 / poolGoal23) * 100);
+      const remaining = Math.max(0, poolGoal23 - poolTotal23);
+
+      document.getElementById('pool-amount-23').innerHTML = `$${poolTotal23.toLocaleString()} <span class="text-xs font-semibold text-pb-muted">/ $5,000</span>`;
+      document.getElementById('pool-pct-23').textContent = `${pct}%`;
+      document.getElementById('pool-remaining-23').textContent = remaining === 0 ? 'Goal Reached!' : `$${remaining} left`;
+      document.getElementById('pool-bar-23').style.width = `${pct}%`;
+      document.getElementById('pool-you-23').textContent = `$${userContribution23.toLocaleString()}`;
+
+      const feed = document.getElementById('pool-feed-23');
+      const newRow = document.createElement('div');
+      newRow.className = 'flex items-center justify-between';
+      newRow.innerHTML = `<p class="text-pb-charcoal"><span class="font-bold">You</span> contributed now</p><span class="font-bold text-pb-primary">+$${amount}.00</span>`;
+      feed.prepend(newRow);
+
+      showToast(`Added +$${amount} to Summer Villa Trip pool!`);
+    }
+
+    // 7. Screen 24: Search Filter for Starred Favorites
+    function filterFavorites24(query) {
+      const q = query.trim().toLowerCase();
+      const cards = document.querySelectorAll('.fav-card-24');
+      cards.forEach(card => {
+        const name = card.dataset.favName || '';
+        card.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    // 8. Screen 25: Monthly Period Selector Cycle
+    const months25 = [
+      { label: 'Nov 2026', spend: '$3,840.50' },
+      { label: 'Oct 2026', spend: '$4,192.10' },
+      { label: 'Sep 2026', spend: '$3,615.80' }
+    ];
+    let monthIdx25 = 0;
+    function cycleAnalyticsMonth() {
+      monthIdx25 = (monthIdx25 + 1) % months25.length;
+      const current = months25[monthIdx25];
+      document.querySelector('#month-selector-25 span').textContent = current.label;
+      document.getElementById('spend-total-25').textContent = current.spend;
+      showToast(`Viewing spending analytics for ${current.label}`);
+    }
+
+    // 9. Screen 26: Receipt vs Notifications Tab Switcher
+    function switchTab26(tab) {
+      const receiptBtn = document.getElementById('tab-26-receipt');
+      const alertsBtn = document.getElementById('tab-26-alerts');
+      const receiptView = document.getElementById('view-26-receipt');
+      const alertsView = document.getElementById('view-26-alerts');
+
+      if (tab === 'receipt') {
+        receiptBtn.classList.add('bg-pb-primary', 'text-white', 'shadow-sm');
+        receiptBtn.classList.remove('text-pb-muted');
+        alertsBtn.classList.remove('bg-pb-primary', 'text-white', 'shadow-sm');
+        alertsBtn.classList.add('text-pb-muted');
+        receiptView.classList.remove('hidden');
+        alertsView.classList.add('hidden');
+      } else {
+        alertsBtn.classList.add('bg-pb-primary', 'text-white', 'shadow-sm');
+        alertsBtn.classList.remove('text-pb-muted');
+        receiptBtn.classList.remove('bg-pb-primary', 'text-white', 'shadow-sm');
+        receiptBtn.classList.add('text-pb-muted');
+        alertsView.classList.remove('hidden');
+        receiptView.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

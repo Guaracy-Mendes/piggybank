@@ -59,6 +59,101 @@ impl IdentityService {
         );
         Ok(response)
     }
+    /// WP-27: start native action-bound reauthentication for a pending challenge owned by this mobile actor.
+    pub async fn native_step_up_begin(
+        &self,
+        actor: &bank_platform::domain::ActorContext,
+        challenge: uuid::Uuid,
+        nonce: &str,
+        digest: &str,
+    ) -> Result<chrono::DateTime<chrono::Utc>, StatusCode> {
+        if actor.trust != bank_platform::domain::TrustContext::Customer
+            || actor.client_id != "bank-mobile"
+        {
+            return Err(StatusCode::FORBIDDEN);
+        }
+        // One timestamp for both columns: two clock_timestamp() calls could differ by a microsecond and break the
+        // 3-minute CHECK, which surfaced as an intermittent 503 (found by the WP-30 resilience drills).
+        let row = sqlx::query("INSERT INTO identity.native_step_ups(challenge_id,issuer,subject,client_id,nonce,intent_digest,created_at,expires_at) VALUES($1,$2,$3,$4,$5,$6,now(),now()+interval '3 minutes') ON CONFLICT(challenge_id) DO UPDATE SET created_at=EXCLUDED.created_at,expires_at=EXCLUDED.expires_at WHERE identity.native_step_ups.issuer=EXCLUDED.issuer AND identity.native_step_ups.subject=EXCLUDED.subject AND identity.native_step_ups.nonce=EXCLUDED.nonce AND identity.native_step_ups.intent_digest=EXCLUDED.intent_digest RETURNING expires_at")
+            .bind(challenge).bind(&actor.issuer).bind(&actor.subject).bind(&actor.client_id).bind(nonce).bind(digest)
+            .fetch_optional(&self.pool).await.map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?
+            .ok_or(StatusCode::CONFLICT)?;
+        Ok(row.get("expires_at"))
+    }
+    /// WP-27: verify a fresh native ID token (audience bank-mobile, matching nonce/subject, auth_time after begin)
+    /// and record the same single-use step-up proof the browser callback records.
+    pub async fn native_step_up_complete(
+        &self,
+        actor: &bank_platform::domain::ActorContext,
+        challenge: uuid::Uuid,
+        id_token: &str,
+    ) -> Result<(), StatusCode> {
+        if actor.trust != bank_platform::domain::TrustContext::Customer
+            || actor.client_id != "bank-mobile"
+        {
+            return Err(StatusCode::FORBIDDEN);
+        }
+        let row = sqlx::query("SELECT nonce,intent_digest,created_at FROM identity.native_step_ups WHERE challenge_id=$1 AND issuer=$2 AND subject=$3 AND expires_at>clock_timestamp()")
+            .bind(challenge).bind(&actor.issuer).bind(&actor.subject)
+            .fetch_optional(&self.pool).await.map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?
+            .ok_or(StatusCode::NOT_FOUND)?;
+        let claims = self
+            .verifier
+            .claims(id_token, Trust::Customer, "bank-mobile")
+            .await?;
+        let created: chrono::DateTime<chrono::Utc> = row.get("created_at");
+        let nonce: String = row.get("nonce");
+        let fresh = claims.auth_time.is_some_and(|time| {
+            time >= created.timestamp() - 1 && time <= chrono::Utc::now().timestamp() + 2
+        });
+        if claims.sub != actor.subject
+            || claims.iss != actor.issuer
+            || (!claims.azp.is_empty() && claims.azp != "bank-mobile")
+            || claims
+                .nonce
+                .as_deref()
+                .map(|n| n.as_bytes().ct_eq(nonce.as_bytes()).into())
+                != Some(true)
+            || !fresh
+        {
+            tracing::warn!(
+                code = "NATIVE_STEP_UP_MISMATCH",
+                fresh,
+                "native step-up evidence rejected"
+            );
+            return Err(StatusCode::UNAUTHORIZED);
+        }
+        let digest: String = row.get("intent_digest");
+        let authenticated = chrono::DateTime::<chrono::Utc>::from_timestamp(
+            claims.auth_time.unwrap_or_default(),
+            0,
+        )
+        .ok_or(StatusCode::UNAUTHORIZED)?;
+        let mut tx = self
+            .pool
+            .begin()
+            .await
+            .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        // A native-only customer has no browser callback; register the verified subject as the callback does.
+        sqlx::query("INSERT INTO identity.subjects(issuer,subject,trust) VALUES($1,$2,'customer') ON CONFLICT(issuer,subject) DO NOTHING")
+            .bind(&actor.issuer).bind(&actor.subject)
+            .execute(&mut *tx).await.map_err(|e| { tracing::warn!(code = "NATIVE_STEP_UP_WRITE", error = %e); StatusCode::SERVICE_UNAVAILABLE })?;
+        sqlx::query("INSERT INTO identity.step_up_proofs(id,challenge_id,issuer,subject,intent_digest,authenticated_at,expires_at) VALUES($1,$2,$3,$4,$5,$6,now()+interval '2 minutes') ON CONFLICT(challenge_id) DO NOTHING")
+            .bind(uuid::Uuid::new_v4()).bind(challenge).bind(&actor.issuer).bind(&actor.subject).bind(&digest).bind(authenticated)
+            .execute(&mut *tx).await.map_err(|e| { tracing::warn!(code = "NATIVE_STEP_UP_WRITE", error = %e); StatusCode::SERVICE_UNAVAILABLE })?;
+        sqlx::query("DELETE FROM identity.native_step_ups WHERE challenge_id=$1")
+            .bind(challenge)
+            .execute(&mut *tx)
+            .await
+            .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        sqlx::query("INSERT INTO identity.audit(id,issuer,subject,action) VALUES($1,$2,$3,'step-up.native')")
+            .bind(uuid::Uuid::new_v4()).bind(&actor.issuer).bind(&actor.subject)
+            .execute(&mut *tx).await.map_err(|e| { tracing::warn!(code = "NATIVE_STEP_UP_WRITE", error = %e); StatusCode::SERVICE_UNAVAILABLE })?;
+        tx.commit()
+            .await
+            .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        Ok(())
+    }
     pub async fn consume_step_up(
         &self,
         actor: &bank_platform::domain::ActorContext,
@@ -157,7 +252,13 @@ impl IdentityService {
                 return Err(StatusCode::FORBIDDEN);
             }
         }
-        let access: String = row.get("access_token");
+        let ring = crate::seal::KeyRing::load().map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        let access = ring
+            .open(
+                &row.get::<String, _>("access_token"),
+                &format!("{id_hash}:access"),
+            )
+            .ok_or(StatusCode::UNAUTHORIZED)?;
         match self.verifier.verify(&access, trust).await {
             Ok(identity) => {
                 if identity.actor.issuer != row.get::<String, _>("issuer")
@@ -183,7 +284,13 @@ impl IdentityService {
         if claimed.is_none() {
             return Err(StatusCode::SERVICE_UNAVAILABLE);
         }
-        let refresh: String = row.get("refresh_token");
+        let ring = crate::seal::KeyRing::load().map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
+        let refresh = ring
+            .open(
+                &row.get::<String, _>("refresh_token"),
+                &format!("{id_hash}:refresh"),
+            )
+            .ok_or(StatusCode::UNAUTHORIZED)?;
         // No DB transaction is held during the external token call.
         let response = self
             .verifier
@@ -208,7 +315,7 @@ impl IdentityService {
             let issuer:String=row.get("issuer");let subject:String=row.get("subject");
             if identity.actor.issuer!=issuer || identity.actor.subject!=subject {return Err(StatusCode::UNAUTHORIZED);}
             let updated=sqlx::query("UPDATE identity.sessions SET access_token=$3,refresh_token=$4,refresh_lease=NULL,refresh_until=NULL WHERE id_hash=$1 AND refresh_lease=$2")
-                .bind(id_hash).bind(lease).bind(&tokens.access_token).bind(tokens.refresh_token.unwrap_or(refresh)).execute(&self.pool).await.map_err(|_|StatusCode::SERVICE_UNAVAILABLE)?;
+                .bind(id_hash).bind(lease).bind(ring.seal(&tokens.access_token,&format!("{id_hash}:access"))).bind(ring.seal(&tokens.refresh_token.unwrap_or(refresh),&format!("{id_hash}:refresh"))).execute(&self.pool).await.map_err(|_|StatusCode::SERVICE_UNAVAILABLE)?;
             if updated.rows_affected()!=1 {return Err(StatusCode::UNAUTHORIZED);}
             Ok(identity)
         }.await;
@@ -272,6 +379,15 @@ fn browser(trust: Trust) -> Result<Trust, StatusCode> {
 pub fn router(service: IdentityService) -> Router {
     Router::new()
         .route("/auth/{trust}/login", get(login))
+        .route("/auth/{trust}/register", get(register))
+        .route(
+            "/auth/{trust}/contact-verification",
+            get(contact_status).post(contact_send),
+        )
+        .route(
+            "/auth/{trust}/contact-verification/confirm",
+            post(contact_confirm),
+        )
         .route("/auth/{trust}/callback", get(callback))
         .route("/auth/{trust}/me", get(me))
         .route("/auth/{trust}/logout", post(logout))
@@ -285,7 +401,97 @@ async fn login(
     State(service): State<Arc<IdentityService>>,
     Path(trust): Path<String>,
 ) -> Result<Response, StatusCode> {
-    let trust = browser(Trust::parse(&trust)?)?;
+    begin(&service, browser(Trust::parse(&trust)?)?, false).await
+}
+
+/// UI-02: customers may create a sign-in at the issuer (OIDC `prompt=create`); credentials are only entered there.
+/// The same PKCE, state and nonce checks apply, and the callback signs the new identity in like any other login.
+async fn register(
+    State(service): State<Arc<IdentityService>>,
+    Path(trust): Path<String>,
+) -> Result<Response, StatusCode> {
+    match Trust::parse(&trust)? {
+        Trust::Customer => begin(&service, Trust::Customer, true).await,
+        _ => Err(StatusCode::NOT_FOUND),
+    }
+}
+
+/// UI-03: customer-only email ownership by one-time code (simulated delivery; see `crate::contact`).
+async fn contact_identity(
+    service: &IdentityService,
+    trust: &str,
+    headers: &HeaderMap,
+    mutating: bool,
+) -> Result<Identity, StatusCode> {
+    match Trust::parse(trust)? {
+        Trust::Customer => {
+            service
+                .authenticate(headers, Trust::Customer, mutating)
+                .await
+        }
+        _ => Err(StatusCode::NOT_FOUND),
+    }
+}
+fn contact_error(error: anyhow::Error) -> StatusCode {
+    use crate::contact::ContactError;
+    match error.downcast_ref::<ContactError>() {
+        Some(ContactError::AlreadyVerified) => StatusCode::CONFLICT,
+        Some(ContactError::ResendTooSoon | ContactError::TooManyCodes) => {
+            StatusCode::TOO_MANY_REQUESTS
+        }
+        Some(ContactError::NoEmail) => StatusCode::UNPROCESSABLE_ENTITY,
+        None if error.to_string().starts_with("A 6-digit code") => StatusCode::BAD_REQUEST,
+        None if error.to_string().starts_with("Email changed") => StatusCode::CONFLICT,
+        None => StatusCode::SERVICE_UNAVAILABLE,
+    }
+}
+async fn contact_status(
+    State(service): State<Arc<IdentityService>>,
+    Path(trust): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<crate::contact::ContactVerification>, StatusCode> {
+    let identity = contact_identity(&service, &trust, &headers, false).await?;
+    service
+        .contact_verification(&identity.actor.issuer, &identity.actor.subject)
+        .await
+        .map(Json)
+        .map_err(contact_error)
+}
+async fn contact_send(
+    State(service): State<Arc<IdentityService>>,
+    Path(trust): Path<String>,
+    headers: HeaderMap,
+) -> Result<Json<crate::contact::ContactVerification>, StatusCode> {
+    let identity = contact_identity(&service, &trust, &headers, true).await?;
+    service
+        .send_contact_code(&identity.actor.issuer, &identity.actor.subject)
+        .await
+        .map(Json)
+        .map_err(contact_error)
+}
+#[derive(Deserialize)]
+struct ContactCode {
+    code: String,
+}
+async fn contact_confirm(
+    State(service): State<Arc<IdentityService>>,
+    Path(trust): Path<String>,
+    headers: HeaderMap,
+    Json(body): Json<ContactCode>,
+) -> Result<Json<crate::contact::ContactVerification>, StatusCode> {
+    let identity = contact_identity(&service, &trust, &headers, true).await?;
+    service
+        .confirm_contact_code(&identity.actor.issuer, &identity.actor.subject, &body.code)
+        .await
+        .map(Json)
+        .map_err(contact_error)
+}
+
+async fn begin(
+    service: &IdentityService,
+    trust: Trust,
+    create: bool,
+) -> Result<Response, StatusCode> {
     let state = random();
     let verifier = random();
     let nonce = random();
@@ -312,6 +518,9 @@ async fn login(
             URL_SAFE_NO_PAD.encode(Sha256::digest(verifier.as_bytes())),
         ),
     ]);
+    if create {
+        url.query_pairs_mut().append_pair("prompt", "create");
+    }
     let mut response = Redirect::to(url.as_str()).into_response();
     set_cookie(
         &mut response,
@@ -394,6 +603,8 @@ async fn callback(
     }
     let refresh = tokens.refresh_token.ok_or(StatusCode::UNAUTHORIZED)?;
     let session = random();
+    let session_hash = hash(&session);
+    let ring = crate::seal::KeyRing::load().map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
     let csrf = random();
     let mut tx = service
         .pool
@@ -421,7 +632,9 @@ async fn callback(
             .execute(&mut *tx).await.map_err(|_|StatusCode::SERVICE_UNAVAILABLE)?;
     }
     sqlx::query("INSERT INTO identity.sessions(id_hash,issuer,subject,trust,access_token,refresh_token,id_token,csrf_hash,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,now()+interval '30 minutes')")
-        .bind(hash(&session)).bind(&identity.actor.issuer).bind(&identity.actor.subject).bind(trust.name()).bind(tokens.access_token).bind(refresh).bind(id_token).bind(hash(&csrf)).execute(&mut *tx).await.map_err(|_|StatusCode::SERVICE_UNAVAILABLE)?;
+        .bind(&session_hash).bind(&identity.actor.issuer).bind(&identity.actor.subject).bind(trust.name())
+        .bind(ring.seal(&tokens.access_token,&format!("{session_hash}:access"))).bind(ring.seal(&refresh,&format!("{session_hash}:refresh"))).bind(ring.seal(&id_token,&format!("{session_hash}:id")))
+        .bind(hash(&csrf)).execute(&mut *tx).await.map_err(|_|StatusCode::SERVICE_UNAVAILABLE)?;
     sqlx::query(
         "INSERT INTO identity.audit(id,issuer,subject,action) VALUES($1,$2,$3,'session.created')",
     )
@@ -521,7 +734,18 @@ async fn logout(
     ))
     .map_err(|_| StatusCode::SERVICE_UNAVAILABLE)?;
     url.query_pairs_mut().extend_pairs([
-        ("id_token_hint", row.get::<String, _>("id_token")),
+        (
+            "id_token_hint",
+            crate::seal::KeyRing::load()
+                .ok()
+                .and_then(|ring| {
+                    ring.open(
+                        &row.get::<String, _>("id_token"),
+                        &format!("{}:id", hash(&session)),
+                    )
+                })
+                .unwrap_or_default(),
+        ),
         (
             "post_logout_redirect_uri",
             format!("{}/auth/{}/signed-out", service.public_base, trust.name()),

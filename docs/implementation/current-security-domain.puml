@@ -1,0 +1,41 @@
+@startuml
+title UML domain - recovery, access recertification, findings and privacy restrictions
+hide methods
+class RecoveryRequest {
+ kind : LOST_DEVICE / CREDENTIAL_RESET
+ channel : CUSTOMER_SELF / STAFF_ASSISTED
+ verification
+ risk : level + signals
+ state : PENDING_APPROVAL / APPROVED / EXECUTED / REJECTED
+ requestedBy <> decidedBy <> customer
+}
+class RecoveryHistory {
+ state
+ recordedAt
+}
+class AccessReview {
+ openedBy
+ closedAt
+}
+class AccessReviewItem {
+ grant / role / person
+ decision : KEEP / REVOKE
+ decidedBy <> person
+}
+class SecurityFinding {
+ reference SF-NNN
+ severity
+ status : OPEN / RESOLVED / ACCEPTED_RISK
+ reportedBy <> disposedBy
+}
+class ProcessingRestriction {
+ purpose : MARKETING / ANALYTICS
+ requestId
+}
+class SealedSessionToken {
+ v1:kid:nonce+ciphertext
+ aad = row:column
+}
+RecoveryRequest "1" -- "*" RecoveryHistory
+AccessReview "1" -- "*" AccessReviewItem
+@enduml

@@ -1,6 +1,8 @@
 # Periodic accounting policies and exact previews
 
-Date: 2026-11-08. WP-24 remains **in progress**. This increment implements approved immutable policy configuration and deterministic previews. The original increment provided configuration and manual previews. Subsequent [native basis observations](periodic-native-basis.md) and [funding-only corrections](finance-corrections.md) are implemented separately; posting jobs, customer enrollment/terms and authoritative economic finalization remain unfinished.
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
+Date: 2026-11-08. WP-24 was **in progress at this checkpoint**. This increment implements approved immutable policy configuration and deterministic previews. The original increment provided configuration and manual previews. Subsequent [native basis observations](periodic-native-basis.md) and [funding-only corrections](finance-corrections.md) are implemented separately; posting jobs, customer enrollment/terms and authoritative economic finalization remain unfinished.
 
 ## Ownership and capability boundary
 

@@ -60,9 +60,23 @@ pub async fn connect_shared(url: &str) -> Result<PgPool> {
     Ok(pool)
 }
 
+/// Per-URL pool ceiling. `BANK_DB_POOL_MAX` (1..=32, default 5) must keep the sum across processes and
+/// modules below the PostgreSQL `max_connections` budget; pools are lazy, so idle modules hold none.
+pub fn pool_max() -> Result<u32> {
+    let value = env::var("BANK_DB_POOL_MAX").unwrap_or_else(|_| "5".into());
+    let max = value
+        .parse::<u32>()
+        .map_err(|_| anyhow::anyhow!("invalid BANK_DB_POOL_MAX"))?;
+    anyhow::ensure!(
+        (1..=32).contains(&max),
+        "BANK_DB_POOL_MAX must be between 1 and 32"
+    );
+    Ok(max)
+}
+
 pub async fn connect(url: &str) -> Result<PgPool> {
     Ok(PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(pool_max()?)
         .min_connections(0)
         .acquire_timeout(Duration::from_secs(3))
         .connect(url)

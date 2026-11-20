@@ -92,7 +92,7 @@ impl Payments {
         &self,
         p: &bank_core::reconciliation::ExternalPosition,
     ) -> Result<()> {
-        let row=sqlx::query("SELECT i.state,i.batch_id,i.actor_context,q.instruction,EXISTS(SELECT 1 FROM payments.rail_submissions w WHERE w.payment_id=i.id) AS work_exists,(SELECT min(e.recorded_at) FROM payments.rail_receipts e WHERE e.payment_id=i.id AND e.document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED')) AS provider_final_at FROM payments.intents i JOIN payments.quotes q ON q.id=i.quote_id WHERE i.id=$1").bind(p.payment_id).fetch_optional(&self.pool).await?;
+        let row=sqlx::query("SELECT i.state,i.batch_id,coalesce(i.authorized_actor,i.actor_context) AS actor_context,q.instruction,EXISTS(SELECT 1 FROM payments.rail_submissions w WHERE w.payment_id=i.id) AS work_exists,(SELECT min(e.recorded_at) FROM payments.rail_receipts e WHERE e.payment_id=i.id AND e.document->'body'->>'status' IN ('SETTLED','REJECTED','CANCELLED')) AS provider_final_at FROM payments.intents i JOIN payments.quotes q ON q.id=i.quote_id WHERE i.id=$1").bind(p.payment_id).fetch_optional(&self.pool).await?;
         let mut codes = Vec::<String>::new();
         let mut customer = None;
         let mut workflow = Value::Null;

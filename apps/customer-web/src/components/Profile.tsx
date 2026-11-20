@@ -1,3 +1,4 @@
+import { ContactVerification } from "./ContactVerification";
 import { useState, useCallback, useEffect } from "react";
 import {
   Alert,
@@ -10,6 +11,8 @@ import {
 } from "@piggybank/web-core";
 import { stableKey, doneKey } from "../lib/navigation";
 import { PageTitle } from "../lib/display";
+import { DeviceSecurity } from "./DeviceSecurity";
+import { AtmAccess } from "./AtmAccess";
 
 export function ProfileView({ hasAccount }: { hasAccount: boolean }) {
   const { client } = useSession();
@@ -56,6 +59,7 @@ export function ProfileView({ hasAccount }: { hasAccount: boolean }) {
         description="Contact changes are checked before they replace your verified information."
       />
       <div className="account-detail-grid">
+        <ContactVerification />
         <section className="card">
           <h2>Verified contact</h2>
           {error ? <Alert>{error}</Alert> : null}
@@ -148,6 +152,14 @@ export function ProfileView({ hasAccount }: { hasAccount: boolean }) {
             Open security settings <Icon name="arrow" />
           </a>
           <div className="divider" />
+          <DeviceSecurity />
+          <div className="divider" />
+          {hasAccount ? (
+            <>
+              <AtmAccess />
+              <div className="divider" />
+            </>
+          ) : null}
           <p className="muted">
             Legal identity corrections need a reviewed support request. Your
             original application evidence stays linked to its decision.

@@ -132,6 +132,34 @@ pub fn router(identity: IdentityService, finance: Arc<Finance>) -> Router {
             "/api/v1/staff/finance/audit-delivery/{id}",
             get(audit_delivery),
         )
+        .route(
+            "/api/v1/staff/finance/periodic-activations",
+            get(periodic_activations).post(propose_periodic_activation),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-activations/{id}",
+            get(periodic_activation),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-activations/{id}/approval",
+            post(approve_periodic_activation),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-activations/{id}/execution",
+            post(execute_periodic_activation),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-activations/{id}/stop",
+            post(stop_periodic_activation),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-runs",
+            get(periodic_runs).post(queue_periodic_run),
+        )
+        .route(
+            "/api/v1/staff/finance/periodic-runs/{id}",
+            get(periodic_run),
+        )
         .with_state(Arc::new((identity, finance)))
 }
 fn error(e: anyhow::Error) -> StatusCode {
@@ -204,6 +232,14 @@ fn error(e: anyhow::Error) -> StatusCode {
     }
     match e.downcast_ref::<sqlx::Error>() {
         Some(sqlx::Error::RowNotFound) => StatusCode::NOT_FOUND,
+        Some(sqlx::Error::Database(d)) if d.code().as_deref() == Some("P0002") => {
+            StatusCode::NOT_FOUND
+        }
+        Some(sqlx::Error::Database(d))
+            if matches!(d.code().as_deref(), Some("P5501" | "P5401")) =>
+        {
+            StatusCode::UNPROCESSABLE_ENTITY
+        }
         Some(sqlx::Error::Database(d))
             if matches!(d.code().as_deref(), Some("23505" | "23514" | "P0001")) =>
         {
@@ -809,5 +845,131 @@ async fn audit_delivery(
     s.1.audit_delivery(&a.actor, id)
         .await
         .map(Json)
+        .map_err(error)
+}
+
+fn periodic_key(h: &HeaderMap) -> Result<Uuid, StatusCode> {
+    h.get("Idempotency-Key")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| Uuid::parse_str(v).ok())
+        .filter(|id| !id.is_nil())
+        .ok_or(StatusCode::BAD_REQUEST)
+}
+async fn periodic_activations(
+    State(s): State<App>,
+    h: HeaderMap,
+) -> Result<Json<Vec<bank_finance::periodic_execution::ActivationRequest>>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.periodic_activations(&a.actor)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn periodic_activation(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<Json<bank_finance::periodic_execution::ActivationRequest>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.periodic_activation(&a.actor, id)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn propose_periodic_activation(
+    State(s): State<App>,
+    h: HeaderMap,
+    Json(body): Json<bank_finance::periodic_execution::ActivationInput>,
+) -> Result<
+    (
+        StatusCode,
+        Json<bank_finance::periodic_execution::ActivationRequest>,
+    ),
+    StatusCode,
+> {
+    let a = s.0.authenticate(&h, Trust::Workforce, true).await?;
+    s.1.propose_periodic_activation(&a.actor, periodic_key(&h)?, &body)
+        .await
+        .map(|r| (StatusCode::CREATED, Json(r)))
+        .map_err(error)
+}
+async fn approve_periodic_activation(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+    Json(body): Json<RevisionScope>,
+) -> Result<Json<bank_finance::periodic_execution::ActivationRequest>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, true).await?;
+    s.1.approve_periodic_activation(&a.actor, id, &body.details_digest)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn execute_periodic_activation(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+    Json(body): Json<RevisionScope>,
+) -> Result<Json<bank_finance::periodic_execution::ActivationRequest>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, true).await?;
+    s.1.execute_periodic_activation(&a.actor, id, &body.details_digest)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PeriodicStop {
+    reason: String,
+}
+async fn stop_periodic_activation(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+    Json(body): Json<PeriodicStop>,
+) -> Result<Json<bank_finance::periodic_execution::ActivationRequest>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, true).await?;
+    s.1.periodic_commands
+        .stop(&s.1.controls, &a.actor, id, &body.reason)
+        .await
+        .map_err(error)?;
+    s.1.periodic_activation(&a.actor, id)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn periodic_runs(
+    State(s): State<App>,
+    h: HeaderMap,
+) -> Result<Json<Vec<bank_finance::periodic_execution::PeriodRun>>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.periodic_runs(&a.actor).await.map(Json).map_err(error)
+}
+async fn periodic_run(
+    State(s): State<App>,
+    h: HeaderMap,
+    Path(id): Path<Uuid>,
+) -> Result<Json<bank_finance::periodic_execution::PeriodRun>, StatusCode> {
+    let a = s.0.authenticate(&h, Trust::Workforce, false).await?;
+    s.1.periodic_run(&a.actor, id)
+        .await
+        .map(Json)
+        .map_err(error)
+}
+async fn queue_periodic_run(
+    State(s): State<App>,
+    h: HeaderMap,
+    Json(body): Json<bank_finance::periodic_execution::PeriodInput>,
+) -> Result<
+    (
+        StatusCode,
+        Json<bank_finance::periodic_execution::PeriodRun>,
+    ),
+    StatusCode,
+> {
+    let a = s.0.authenticate(&h, Trust::Workforce, true).await?;
+    s.1.queue_periodic_run(&a.actor, periodic_key(&h)?, &body)
+        .await
+        .map(|r| (StatusCode::ACCEPTED, Json(r)))
         .map_err(error)
 }

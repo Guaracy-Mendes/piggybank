@@ -2,13 +2,14 @@
   "name": "piggybank",
   "version": "0.1.0",
   "private": true,
-  "description": "Digital banking platform — synthetic local development",
+  "description": "Digital banking platform \u2014 synthetic local development",
   "engines": {
     "node": ">=24.15.0 <25"
   },
   "packageManager": "npm@11.12.1",
   "workspaces": [
-    "apps/*",
+    "apps/customer-web",
+    "apps/staff-web",
     "packages/*"
   ],
   "devDependencies": {

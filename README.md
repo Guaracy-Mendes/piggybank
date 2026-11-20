@@ -1,5 +1,8 @@
 # Piggybank — Digital Bank
 
+
+The [official-template consumer and investment preview](docs/implementation/ui/ARCHITECTURE.md) extends the essential banking baseline. Use the [local end-to-end CX walkthrough](docs/implementation/ui/LOCAL_CX_TEST.md) and [32-screen coverage record](docs/implementation/ui/SCREEN_COVERAGE.md).
+
 This repository contains a proposed product requirements baseline, editable C4/UML models, and an evolving synthetic local application based on the supplied [Digital Bank Logical Architecture](Digital%20Bank%20Logical%20Architecture.jpeg). The [current implementation](docs/implementation/README.md) distinguishes working capabilities from the full target design.
 
 **Product baseline:** Draft v1.0, 2026-10-22. The image is the only product source supplied. Requirements, release boundaries, interfaces, deployment topology, and numerical targets are proposals unless explicitly marked as observations from that image. Implementation progress and evidence are tracked separately in the backlog.
@@ -18,6 +21,8 @@ This repository contains a proposed product requirements baseline, editable C4/U
 | [Validation record](docs/VALIDATION.md) | Checks actually performed on this documentation package and their limits |
 
 The source image credits **AlphaMille / Victor Yaromin** as its source and **Simon Koci** for the visual. Those credits describe the supplied image; they are not an endorsement of this proposed specification.
+
+WP-01–WP-24 are complete within documented local synthetic scope. The [essential WP-24 completion evidence](docs/implementation/evidence/WP-24-complete.md) and [scope decision](docs/implementation/wp24-essential-scope.md) record the financial lifecycle and deliberate deferrals. Work stops before WP-25; full R1 and production qualification remain outstanding.
 
 ## Read and render
 
@@ -67,3 +72,5 @@ The [controlled funding correction workflow](docs/implementation/finance-correct
 [Durable Finance audit delivery](docs/implementation/finance-audit-delivery.md) now preserves original records while progressing past failed events. The [runbook](docs/runbooks/finance-audit-delivery.md) covers native receipt confirmation, retained pending records and forward-upgrade checks.
 
 [Customer periodic disclosures](docs/implementation/customer-periodic-disclosures.md) expose exact approved preview rules for owned accounts. The [runbook](docs/runbooks/customer-periodic-disclosures.md) explains material digests and saved versions. This information does not enroll accounts or enable charges.
+
+[Retained preview reviews](docs/implementation/periodic-preview-reviews.md) add explicit customer acknowledgment, exact archived material and original receipt recovery. The [runbook](docs/runbooks/periodic-preview-reviews.md) covers response loss, historical evidence and integrity failures. These records do not establish financial consent or enrollment.

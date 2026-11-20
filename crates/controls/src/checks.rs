@@ -403,7 +403,7 @@ impl Checks {
         AuditLog::append_in(
             tx,
             Uuid::new_v4(),
-            "controls",
+            &crate::audit::control_stream(correlation),
             &AuditRecord::new(actor, "control.recorded", id, correlation),
         )
         .await?;

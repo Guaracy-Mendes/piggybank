@@ -1,0 +1,54 @@
+# Sanitized threat model (local synthetic profile)
+
+Version 1, 2026-11-17 (WP-28). It covers the implemented local system: Rust API and worker, PostgreSQL module schemas, local Keycloak issuer, provider simulator, web portals and the native Android app.
+
+It holds no secrets, real identities or production topology. Production threat modeling belongs to the provider and deployment gates (WP-31 and WP-32).
+
+## Trust zones and boundaries
+
+| Zone | Contents | Boundary controls |
+| --- | --- | --- |
+| Public / client | Customer and staff browsers, native app | TLS terminates outside the local profile. Separate customer and workforce issuers and audiences. BFF opaque cookies with CSRF and an origin check. Native PKCE with Keystore-held tokens. |
+| Ingress | `bank-api` boundary middleware | Per-IP fixed-window quota, 64 KiB bodies, 3 s body and 5 s handler timeouts, safe error envelope, request IDs, `no-store` and anti-framing headers |
+| Application | Domain modules (Core, Payments, Controls, Documents, Data, Identity, Finance) | Module database roles. SECURITY DEFINER functions recheck actor, role, relationship and independence. Immutable journals and evidence. |
+| Financial data | `core` schema | Balanced journals, holds and restrictions; only Core paths post. Monitoring, analytics and repair are read-only to Core (tested). |
+| Provider egress | Simulator rail, GL and liquidity | HMAC-signed evidence, durable receipts before acknowledgement, replay and conflict quarantine |
+| Issuer | Local Keycloak | Password grants disabled. 30 s access tokens, rotating single-use refresh tokens with reuse revocation. The recovery executor client holds only `manage-users`/`view-users`. |
+
+## STRIDE summary
+
+| Threat | Example | Implemented mitigation | Residual / owner |
+| --- | --- | --- | --- |
+| Spoofing | Stolen phone used to sign in; staff impersonating a customer | Issuer authentication. Lost-device revocation kills issuer, browser and native sessions. Staff recovery records ownership verification; a credential reset or high risk needs a different security approver. Staff never see or set passwords. | Phishing-resistant staff factors and customer MFA: WP-31 issuer configuration |
+| Tampering | Changed payment after approval; rewritten audit or statement | Action-bound step-up with exact digest (browser and native). Immutable journals, statements, audit chain, dispositions and recovery history (triggers deny owner-path edits). | Database superuser threat: deployment control (WP-29/31) |
+| Repudiation | "I didn't approve that" | Attributable maker/checker for cases, monitoring, holds, recovery, access review and findings. Append-only `controls.audit_events` with per-stream hash chains. High-volume streams (`authorization`, `controls`) are split into a fixed set of 16 shard chains (WP-30 CF-01), so a missing or truncated shard is detectable; `AuditLog::verify_sharded` checks the legacy chain and every shard. | — |
+| Information disclosure | Logs leaking tokens or PII; cross-customer reads; tipping-off; database snapshot exposure | Seeded-sensitive log inspection test. Cross-customer denial without leakage. Monitoring cases hidden from customers. Exports contain only the subject's own data; evidence content is restricted. Server-held tokens are sealed at rest. | Production key custody (WP-31) |
+| Denial of service | Request floods; huge bodies; long histories | Quotas, body and time limits. Fact bounds (1,000 per statement, 5,000 per scan) refuse rather than truncate. | Capacity qualification: WP-30 |
+| Elevation of privilege | A role grant used to bypass relationships; self-approval | Database-level role and relationship checks. Separation of duties in every approval. Quarterly-style access recertification with self-review blocked and immediate revocation. | — |
+
+## Findings register (initial entries)
+
+Findings are recorded and dispositioned in the staff **Security** workspace (`controls.security_findings`). High and critical findings cannot be accepted, only resolved, and the disposer must differ from the reporter. Items identified during this review:
+
+| Ref | Severity | Finding | Disposition path |
+| --- | --- | --- | --- |
+| SF-001 | High | BFF access, refresh and ID tokens were held in `identity.sessions` in plaintext | **Resolved in WP-28.** Tokens are sealed with AES-256-GCM, row- and column-bound, from a rotatable key ring (`BANK_SESSION_KEYS_FILE`). Verified by unit and issuer tests. Production key custody (KMS or HSM) is a WP-31 deployment input. |
+| SF-002 | Low | The provider simulator HMAC key is a fixed synthetic constant | Accepted for the local profile. Production adapters use managed secrets with dual-key rotation (WP-31). |
+| SF-003 | Medium | Loopback cleartext HTTP in the native synthetic profile | Restricted to `127.0.0.1` and `localhost` by network security config; production builds use HTTPS only (WP-31). |
+| SF-004 | Medium | Native-only customers were not registered as issuer subjects, which broke step-up | Resolved in WP-27 (subject registration in the step-up transaction, plus a regression test). |
+| SF-005 | Low | The ATM network and partner callback paths use synthetic keys and loopback endpoints (WP-34/35) | Accepted for the local profile: the ATM network key defaults to a fixed synthetic constant (`BANK_ATM_NETWORK_KEY`), and partner callback secrets are generated per client and sealed. Production networks need managed keys, mTLS and certification (WP-31, DEC-04/09). |
+| SF-006 | Low | Warehouse functions (WP-37) run as the schema owner and read Core, Data, controls and privacy tables on behalf of `bank_data` | Mitigated: `bank_data` has EXECUTE on eight API functions only, with no table privileges and no `core` usage. Every function pins `search_path` and uses no temporary tables (a caller-made temp table could carry an owner-privileged trigger). A database test fails if any analytics body writes Core or calls a volatile Core function. Purpose roles are re-checked on every read. Selected analytical products need their own principals and review (DEC-08). |
+| SF-007 | Low | The journey-partner channel (WP-38) accepts signed requests from the local simulator role with a synthetic key (`BANK_JOURNEY_PARTNER_KEY`) | Accepted for the local profile. Partners see only per-audience pseudonymous tokens. Recommendations are limited to allowlisted codes, routes and plain text; anything else is rejected and recorded. Consent is re-checked at export, delivery and receipt, and the only possible effect is an advisory insight. A selected partner needs managed keys, mTLS and a data-sharing agreement (DEC-05/06/09). |
+| SF-008 | Low | Two simulated rail providers (WP-39) use synthetic keys; a compromised or lying provider could claim settlement after proving non-execution | Mitigated: Core accepts a re-route only with the current provider's signed non-execution proof, verified with that provider's key. It books final evidence only from the current route's provider, so a contradicting earlier provider is quarantined and never booked. Routing policies need independent approval and cannot widen fallback reasons or touch approvals. Real providers need managed keys, mTLS and certification (DEC-03/04/07/11). |
+| SF-009 | Low | Liquidity automation (WP-40) can move money: an approved settlement-prefunding action posts from a seeded synthetic treasury reserve account to the settlement clearing account | Mitigated: the action is proposed only by a current confirmed breach forecast (fresh signed liquidity evidence); a Finance maker confirms it and a different Finance approver approves it. `core.execute_liquidity_action` re-checks the exact details and digest, both people's live roles, an approval under 15 minutes old, and the policy's per-action and daily limits, then books once by execution id. The Finance role cannot write liquidity records directly; all history is immutable. Payments can only read the restriction gate. Real treasury movements need DEC-03/06/07/12. |
+| SF-010 | Medium | Customer self-registration (UI-02) lets anyone who can reach the local issuer create a customers-realm identity | Mitigated for the local profile: credentials are entered only at the issuer (OIDC `prompt=create` with the normal PKCE, state and nonce checks), under a realm password policy (8 to 128 characters, an uppercase letter, a symbol, not the username or email). A new identity gets only the `customer` realm role and no person link, so it can read the catalogue and start an application but reach no account until onboarding is approved. The workforce realm has no registration route. Email ownership is not verified until an OTP provider exists (UI-03). The cloud template keeps registration off (`BANK_CUSTOMER_REGISTRATION=disabled`). Production needs abuse controls such as CAPTCHA, rate limits and verified contact details before enabling it. |
+| SF-011 | Low | Email verification codes (UI-03) could be guessed, replayed or flooded, and the local delivery is a readable outbox | Mitigated: codes come from OS entropy (uniform 6 digits), are stored only as per-code salted SHA-256 digests, expire after 10 minutes, lock after 5 misses, are single use, are superseded by a new code, and are limited to one per 45 seconds and 5 per subject per hour, all under a per-subject advisory lock. The identity role has no table access, only three functions; the outbox is written only by a simulator-owned function. Sending needs a CSRF-checked customer session. A match is accepted only if the issuer's email is unchanged, then marks it verified through the least-privilege admin client and is audited. Delivery is simulated: the outbox is synthetic and readable by the simulator role and local admins, so it must never hold real contact details. A real provider needs DEC selection, managed keys and abuse monitoring. |
+
+## Sensitive data classes
+
+| Class | Examples | Handling |
+| --- | --- | --- |
+| Credentials | Passwords, tokens, client secrets | Never logged (tested). Stored tokens are sealed. Secrets are read from files or env; the issuer admin secret and session key ring rotate without restart (tested). |
+| Identity evidence | Application evidence objects | Restricted by purpose; content excluded from exports. |
+| Personal data | Name, date of birth, email | Own-subject export only. Restriction of marketing and analytics is honored over preferences. |
+| Financial facts | Journals, statements | Immutable. Corrections are linked. Retention and legal holds govern documents. |

@@ -1,5 +1,7 @@
 # Incoming and return reconciliation
 
+Current status: essential synthetic WP-24 is complete. This document retains the narrower increment it introduced; the [financial lifecycle](periodic-finance-r1.md), [scope decision](wp24-essential-scope.md) and [completion evidence](evidence/WP-24-complete.md) describe the completed execution and deliberate deferrals. Earlier references to remaining work below describe that checkpoint.
+
 This WP-24 increment observes incoming and returned principal from independent synthetic clearing files through authenticated movement evidence, Core suspense and customer allocation, original payment receipts and captured GL bookings. It has no money, hold-release, allocation, submission or GL-replay command. The [operator runbook](../runbooks/finance-credit-reconciliation.md), [provider contract](../../contracts/providers/finance/README.md), [C4 components](current-finance-components.puml) and [UML sequence](current-finance-credit-reconciliation.puml) describe the implemented boundaries.
 
 ## Separate immutable formats

@@ -24,6 +24,21 @@ import { BalanceCard, AccountsView } from "./components/Accounts";
 import { ProfileView } from "./components/Profile";
 import { PaymentsView } from "./components/Payments";
 import { SupportView } from "./components/Support";
+import { SharingView } from "./components/Sharing";
+import { BatchTransfers } from "./components/BatchTransfers";
+import { ConsumerProvider, useConsumer } from "./consumer/context";
+import { Investments } from "./consumer/Investments";
+import {
+  Home,
+  Savings,
+  Spend,
+  Wallet,
+  Preferences,
+  Notifications,
+  MoneyRequests,
+} from "./consumer/Personal";
+import { UIIcon } from "./consumer/components";
+import { DocumentsPage } from "./consumer/Documents";
 
 export function Root() {
   const session = useSession();
@@ -65,6 +80,14 @@ export function Root() {
 }
 
 export function Bank() {
+  return (
+    <ConsumerProvider>
+      <BankWorkspace />
+    </ConsumerProvider>
+  );
+}
+function BankWorkspace() {
+  const { refresh: refreshConsumer } = useConsumer();
   const { client, logout } = useSession();
   const current = useRoute();
   const [products, setProducts] = useState<Product[]>([]);
@@ -90,13 +113,14 @@ export function Bank() {
       setApplications(a);
       setAccounts(b);
       setCases(c.items);
+      await refreshConsumer();
       setError("");
     } catch (e) {
       setError(message(e));
     } finally {
       setLoading(false);
     }
-  }, [client]);
+  }, [client, refreshConsumer]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -134,10 +158,18 @@ export function Bank() {
     ?.profile?.fullName.split(" ")[0];
   const nav = [
     ["home", "Overview", "home"],
+    ["save", "Savings & vaults", "accounts"],
+    ["spend", "Spending & insights", "applications"],
+    ["invest", "Investments", "arrow"],
+    ["wallet", "Cards & wallet", "accounts"],
     ["accounts", "Accounts", "accounts"],
     ["payments", "Payments", "arrow"],
+    ["documents", "Statements & documents", "applications"],
     ["applications", "Applications", "applications"],
     ["profile", "Profile & security", "profile"],
+    ["sharing", "Connected apps & sharing", "shield"],
+    ["preferences", "Preferences & API", "profile"],
+    ["notifications", "Notifications", "support"],
     ["support", "Help & support", "support"],
   ] as const;
   return (
@@ -192,10 +224,15 @@ export function Bank() {
           <div className="breadcrumb">
             Personal banking <span>/</span>{" "}
             <strong>
-              {nav.find((n) => n[0] === section)?.[1] ?? "Overview"}
+              {nav.find(
+                (n) => n[0] === (section === "connected" ? "sharing" : section),
+              )?.[1] ?? "Overview"}
             </strong>
           </div>
           <div className="row">
+            <a href="#/notifications" aria-label="Notifications">
+              <UIIcon kind="bell" />
+            </a>
             <Badge>Synthetic demo</Badge>
             <span className="avatar" aria-hidden="true">
               {name?.[0] ?? "P"}
@@ -225,6 +262,20 @@ export function Bank() {
           ) : null}
           {loading ? (
             <Busy />
+          ) : section === "save" ? (
+            <Savings key={current} route={current} />
+          ) : section === "spend" ? (
+            <Spend key={current} route={current} />
+          ) : section === "invest" ? (
+            <Investments key={current} route={current} />
+          ) : section === "wallet" ? (
+            <Wallet />
+          ) : section === "preferences" ? (
+            <Preferences />
+          ) : section === "notifications" ? (
+            <Notifications />
+          ) : section === "documents" ? (
+            <DocumentsPage />
           ) : section === "applications" && selected ? (
             <ApplicationView
               key={selected}
@@ -237,6 +288,11 @@ export function Bank() {
               key={selected ?? "all"}
               accounts={accounts}
               selected={selected}
+              offerId={
+                current.split("/")[3] === "offers"
+                  ? current.split("/")[4]
+                  : undefined
+              }
               disclosureId={
                 current.split("/")[3] === "periodic"
                   ? current.split("/")[4]
@@ -246,7 +302,16 @@ export function Bank() {
               notify={setNotice}
             />
           ) : section === "payments" ? (
-            <PaymentsView accounts={accounts} selected={selected} />
+            <>
+              <PaymentsView accounts={accounts} selected={selected} />
+              {selected ? null : <BatchTransfers accounts={accounts} />}
+              <MoneyRequests />
+            </>
+          ) : section === "sharing" || section === "connected" ? (
+            <SharingView
+              accounts={accounts}
+              consentId={section === "connected" ? selected : undefined}
+            />
           ) : section === "profile" ? (
             <ProfileView hasAccount={accounts.length > 0} />
           ) : section === "support" ? (
@@ -273,6 +338,8 @@ export function Bank() {
                 </div>
               </section>
             </>
+          ) : accounts.length ? (
+            <Home name={name} />
           ) : (
             <>
               <div className="page-heading spread">
@@ -430,6 +497,24 @@ export function Bank() {
             </>
           )}
         </main>
+        <nav className="ui-mobile-nav" aria-label="Mobile navigation">
+          {[
+            ["home", "Home", "home"],
+            ["save", "Save", "save"],
+            ["spend", "Spend", "spend"],
+            ["invest", "Invest", "invest"],
+            ["preferences", "Profile", "profile"],
+          ].map(([id, label, icon]) => (
+            <a
+              key={id}
+              href={"#/" + id}
+              aria-current={section === id ? "page" : undefined}
+            >
+              <UIIcon kind={icon} />
+              {label}
+            </a>
+          ))}
+        </nav>
         <footer className="app-footer">
           <span>A little more clarity. Every day.</span>
           <span>TST · Synthetic demonstration · No monetary value</span>

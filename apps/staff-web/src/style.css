@@ -562,3 +562,55 @@ textarea {
   padding: 1rem 0;
   overflow-wrap: anywhere;
 }
+
+.periodic-finance {
+  min-width: 0;
+}
+.periodic-finance pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.periodic-finance .case-row {
+  overflow-wrap: anywhere;
+}
+
+/* WP-25 records workspace */
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  margin: 8px 0;
+}
+.inline-form label {
+  flex: 1 1 180px;
+}
+.stack-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.table-scroll {
+  overflow-x: auto;
+}
+.data-table td {
+  vertical-align: top;
+}
+.plain-list {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+}
+
+/* WP-33 partner registry: checkbox rows meet the 24px target size (WCAG 2.2 2.5.8). */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+.check input {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+}

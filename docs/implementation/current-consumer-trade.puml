@@ -1,0 +1,42 @@
+@startuml
+title UML sequence - exact trade approval, reservation and native financial receipt
+actor Customer
+participant "Official portal" as UI
+participant "Customer BFF" as API
+participant "OIDC issuer" as OIDC
+participant "Core capability" as Core
+database "Native financial schemas" as DB
+participant "Recovery worker" as Worker
+Customer -> UI : Choose BUY/SELL, amount/shares, market/limit, TIF
+UI -> API : POST investments/quotes (session + CSRF)
+API -> Core : Current canonical actor and exact terms
+Core -> DB : Lock current person; validate cash / shares; retain full quote + digest
+DB --> UI : Immutable authorization, expiry and issuer approval URL
+Customer -> UI : Confirm identity for these exact terms
+UI -> API : Open challenge URL
+API -> OIDC : Authorization code + PKCE, fresh login, nonce and exact subject
+OIDC --> API : Subject-bound fresh authentication
+API -> DB : Retain matching expiring action-bound proof
+API --> UI : Return to saved review route
+Customer -> UI : Submit approved instruction
+UI -> API : Original UUID key + authorizationId only
+API -> Core : Execute exact approved instruction
+Core -> DB : Person lock; replay original receipt or reject key/input mismatch
+Core -> DB : Validate fresh matching proof and one authorization / command
+Core -> DB : Reserve native cash or unreserved microshares
+alt Price satisfies approved bound
+ Core -> DB : Balanced native journal + position event + fill + outbox + original command receipt (atomic)
+ DB --> UI : FILLED + actual batch, units, price and cash
+else Limit remains open
+ Core -> DB : Retain OPEN order and original reservation
+ DB --> UI : OPEN; no fill receipt
+ Worker -> Core : Recover owned open order or expire
+ Core -> DB : Revalidate native authority, current price and exact original reservation
+end
+note over Core,DB
+Cancellation releases only an OPEN order's original reservation.
+A request-key replay returns its original financial effect.
+Reusing the authorization under a new key is refused.
+TST assets and prices are explicitly synthetic.
+end note
+@enduml

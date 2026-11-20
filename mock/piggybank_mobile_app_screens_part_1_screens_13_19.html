@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bundle 3: PiggyBank Mobile App Screens Part 1 (Screens 13–19)</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            emeraldBrand: '#1D6E4E',
+            emeraldHover: '#288C64',
+            emeraldTint: '#E8F3EE',
+            sidebarDark: '#1E2D2F',
+            canvasMint: '#F6F9F8',
+            cardSurface: '#FFFFFF',
+            cardBorder: '#E2EAE8',
+            textPrimary: '#132224',
+            textSecondary: '#64748B',
+            mintChart: '#34D399',
+            goldAccent: '#F59E0B',
+            coralAccent: '#EF4444',
+          },
+          boxShadow: {
+            iosDevice: '0 28px 60px -15px rgba(19, 34, 36, 0.22), 0 0 0 1px rgba(19, 34, 36, 0.08)',
+            cardSoft: '0 4px 16px -4px rgba(19, 34, 36, 0.06)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    @keyframes floatCoin {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    .animate-coin {
+      animation: floatCoin 3.5s ease-in-out infinite;
+    }
+
+    /* Hide scrollbar inside compact mobile device screens */
+    .mobile-scroll::-webkit-scrollbar {
+      width: 0px;
+      height: 0px;
+    }
+    .mobile-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-canvasMint text-textPrimary font-sans antialiased selection:bg-emeraldBrand selection:text-white min-h-screen flex flex-col">
+
+  <!-- Non-Blocking Toast Notification (Never uses alert) -->
+  <div
+    id="toastBanner"
+    class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-sidebarDark text-white px-4 py-3 rounded-2xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none"
+  >
+    <span class="w-2.5 h-2.5 rounded-full bg-mintChart animate-pulse"></span>
+    <span id="toastMessage" class="text-sm font-medium">Action completed</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- STICKY BUNDLE CONTROL BAR & VIEW SWITCHER                             -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cardBorder shadow-2xs">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-col gap-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <!-- Title & Badge -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emeraldBrand flex items-center justify-center text-white shadow-xs shrink-0">
+            <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="font-display font-bold text-sm sm:text-base text-textPrimary">
+                Bundle 3: PiggyBank Mobile App Screens Part 1 (Screens 13–19)
+              </h1>
+              <span class="px-2.5 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">
+                375×812px iOS Frames
+              </span>
+            </div>
+            <p class="text-[11px] text-textSecondary hidden sm:block">
+              Primary Emerald #1D6E4E • Hover #288C64 • Dark Slate-Teal #1E2D2F • Soft Mint Canvas #F6F9F8
+            </p>
+          </div>
+        </div>
+
+        <!-- Single-View Active Copy Button (visible when focused on a single screen) -->
+        <button
+          id="copyActiveScreenBtn"
+          type="button"
+          onclick="copyActiveSingleScreen()"
+          class="hidden items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-semibold shadow-xs transition-colors"
+        >
+          <i data-lucide="code-2" class="w-4 h-4"></i>
+          <span>Copy Active Screen HTML</span>
+        </button>
+      </div>
+
+      <!-- View Switcher Buttons -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto pb-1" aria-label="Mobile Screen Switcher">
+        <button
+          type="button"
+          onclick="switchMobileView('grid')"
+          id="tab-grid"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-sidebarDark text-white flex items-center gap-1.5 shrink-0 transition-all"
+        >
+          <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+          <span>All Screens Grid (7)</span>
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('13')"
+          id="tab-13"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          13. Mobile Home ($43,502)
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('14')"
+          id="tab-14"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          14. Recent Money & Promo
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('15')"
+          id="tab-15"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          15. Scan QR Code
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('16')"
+          id="tab-16"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          16. Mobile Payment & Keypad
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('17')"
+          id="tab-17"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          17. Price Money & Limits
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('18')"
+          id="tab-18"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          18. Security Balance & Card
+        </button>
+        <button
+          type="button"
+          onclick="switchMobileView('19')"
+          id="tab-19"
+          class="view-tab px-3 py-1.5 rounded-xl text-xs font-semibold bg-canvasMint hover:bg-emeraldTint text-textPrimary border border-cardBorder shrink-0 transition-all"
+        >
+          19. Smart Pay Onboarding
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- RESPONSIVE MULTI-SCREEN MOBILE CANVAS GRID (375x812px iOS FRAMES)     -->
+  <!-- ===================================================================== -->
+  <main
+    id="mobileCanvasGrid"
+    class="flex-1 max-w-[1620px] w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 justify-items-center"
+  >
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 13: MOBILE HOME & TOTAL BALANCE ($43,502)                    -->
+    <!-- =================================================================== -->
+    <article id="card-13" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <!-- Card Header with Copy HTML Button -->
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">13</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Mobile Home ($43,502)</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('13', 'Screen 13: Mobile Home ($43,502)')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 13 -->
+      <div
+        id="screen-13"
+        class="w-[375px] h-[812px] bg-emeraldBrand rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col relative select-none"
+      >
+        <!-- iOS Status Bar & Dynamic Island -->
+        <div class="px-6 pt-3 pb-2 flex items-center justify-between text-white text-xs font-semibold shrink-0">
+          <span class="tabular-nums">9:41</span>
+          <div class="w-24 h-6 bg-black rounded-full flex items-center justify-end px-2.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-950 border border-emerald-700"></span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <i data-lucide="battery-full" class="w-4 h-4"></i>
+          </div>
+        </div>
+
+        <!-- Deep Emerald Header (#1D6E4E) -->
+        <div class="px-6 pt-2 pb-5 text-white shrink-0">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&q=80"
+                onerror="this.src='https://placehold.co/96x96/288C64/FFFFFF?text=CB'"
+                alt="Clara Bennett"
+                class="w-9 h-9 rounded-full object-cover border-2 border-white/30"
+              />
+              <div>
+                <p class="text-[11px] text-emerald-100">Welcome back</p>
+                <p class="font-display text-xs font-bold">Clara Bennett</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onclick="showToast('2 new cashback rewards unlocked')"
+              class="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center relative transition-colors"
+            >
+              <i data-lucide="bell" class="w-4 h-4 text-white"></i>
+              <span class="w-2 h-2 rounded-full bg-goldAccent absolute top-2 right-2"></span>
+            </button>
+          </div>
+
+          <!-- Total Balance ($43,502) & Circular Send / Receive Action Pills -->
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <p class="text-[11px] font-medium text-emerald-100 uppercase tracking-wider">Total Balance</p>
+              <h3 class="font-display text-[32px] leading-tight font-extrabold tracking-tight tabular-nums mt-0.5">
+                $43,502
+              </h3>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-mintChart mt-0.5">
+                <i data-lucide="trending-up" class="w-3 h-3"></i>
+                +$2,410.00 (5.8%)
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button
+                type="button"
+                onclick="showToast('Opening Send Money sheet')"
+                class="flex flex-col items-center gap-1 group"
+              >
+                <span class="w-11 h-11 rounded-full bg-white text-emeraldBrand group-hover:bg-emeraldTint flex items-center justify-center shadow-md transition-transform group-active:scale-95">
+                  <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                </span>
+                <span class="text-[11px] font-semibold text-white">Send</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="showToast('Opening Receive QR Code')"
+                class="flex flex-col items-center gap-1 group"
+              >
+                <span class="w-11 h-11 rounded-full bg-emeraldHover border border-white/25 text-white flex items-center justify-center shadow-md transition-transform group-active:scale-95">
+                  <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+                </span>
+                <span class="text-[11px] font-semibold text-white">Receive</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Custom 3D-Style SVG Hero Banner: Stacked Gold Coins, Emerald Bank Card & Mint Botanical Leaves -->
+          <div class="mt-4 rounded-2xl bg-gradient-to-r from-[#16583E] to-[#24825D] border border-white/15 p-3.5 flex items-center justify-between overflow-hidden relative">
+            <div class="z-10 max-w-[175px]">
+              <span class="px-2 py-0.5 rounded-full bg-white/15 text-mintChart text-[10px] font-bold">Smart Treasury</span>
+              <p class="font-display text-xs font-bold text-white mt-1.5 leading-snug">
+                Earn 4.85% APY on idle vault reserves
+              </p>
+              <button
+                type="button"
+                onclick="showToast('Auto-Yield Vault activated')"
+                class="mt-2 px-2.5 py-1 rounded-lg bg-white text-emeraldBrand text-[11px] font-bold hover:bg-emeraldTint transition-colors"
+              >
+                Boost Yield
+              </button>
+            </div>
+
+            <!-- 3D Vector Scene -->
+            <svg class="w-32 h-24 shrink-0 animate-coin" viewBox="0 0 140 105" fill="none">
+              <!-- Mint Botanical Leaves -->
+              <path d="M24 84 C10 66 16 42 36 36 C42 54 38 72 24 84 Z" fill="#34D399" opacity="0.7" />
+              <path d="M118 82 C132 64 128 40 108 34 C102 52 106 70 118 82 Z" fill="#6EE7B7" opacity="0.65" />
+              <!-- Emerald Bank Card -->
+              <g transform="translate(36, 18) rotate(-8)">
+                <rect x="0" y="0" width="76" height="48" rx="9" fill="#1E2D2F" stroke="#34D399" stroke-width="1.5" />
+                <rect x="10" y="12" width="14" height="10" rx="2.5" fill="#F59E0B" />
+                <circle cx="58" cy="16" r="5" fill="#EF4444" opacity="0.85" />
+                <circle cx="64" cy="16" r="5" fill="#F59E0B" opacity="0.85" />
+                <rect x="10" y="32" width="34" height="4" rx="2" fill="#A3B8B5" />
+              </g>
+              <!-- Stacked 3D Gold Coins -->
+              <g transform="translate(18, 52)">
+                <ellipse cx="20" cy="34" rx="16" ry="6" fill="#B45309" />
+                <ellipse cx="20" cy="30" rx="16" ry="6" fill="#F59E0B" />
+                <ellipse cx="20" cy="24" rx="16" ry="6" fill="#B45309" />
+                <ellipse cx="20" cy="20" rx="16" ry="6" fill="#FBBF24" />
+                <ellipse cx="20" cy="14" rx="16" ry="6" fill="#D97706" />
+                <ellipse cx="20" cy="10" rx="16" ry="6" fill="#FDE68A" />
+                <text x="20" y="13" text-anchor="middle" fill="#92400E" font-size="8" font-weight="800">$</text>
+              </g>
+              <!-- Floating Coin -->
+              <circle cx="114" cy="22" r="11" fill="#F59E0B" stroke="#FEF3C7" stroke-width="1.5" />
+              <text x="114" y="26" text-anchor="middle" fill="#78350F" font-size="11" font-weight="800">$</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- White Bottom Sheet: Transactions List -->
+        <div class="flex-1 bg-white rounded-t-[30px] px-5 pt-4 pb-20 flex flex-col justify-between overflow-y-auto mobile-scroll">
+          <div>
+            <div class="w-10 h-1 rounded-full bg-cardBorder mx-auto mb-3"></div>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-display text-sm font-extrabold text-textPrimary">Transactions</h4>
+              <button type="button" onclick="showToast('Viewing full transaction history')" class="text-xs font-bold text-emeraldBrand">See All</button>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Transaction 1 -->
+              <div class="flex items-center justify-between p-2.5 rounded-2xl bg-canvasMint border border-cardBorder">
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"
+                    onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=SM'"
+                    alt="Sophia Miller"
+                    class="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Sophia Miller</p>
+                    <p class="text-[11px] text-textSecondary">Design Retainer • 10:24 AM</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-extrabold text-emeraldBrand tabular-nums">+$1,250.00</span>
+              </div>
+
+              <!-- Transaction 2 -->
+              <div class="flex items-center justify-between p-2.5 rounded-2xl bg-canvasMint border border-cardBorder">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-emeraldTint text-emeraldBrand flex items-center justify-center font-bold text-xs">
+                    <i data-lucide="coffee" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Blue Bottle Coffee</p>
+                    <p class="text-[11px] text-textSecondary">Card •••• 4829 • Yesterday</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-bold text-textPrimary tabular-nums">-$14.50</span>
+              </div>
+
+              <!-- Transaction 3 -->
+              <div class="flex items-center justify-between p-2.5 rounded-2xl bg-canvasMint border border-cardBorder">
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
+                    onerror="this.src='https://placehold.co/80x80/1E2D2F/FFFFFF?text=LC'"
+                    alt="Liam Carter"
+                    class="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Liam Carter</p>
+                    <p class="text-[11px] text-textSecondary">Shared Dinner Split • Nov 11</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-extrabold text-emeraldBrand tabular-nums">+$86.00</span>
+              </div>
+
+              <!-- Transaction 4 -->
+              <div class="flex items-center justify-between p-2.5 rounded-2xl bg-canvasMint border border-cardBorder">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-amber-50 text-goldAccent flex items-center justify-center font-bold text-xs">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">ConEdison Utility</p>
+                    <p class="text-[11px] text-textSecondary">Auto-Debit • Nov 10</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-bold text-textPrimary tabular-nums">-$142.80</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon iOS Bottom Tab Bar -->
+        <nav class="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-cardBorder px-5 pt-2.5 pb-5 flex items-center justify-between text-[10px] font-semibold">
+          <button type="button" class="flex flex-col items-center gap-1 text-emeraldBrand font-bold">
+            <i data-lucide="home" class="w-4 h-4"></i>
+            <span>Home</span>
+          </button>
+          <button type="button" onclick="showToast('Switching to Analytics')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+            <span>Stats</span>
+          </button>
+          <button type="button" onclick="showToast('Opening QR Scanner')" class="w-11 h-11 -mt-5 rounded-full bg-emeraldBrand text-white flex items-center justify-center shadow-lg border-4 border-white">
+            <i data-lucide="qr-code" class="w-5 h-5"></i>
+          </button>
+          <button type="button" onclick="showToast('Switching to Vaults')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+            <span>Vaults</span>
+          </button>
+          <button type="button" onclick="showToast('Switching to Profile')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            <span>Profile</span>
+          </button>
+        </nav>
+      </div>
+      <!-- END SCREEN 13 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 14: RECENT MONEY & PROMO BANNER                              -->
+    <!-- =================================================================== -->
+    <article id="card-14" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">14</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Recent Money & Promo</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('14', 'Screen 14: Recent Money & Promo Banner')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 14 -->
+      <div
+        id="screen-14"
+        class="w-[375px] h-[812px] bg-canvasMint rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col relative select-none"
+      >
+        <!-- Emerald Header -->
+        <div class="bg-emeraldBrand text-white px-6 pt-3 pb-6 rounded-b-[30px] shrink-0">
+          <!-- iOS Status Bar -->
+          <div class="pb-3 flex items-center justify-between text-xs font-semibold">
+            <span class="tabular-nums">9:41</span>
+            <div class="w-24 h-6 bg-black rounded-full"></div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery-full" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-4">
+            <button type="button" onclick="showToast('Back to Home')" class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <h3 class="font-display text-base font-extrabold tracking-tight">Recent Money</h3>
+            <button type="button" onclick="showToast('Searching contacts')" class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Promo Voucher Banner ('Get $50.00 / Today Cashback' with Gold Coin SVG) -->
+          <div class="rounded-2xl bg-gradient-to-r from-[#14533A] to-[#288C64] border border-white/20 p-4 flex items-center justify-between shadow-md">
+            <div>
+              <span class="px-2 py-0.5 rounded-full bg-goldAccent text-sidebarDark text-[10px] font-extrabold uppercase tracking-wide">
+                Limited Voucher
+              </span>
+              <h4 class="font-display text-xl font-extrabold text-white mt-1.5 tabular-nums">Get $50.00</h4>
+              <p class="text-xs font-semibold text-mintChart">Today Cashback</p>
+              <button
+                type="button"
+                onclick="showToast('Claimed $50.00 Today Cashback Voucher!')"
+                class="mt-2.5 px-3 py-1.5 rounded-xl bg-white text-emeraldBrand hover:bg-emeraldTint text-[11px] font-bold transition-colors"
+              >
+                Claim Now
+              </button>
+            </div>
+
+            <!-- Gold Coin SVG Emblem -->
+            <svg class="w-20 h-20 shrink-0 animate-coin" viewBox="0 0 84 84" fill="none">
+              <circle cx="42" cy="42" r="34" fill="#F59E0B" opacity="0.22" />
+              <circle cx="42" cy="42" r="26" fill="#F59E0B" stroke="#FEF3C7" stroke-width="2.5" />
+              <circle cx="42" cy="42" r="20" fill="none" stroke="#FDE68A" stroke-width="1.2" stroke-dasharray="3 2" />
+              <text x="42" y="49" text-anchor="middle" fill="#78350F" font-size="22" font-weight="800">$</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Body: Quickly Actions & Recent Names -->
+        <div class="flex-1 px-5 pt-5 pb-20 space-y-5 overflow-y-auto mobile-scroll">
+          <!-- Quickly Actions Row with Contact Avatars -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-display text-xs font-extrabold uppercase tracking-wider text-textSecondary">Quickly Actions</h4>
+              <span class="text-[11px] font-bold text-emeraldBrand">+ Add New</span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2 text-center">
+              <button type="button" onclick="showToast('Selected Emma Wilson for Quick Transfer')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-white border border-cardBorder hover:border-emeraldBrand transition-colors">
+                <img
+                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=EW'"
+                  alt="Emma"
+                  class="w-11 h-11 rounded-full object-cover ring-2 ring-emeraldBrand/20"
+                />
+                <span class="text-[11px] font-bold text-textPrimary truncate w-full">Emma</span>
+              </button>
+
+              <button type="button" onclick="showToast('Selected Noah Davis for Quick Transfer')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-white border border-cardBorder hover:border-emeraldBrand transition-colors">
+                <img
+                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/1E2D2F/FFFFFF?text=ND'"
+                  alt="Noah"
+                  class="w-11 h-11 rounded-full object-cover ring-2 ring-emeraldBrand/20"
+                />
+                <span class="text-[11px] font-bold text-textPrimary truncate w-full">Noah</span>
+              </button>
+
+              <button type="button" onclick="showToast('Selected Maya Lin for Quick Transfer')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-white border border-cardBorder hover:border-emeraldBrand transition-colors">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=ML'"
+                  alt="Maya"
+                  class="w-11 h-11 rounded-full object-cover ring-2 ring-emeraldBrand/20"
+                />
+                <span class="text-[11px] font-bold text-textPrimary truncate w-full">Maya</span>
+              </button>
+
+              <button type="button" onclick="showToast('Selected Lucas Kim for Quick Transfer')" class="flex flex-col items-center gap-1.5 p-2 rounded-2xl bg-white border border-cardBorder hover:border-emeraldBrand transition-colors">
+                <div class="w-11 h-11 rounded-full bg-emeraldTint text-emeraldBrand font-display font-extrabold text-xs flex items-center justify-center">
+                  LK
+                </div>
+                <span class="text-[11px] font-bold text-textPrimary truncate w-full">Lucas</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Names List -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="font-display text-sm font-extrabold text-textPrimary">Recent Names</h4>
+              <span class="text-[11px] font-semibold text-textSecondary">Instant P2P</span>
+            </div>
+
+            <div class="divide-y divide-cardBorder">
+              <div class="py-2.5 first:pt-0 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=80&q=80"
+                    onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=EW'"
+                    alt="Emma Wilson"
+                    class="w-9 h-9 rounded-full object-cover"
+                  />
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Emma Wilson</p>
+                    <p class="text-[11px] text-textSecondary">@emma.piggy • Today</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-extrabold text-emeraldBrand tabular-nums">+$320.00</span>
+              </div>
+
+              <div class="py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&q=80"
+                    onerror="this.src='https://placehold.co/80x80/1E2D2F/FFFFFF?text=ND'"
+                    alt="Noah Davis"
+                    class="w-9 h-9 rounded-full object-cover"
+                  />
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Noah Davis</p>
+                    <p class="text-[11px] text-textSecondary">@noahd • Yesterday</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-bold text-textPrimary tabular-nums">-$95.00</span>
+              </div>
+
+              <div class="py-2.5 last:pb-0 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80"
+                    onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=ML'"
+                    alt="Maya Lin"
+                    class="w-9 h-9 rounded-full object-cover"
+                  />
+                  <div>
+                    <p class="text-xs font-bold text-textPrimary">Maya Lin</p>
+                    <p class="text-[11px] text-textSecondary">@mayalin • Nov 09</p>
+                  </div>
+                </div>
+                <span class="font-display text-xs font-extrabold text-emeraldBrand tabular-nums">+$540.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5-Icon iOS Bottom Navigation -->
+        <nav class="absolute bottom-0 inset-x-0 bg-white border-t border-cardBorder px-5 pt-2.5 pb-5 flex items-center justify-between text-[10px] font-semibold">
+          <button type="button" onclick="showToast('Home tab')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="home" class="w-4 h-4"></i>
+            <span>Home</span>
+          </button>
+          <button type="button" class="flex flex-col items-center gap-1 text-emeraldBrand font-bold">
+            <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+            <span>Transfers</span>
+          </button>
+          <button type="button" onclick="showToast('Scan QR')" class="w-11 h-11 -mt-5 rounded-full bg-emeraldBrand text-white flex items-center justify-center shadow-lg border-4 border-white">
+            <i data-lucide="qr-code" class="w-5 h-5"></i>
+          </button>
+          <button type="button" onclick="showToast('Vaults tab')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+            <span>Vaults</span>
+          </button>
+          <button type="button" onclick="showToast('Profile tab')" class="flex flex-col items-center gap-1 text-textSecondary hover:text-emeraldBrand">
+            <i data-lucide="user" class="w-4 h-4"></i>
+            <span>Profile</span>
+          </button>
+        </nav>
+      </div>
+      <!-- END SCREEN 14 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 15: RECEIVE MONEY & SCAN QR CODE                             -->
+    <!-- =================================================================== -->
+    <article id="card-15" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">15</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Scan QR Code</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('15', 'Screen 15: Receive Money & Scan QR Code')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 15 -->
+      <div
+        id="screen-15"
+        class="w-[375px] h-[812px] bg-emeraldBrand rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col justify-between relative select-none"
+      >
+        <!-- Top Emerald Stage -->
+        <div class="px-6 pt-3 text-white">
+          <!-- iOS Status Bar -->
+          <div class="pb-3 flex items-center justify-between text-xs font-semibold">
+            <span class="tabular-nums">9:41</span>
+            <div class="w-24 h-6 bg-black rounded-full"></div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery-full" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-6">
+            <button type="button" onclick="showToast('Closing QR scanner')" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            </button>
+            <h3 class="font-display text-base font-extrabold">Receive & Scan QR</h3>
+            <button type="button" onclick="showToast('Camera flashlight toggled')" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
+              <i data-lucide="flashlight" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Centered White QR Code Card with Custom PiggyBank Center Badge -->
+          <div class="bg-white rounded-[28px] p-6 text-textPrimary shadow-xl mx-auto max-w-[295px] text-center">
+            <div class="flex items-center justify-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-mintChart"></span>
+              <span class="text-xs font-bold text-textSecondary">Clara Bennett • @clarab</span>
+            </div>
+            <p class="font-display text-sm font-extrabold text-textPrimary mb-4">Scan to Pay Instantly</p>
+
+            <!-- Crisp SVG QR Matrix + PiggyBank Center Badge -->
+            <div class="relative w-48 h-48 mx-auto p-3 rounded-2xl bg-canvasMint border-2 border-emeraldBrand/20 flex items-center justify-center">
+              <svg class="w-full h-full" viewBox="0 0 120 120" fill="none">
+                <!-- Corner Finder Squares -->
+                <rect x="6" y="6" width="30" height="30" rx="6" stroke="#132224" stroke-width="5" />
+                <rect x="14" y="14" width="14" height="14" rx="2.5" fill="#1D6E4E" />
+
+                <rect x="84" y="6" width="30" height="30" rx="6" stroke="#132224" stroke-width="5" />
+                <rect x="92" y="14" width="14" height="14" rx="2.5" fill="#1D6E4E" />
+
+                <rect x="6" y="84" width="30" height="30" rx="6" stroke="#132224" stroke-width="5" />
+                <rect x="14" y="92" width="14" height="14" rx="2.5" fill="#1D6E4E" />
+
+                <!-- QR Data Modules -->
+                <rect x="46" y="8" width="8" height="8" rx="2" fill="#132224" />
+                <rect x="62" y="8" width="12" height="8" rx="2" fill="#132224" />
+                <rect x="46" y="24" width="14" height="8" rx="2" fill="#132224" />
+                <rect x="68" y="24" width="8" height="8" rx="2" fill="#1D6E4E" />
+
+                <rect x="8" y="46" width="8" height="14" rx="2" fill="#132224" />
+                <rect x="24" y="48" width="10" height="8" rx="2" fill="#1D6E4E" />
+                <rect x="8" y="68" width="14" height="8" rx="2" fill="#132224" />
+
+                <rect x="86" y="46" width="12" height="8" rx="2" fill="#132224" />
+                <rect x="104" y="46" width="10" height="14" rx="2" fill="#1D6E4E" />
+                <rect x="86" y="64" width="8" height="12" rx="2" fill="#132224" />
+                <rect x="102" y="68" width="12" height="8" rx="2" fill="#132224" />
+
+                <rect x="46" y="86" width="10" height="10" rx="2" fill="#132224" />
+                <rect x="64" y="86" width="12" height="8" rx="2" fill="#1D6E4E" />
+                <rect x="46" y="104" width="16" height="10" rx="2" fill="#132224" />
+                <rect x="70" y="102" width="8" height="12" rx="2" fill="#132224" />
+                <rect x="86" y="88" width="12" height="12" rx="3" fill="#1D6E4E" />
+                <rect x="104" y="96" width="10" height="18" rx="2" fill="#132224" />
+              </svg>
+
+              <!-- Custom PiggyBank Center Emblem -->
+              <div class="w-11 h-11 rounded-2xl bg-emeraldBrand text-white flex items-center justify-center shadow-md border-2 border-white absolute">
+                <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+              </div>
+            </div>
+
+            <!-- Wallet Address Copy Pill -->
+            <div class="mt-4 p-2.5 rounded-xl bg-canvasMint border border-cardBorder flex items-center justify-between gap-2">
+              <span class="font-mono text-[11px] font-semibold text-textSecondary truncate">pb_pay_0x94F8...31C2</span>
+              <button
+                type="button"
+                onclick="copyWalletTag('pb_pay_0x94F8a812e90b31C2')"
+                class="px-2.5 py-1 rounded-lg bg-emeraldTint hover:bg-emeraldBrand text-emeraldBrand hover:text-white text-[11px] font-bold transition-colors shrink-0"
+              >
+                Copy ID
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- White Bottom Sheet with 'Select Flow' & 'Share QR Code' CTA -->
+        <div class="bg-white rounded-t-[30px] px-6 pt-4 pb-8 space-y-3.5 shadow-lg">
+          <div class="w-10 h-1 rounded-full bg-cardBorder mx-auto"></div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-display text-sm font-extrabold text-textPrimary">Select Flow</h4>
+              <p class="text-[11px] text-textSecondary">Zero-fee instant settlement via PiggyPay</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">USD • EUR</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 pt-1">
+            <button
+              type="button"
+              onclick="showToast('Requesting specific amount via QR link')"
+              class="py-3 px-3 rounded-2xl bg-canvasMint hover:bg-emeraldTint border border-cardBorder text-xs font-bold text-textPrimary transition-colors"
+            >
+              Set Amount
+            </button>
+            <button
+              type="button"
+              onclick="showToast('QR Payment Pass ready to share!')"
+              class="py-3 px-3 rounded-2xl bg-emeraldBrand hover:bg-emeraldHover text-white text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-1.5"
+            >
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+              <span>Share QR Code</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- END SCREEN 15 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 16: MOBILE PAYMENT & INTERACTIVE AMOUNT KEYPAD               -->
+    <!-- =================================================================== -->
+    <article id="card-16" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">16</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Mobile Payment & Keypad</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('16', 'Screen 16: Mobile Payment & Amount Keypad')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 16 -->
+      <div
+        id="screen-16"
+        class="w-[375px] h-[812px] bg-white rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col justify-between relative select-none"
+      >
+        <!-- Top Light Header with PiggyBank Logo -->
+        <div class="px-5 pt-3">
+          <!-- iOS Status Bar -->
+          <div class="pb-3 flex items-center justify-between text-xs font-semibold text-textPrimary">
+            <span class="tabular-nums">9:41</span>
+            <div class="w-24 h-6 bg-black rounded-full"></div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery-full" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-emeraldBrand text-white flex items-center justify-center">
+                <i data-lucide="piggy-bank" class="w-4 h-4"></i>
+              </div>
+              <span class="font-display text-sm font-extrabold text-textPrimary">PiggyBank Pay</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold tabular-nums">
+              Bal: $43,502
+            </span>
+          </div>
+
+          <!-- Recipient Selector Pill -->
+          <div class="p-2.5 rounded-2xl bg-canvasMint border border-cardBorder flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <img
+                id="s16RecipientAvatar"
+                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"
+                onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=SM'"
+                alt="Sophia Miller"
+                class="w-9 h-9 rounded-full object-cover"
+              />
+              <div>
+                <p id="s16RecipientName" class="text-xs font-bold text-textPrimary">Sophia Miller</p>
+                <p id="s16RecipientHandle" class="text-[11px] text-textSecondary">@sophia.m • Instant</p>
+              </div>
+            </div>
+            <span class="px-2 py-1 rounded-lg bg-white border border-cardBorder text-[11px] font-semibold text-emeraldBrand">
+              Verified
+            </span>
+          </div>
+
+          <!-- Green-Accented Payment Amount Display ('$240.00') -->
+          <div class="my-4 text-center">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-textSecondary">Enter Amount</span>
+            <div class="font-display text-4xl font-extrabold text-emeraldBrand tracking-tight tabular-nums mt-1">
+              $<span id="s16AmountDisplay">240.00</span>
+            </div>
+          </div>
+
+          <!-- Quick-Preset Chips ($50, $100, $250) -->
+          <div class="flex items-center justify-center gap-2 mb-3">
+            <button
+              type="button"
+              onclick="setKeypadPreset('50.00')"
+              class="px-3.5 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint border border-cardBorder text-xs font-bold text-textPrimary tabular-nums transition-colors"
+            >
+              $50
+            </button>
+            <button
+              type="button"
+              onclick="setKeypadPreset('100.00')"
+              class="px-3.5 py-1.5 rounded-full bg-canvasMint hover:bg-emeraldTint border border-cardBorder text-xs font-bold text-textPrimary tabular-nums transition-colors"
+            >
+              $100
+            </button>
+            <button
+              type="button"
+              onclick="setKeypadPreset('250.00')"
+              class="px-3.5 py-1.5 rounded-full bg-emeraldTint border border-emeraldBrand/30 text-xs font-bold text-emeraldBrand tabular-nums transition-colors"
+            >
+              $250
+            </button>
+          </div>
+
+          <!-- Recent Send Avatar List -->
+          <div class="flex items-center justify-between px-2 py-2 border-y border-cardBorder">
+            <span class="text-[11px] font-bold text-textSecondary">Recent Send:</span>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="selectS16Recipient('Sophia Miller', '@sophia.m • Instant')" class="w-7 h-7 rounded-full ring-2 ring-emeraldBrand overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=60&q=80" onerror="this.src='https://placehold.co/60x60/1D6E4E/FFFFFF?text=SM'" alt="Sophia" class="w-full h-full object-cover" />
+              </button>
+              <button type="button" onclick="selectS16Recipient('Liam Carter', '@liamc • Instant')" class="w-7 h-7 rounded-full opacity-75 hover:opacity-100 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=60&q=80" onerror="this.src='https://placehold.co/60x60/1E2D2F/FFFFFF?text=LC'" alt="Liam" class="w-full h-full object-cover" />
+              </button>
+              <button type="button" onclick="selectS16Recipient('Emma Wilson', '@emma.piggy • Instant')" class="w-7 h-7 rounded-full opacity-75 hover:opacity-100 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=60&q=80" onerror="this.src='https://placehold.co/60x60/E8F3EE/1D6E4E?text=EW'" alt="Emma" class="w-full h-full object-cover" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Touch Numeric Keypad + Send Payment CTA -->
+        <div class="bg-canvasMint px-5 pt-3 pb-7 border-t border-cardBorder">
+          <div class="grid grid-cols-3 gap-2 text-center font-display font-bold text-lg text-textPrimary tabular-nums">
+            <button type="button" onclick="pressKeypadDigit('1')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">1</button>
+            <button type="button" onclick="pressKeypadDigit('2')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">2</button>
+            <button type="button" onclick="pressKeypadDigit('3')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">3</button>
+            <button type="button" onclick="pressKeypadDigit('4')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">4</button>
+            <button type="button" onclick="pressKeypadDigit('5')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">5</button>
+            <button type="button" onclick="pressKeypadDigit('6')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">6</button>
+            <button type="button" onclick="pressKeypadDigit('7')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">7</button>
+            <button type="button" onclick="pressKeypadDigit('8')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">8</button>
+            <button type="button" onclick="pressKeypadDigit('9')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">9</button>
+            <button type="button" onclick="pressKeypadDigit('.')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">.</button>
+            <button type="button" onclick="pressKeypadDigit('0')" class="py-2.5 rounded-xl bg-white hover:bg-emeraldTint active:scale-95 border border-cardBorder shadow-2xs transition-all">0</button>
+            <button type="button" onclick="backspaceKeypad()" class="py-2.5 rounded-xl bg-white hover:bg-red-50 active:scale-95 border border-cardBorder shadow-2xs flex items-center justify-center text-textSecondary hover:text-coralAccent transition-all">
+              <i data-lucide="delete" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onclick="submitMobilePayment()"
+            class="mt-3 w-full py-3.5 px-4 rounded-2xl bg-emeraldBrand hover:bg-emeraldHover text-white font-display text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
+          >
+            <span>Send Payment</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+      <!-- END SCREEN 16 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 17: PRICE MONEY & QUICK SEND                                 -->
+    <!-- =================================================================== -->
+    <article id="card-17" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">17</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Price Money & Limits</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('17', 'Screen 17: Price Money & Quick Send')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 17 -->
+      <div
+        id="screen-17"
+        class="w-[375px] h-[812px] bg-white rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col justify-between relative select-none"
+      >
+        <div class="px-5 pt-3">
+          <!-- iOS Status Bar -->
+          <div class="pb-3 flex items-center justify-between text-xs font-semibold text-textPrimary">
+            <span class="tabular-nums">9:41</span>
+            <div class="w-24 h-6 bg-black rounded-full"></div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery-full" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <button type="button" onclick="showToast('Back to Transfers')" class="w-9 h-9 rounded-full bg-canvasMint border border-cardBorder flex items-center justify-center">
+              <i data-lucide="chevron-left" class="w-4 h-4 text-textPrimary"></i>
+            </button>
+            <h3 class="font-display text-base font-extrabold text-textPrimary">Price Money</h3>
+            <span class="px-2.5 py-1 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">Tier 1</span>
+          </div>
+
+          <!-- Daily Limit Summary Pill -->
+          <div class="p-4 rounded-2xl bg-canvasMint border border-cardBorder mb-4">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <span class="font-semibold text-textSecondary">Instant Bank Payout Limit</span>
+              <span class="font-display font-extrabold text-emeraldBrand tabular-nums">$10,000 / day</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-white overflow-hidden border border-cardBorder">
+              <div class="h-full bg-emeraldBrand rounded-full" style="width: 24%"></div>
+            </div>
+            <p class="text-[11px] text-textSecondary mt-1.5">Select a queued peer settlement batch below to disburse:</p>
+          </div>
+
+          <!-- Compact Peer Transfer Rows ($210, $135, $480) with Interactive Selection States -->
+          <div class="space-y-2.5">
+            <button
+              type="button"
+              onclick="selectPriceMoneyRow(this, '$210.00', 'Sophia Miller')"
+              class="s17-row w-full text-left p-3.5 rounded-2xl bg-emeraldTint/60 border-2 border-emeraldBrand flex items-center justify-between transition-all"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/1D6E4E/FFFFFF?text=SM'"
+                  alt="Sophia Miller"
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p class="text-xs font-bold text-textPrimary">Sophia Miller</p>
+                  <p class="text-[11px] text-textSecondary">Chase Checking •••• 8812</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-display text-sm font-extrabold text-emeraldBrand tabular-nums">$210.00</p>
+                <span class="text-[10px] font-bold text-emeraldBrand">Selected</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onclick="selectPriceMoneyRow(this, '$135.00', 'Liam Carter')"
+              class="s17-row w-full text-left p-3.5 rounded-2xl bg-canvasMint hover:bg-emeraldTint/40 border border-cardBorder flex items-center justify-between transition-all"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/1E2D2F/FFFFFF?text=LC'"
+                  alt="Liam Carter"
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p class="text-xs font-bold text-textPrimary">Liam Carter</p>
+                  <p class="text-[11px] text-textSecondary">Bank of America •••• 3190</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-display text-sm font-extrabold text-textPrimary tabular-nums">$135.00</p>
+                <span class="text-[10px] font-semibold text-textSecondary">Tap to select</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onclick="selectPriceMoneyRow(this, '$480.00', 'Maya Lin')"
+              class="s17-row w-full text-left p-3.5 rounded-2xl bg-canvasMint hover:bg-emeraldTint/40 border border-cardBorder flex items-center justify-between transition-all"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&q=80"
+                  onerror="this.src='https://placehold.co/80x80/E8F3EE/1D6E4E?text=ML'"
+                  alt="Maya Lin"
+                  class="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p class="text-xs font-bold text-textPrimary">Maya Lin</p>
+                  <p class="text-[11px] text-textSecondary">Citibank Treasury •••• 7741</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-display text-sm font-extrabold text-textPrimary tabular-nums">$480.00</p>
+                <span class="text-[10px] font-semibold text-textSecondary">Tap to select</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Fee Breakdown ('Free • Instant') + Full-Width Emerald 'Send to Bank' CTA -->
+        <div class="px-5 pt-4 pb-8 bg-canvasMint border-t border-cardBorder space-y-3">
+          <div class="space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-textSecondary">Transfer Amount</span>
+              <span id="s17SelectedAmt" class="font-display font-bold text-textPrimary tabular-nums">$210.00</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-textSecondary">Network Fee</span>
+              <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[11px] font-bold">Free • Instant</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onclick="confirmSendToBank()"
+            class="w-full py-3.5 px-4 rounded-2xl bg-emeraldBrand hover:bg-emeraldHover text-white font-display text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
+          >
+            <i data-lucide="landmark" class="w-4 h-4"></i>
+            <span>Send to Bank</span>
+          </button>
+        </div>
+      </div>
+      <!-- END SCREEN 17 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 18: SECURITY BALANCE & VIRTUAL CARD CONTROLS                 -->
+    <!-- =================================================================== -->
+    <article id="card-18" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">18</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Security Balance & Card</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('18', 'Screen 18: Security Balance & Virtual Card Controls')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 18 -->
+      <div
+        id="screen-18"
+        class="w-[375px] h-[812px] bg-canvasMint rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col justify-between relative select-none"
+      >
+        <div class="px-5 pt-3 space-y-4 overflow-y-auto mobile-scroll pb-6">
+          <!-- iOS Status Bar -->
+          <div class="flex items-center justify-between text-xs font-semibold text-textPrimary">
+            <span class="tabular-nums">9:41</span>
+            <div class="w-24 h-6 bg-black rounded-full"></div>
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+              <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+              <i data-lucide="battery-full" class="w-4 h-4"></i>
+            </div>
+          </div>
+
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-base font-extrabold text-textPrimary">Security Balance</h3>
+            <button
+              type="button"
+              onclick="toggleMobileCardNumbers()"
+              class="px-2.5 py-1 rounded-xl bg-white border border-cardBorder text-[11px] font-bold text-emeraldBrand hover:bg-emeraldTint transition-colors"
+            >
+              <span id="s18RevealBtnText">Reveal Card</span>
+            </button>
+          </div>
+
+          <!-- Dark Emerald Gradient Virtual Debit Card with Holographic Chip -->
+          <div class="rounded-[24px] bg-gradient-to-br from-[#132224] via-[#1E2D2F] to-[#1D6E4E] text-white p-5 shadow-lg relative overflow-hidden">
+            <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-mintChart/15 blur-xl"></div>
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-2">
+                <i data-lucide="piggy-bank" class="w-5 h-5 text-mintChart"></i>
+                <span class="font-display text-xs font-extrabold tracking-wide">PiggyBank Black</span>
+              </div>
+              <i data-lucide="wifi" class="w-4 h-4 rotate-90 text-white/75"></i>
+            </div>
+
+            <!-- Holographic EMV Chip -->
+            <div class="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-yellow-200 to-emerald-200 border border-white/40 mb-4 flex items-center justify-center">
+              <div class="w-6 h-4 border border-amber-700/40 rounded-xs"></div>
+            </div>
+
+            <p id="s18CardNumber" class="font-mono text-base font-bold tracking-widest tabular-nums">
+              4921 •••• •••• 8402
+            </p>
+
+            <div class="flex items-center justify-between mt-4 text-[11px]">
+              <div>
+                <span class="text-white/60 block text-[9px] uppercase">Cardholder</span>
+                <span class="font-semibold">CLARA BENNETT</span>
+              </div>
+              <div>
+                <span class="text-white/60 block text-[9px] uppercase">Expires</span>
+                <span id="s18CardExp" class="font-mono font-semibold tabular-nums">09/29</span>
+              </div>
+              <div>
+                <span class="text-white/60 block text-[9px] uppercase">CVV</span>
+                <span id="s18CardCvv" class="font-mono font-semibold tabular-nums">•••</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Beneficiary Limit Row ($50,000) -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-3.5 flex items-center justify-between shadow-cardSoft">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-textPrimary">Beneficiary Wire Ceiling</p>
+                <p class="text-[11px] text-textSecondary">Verified Institutional Tier</p>
+              </div>
+            </div>
+            <span class="font-display text-sm font-extrabold text-emeraldBrand tabular-nums">$50,000</span>
+          </div>
+
+          <!-- Interactive Card & Security Toggle Switches -->
+          <div class="bg-white rounded-2xl border border-cardBorder p-4 space-y-3.5 shadow-cardSoft">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-textPrimary">Online & International Payments</p>
+                <p class="text-[11px] text-textSecondary">Zero FX markup worldwide</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked onchange="showToast('Online & International Payments ' + (this.checked ? 'enabled' : 'locked'))" class="sr-only peer" />
+                <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+              </label>
+            </div>
+
+            <div class="border-t border-cardBorder pt-3 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-textPrimary">Biometric Auth (FaceID)</p>
+                <p class="text-[11px] text-textSecondary">Approve card-not-present charges</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked onchange="showToast('Biometric Auth ' + (this.checked ? 'enabled' : 'disabled'))" class="sr-only peer" />
+                <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+              </label>
+            </div>
+
+            <div class="border-t border-cardBorder pt-3 flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-textPrimary">ATM Withdrawals</p>
+                <p class="text-[11px] text-textSecondary">Up to $1,500 daily cash access</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" onchange="showToast('ATM Withdrawals ' + (this.checked ? 'enabled' : 'disabled'))" class="sr-only peer" />
+                <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emeraldBrand after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="bg-white border-t border-cardBorder px-5 pt-3 pb-7">
+          <button
+            type="button"
+            onclick="showToast('Virtual card frozen instantly for safety')"
+            class="w-full py-3 px-4 rounded-2xl bg-sidebarDark hover:bg-emeraldBrand text-white font-display text-xs font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <i data-lucide="snowflake" class="w-4 h-4 text-mintChart"></i>
+            <span>Freeze Virtual Card</span>
+          </button>
+        </div>
+      </div>
+      <!-- END SCREEN 18 -->
+    </article>
+
+    <!-- =================================================================== -->
+    <!-- SCREEN 19: SMART PAY ONBOARDING & PERMISSIONS                       -->
+    <!-- =================================================================== -->
+    <article id="card-19" class="screen-card flex flex-col items-center gap-3 w-full max-w-[395px]">
+      <div class="w-full flex items-center justify-between px-1">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emeraldBrand text-white font-display font-bold text-[11px]">19</span>
+          <h2 class="font-display font-bold text-xs text-textPrimary">Smart Pay Onboarding</h2>
+        </div>
+        <button
+          type="button"
+          onclick="copyScreenHtml('19', 'Screen 19: Smart Pay Onboarding & Permissions')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-emeraldTint border border-cardBorder text-[11px] font-semibold text-emeraldBrand transition-colors"
+        >
+          <i data-lucide="copy" class="w-3 h-3"></i>
+          <span>Copy HTML</span>
+        </button>
+      </div>
+
+      <!-- BEGIN SCREEN 19 -->
+      <div
+        id="screen-19"
+        class="w-[375px] h-[812px] bg-canvasMint rounded-[46px] border-[8px] border-sidebarDark shadow-iosDevice overflow-hidden flex flex-col justify-between relative select-none"
+      >
+        <div>
+          <!-- Dark Emerald Top Banner ('Smart Pay Onboarding') -->
+          <div class="bg-gradient-to-br from-sidebarDark via-[#184B37] to-emeraldBrand text-white px-6 pt-3 pb-6 rounded-b-[30px]">
+            <!-- iOS Status Bar -->
+            <div class="pb-3 flex items-center justify-between text-xs font-semibold">
+              <span class="tabular-nums">9:41</span>
+              <div class="w-24 h-6 bg-black rounded-full"></div>
+              <div class="flex items-center gap-1.5">
+                <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+                <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                <i data-lucide="battery-full" class="w-4 h-4"></i>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 rounded-full bg-white/15 text-mintChart text-[10px] font-extrabold uppercase tracking-wider">
+                Shield Active
+              </span>
+              <i data-lucide="shield-check" class="w-5 h-5 text-mintChart"></i>
+            </div>
+
+            <h3 class="font-display text-xl font-extrabold tracking-tight">Smart Pay Onboarding</h3>
+            <p class="text-xs text-emerald-100 mt-1 leading-relaxed">
+              Your account permissions, hardware passkeys, and real-time fraud defenses are verified.
+            </p>
+          </div>
+
+          <!-- Body: Security Protection Checklist + Recent Operations Audit Feed -->
+          <div class="px-5 pt-4 space-y-4">
+            <!-- Security Protection Checklist with Verified Green Badges -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-display text-xs font-extrabold uppercase tracking-wider text-textPrimary">Security Protection</h4>
+                <span class="text-[11px] font-bold text-emeraldBrand">3 / 3 Verified</span>
+              </div>
+
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint border border-cardBorder">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-lg bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                      <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <div>
+                      <p class="text-xs font-bold text-textPrimary">Hardware 2FA Passkey</p>
+                      <p class="text-[10px] text-textSecondary">Biometric & TOTP enforced</p>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[10px] font-extrabold">Verified</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint border border-cardBorder">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-lg bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                      <i data-lucide="radar" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <div>
+                      <p class="text-xs font-bold text-textPrimary">AI Fraud Shield</p>
+                      <p class="text-[10px] text-textSecondary">24/7 anomalous velocity block</p>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[10px] font-extrabold">Active</span>
+                </div>
+
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-canvasMint border border-cardBorder">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-lg bg-emeraldTint text-emeraldBrand flex items-center justify-center">
+                      <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <div>
+                      <p class="text-xs font-bold text-textPrimary">Treasury Vault Lock</p>
+                      <p class="text-[10px] text-textSecondary">24h cooldown on large sweeps</p>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-emeraldTint text-emeraldBrand text-[10px] font-extrabold">Enabled</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Operations Audit Feed -->
+            <div class="bg-white rounded-2xl border border-cardBorder p-4 shadow-cardSoft">
+              <div class="flex items-center justify-between mb-2.5">
+                <h4 class="font-display text-xs font-extrabold uppercase tracking-wider text-textPrimary">Recent Operations</h4>
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emeraldBrand">
+                  <span class="w-1.5 h-1.5 rounded-full bg-mintChart animate-pulse"></span>
+                  Live Audit
+                </span>
+              </div>
+
+              <div class="space-y-2 text-[11px]">
+                <div class="flex items-center justify-between py-1 border-b border-cardBorder">
+                  <span class="font-semibold text-textPrimary">FaceID Device Handshake</span>
+                  <span class="text-emeraldBrand font-bold">Passed • 09:40</span>
+                </div>
+                <div class="flex items-center justify-between py-1 border-b border-cardBorder">
+                  <span class="font-semibold text-textPrimary">ACH Beneficiary Allowlist</span>
+                  <span class="text-emeraldBrand font-bold">Synced • 09:12</span>
+                </div>
+                <div class="flex items-center justify-between py-1">
+                  <span class="font-semibold text-textPrimary">Encryption Key Rotation</span>
+                  <span class="text-textSecondary font-semibold">AES-256 • Nov 12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom CTA -->
+        <div class="px-5 pt-3 pb-7 bg-white border-t border-cardBorder">
+          <button
+            type="button"
+            onclick="showToast('Smart Pay Onboarding & Security Permissions confirmed!')"
+            class="w-full py-3.5 px-4 rounded-2xl bg-emeraldBrand hover:bg-emeraldHover text-white font-display text-sm font-bold shadow-md transition-colors"
+          >
+            Complete Smart Pay Setup
+          </button>
+        </div>
+      </div>
+      <!-- END SCREEN 19 -->
+    </article>
+
+  </main>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    let currentActiveView = 'grid';
+    let toastTimer;
+
+    function showToast(msg) {
+      const banner = document.getElementById('toastBanner');
+      document.getElementById('toastMessage').textContent = msg;
+      banner.classList.remove('translate-y-24', 'opacity-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        banner.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    // View Switcher: All Screens Grid (7) or Single iOS Frame Focus
+    function switchMobileView(target) {
+      currentActiveView = target;
+
+      // Update active tab styling
+      document.querySelectorAll('.view-tab').forEach((tab) => {
+        tab.classList.remove('bg-sidebarDark', 'text-white');
+        tab.classList.add('bg-canvasMint', 'text-textPrimary', 'border', 'border-cardBorder');
+      });
+
+      const activeTab = document.getElementById(`tab-${target}`);
+      if (activeTab) {
+        activeTab.classList.remove('bg-canvasMint', 'text-textPrimary', 'border', 'border-cardBorder');
+        activeTab.classList.add('bg-sidebarDark', 'text-white');
+      }
+
+      const grid = document.getElementById('mobileCanvasGrid');
+      const cards = document.querySelectorAll('.screen-card');
+      const copyActiveBtn = document.getElementById('copyActiveScreenBtn');
+
+      if (target === 'grid') {
+        grid.className = 'flex-1 max-w-[1620px] w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 justify-items-center';
+        cards.forEach((c) => c.classList.remove('hidden'));
+        copyActiveBtn.classList.add('hidden');
+        copyActiveBtn.classList.remove('inline-flex');
+      } else {
+        grid.className = 'flex-1 max-w-[1620px] w-full mx-auto px-4 sm:px-6 py-8 flex items-center justify-center';
+        cards.forEach((c) => {
+          if (c.id === `card-${target}`) {
+            c.classList.remove('hidden');
+          } else {
+            c.classList.add('hidden');
+          }
+        });
+        copyActiveBtn.classList.remove('hidden');
+        copyActiveBtn.classList.add('inline-flex');
+      }
+    }
+
+    // Copy standalone HTML wrapped in <!-- BEGIN SCREEN X --> and <!-- END SCREEN X -->
+    function copyScreenHtml(screenNum, label) {
+      const screenEl = document.getElementById(`screen-${screenNum}`);
+      if (!screenEl) return;
+
+      const wrappedHtml = `<!-- BEGIN SCREEN ${screenNum} -->\n${screenEl.outerHTML}\n<!-- END SCREEN ${screenNum} -->`;
+      const textarea = document.createElement('textarea');
+      textarea.value = wrappedHtml;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      showToast(`Copied standalone HTML for ${label}!`);
+    }
+
+    function copyActiveSingleScreen() {
+      if (currentActiveView !== 'grid') {
+        copyScreenHtml(currentActiveView, `Screen ${currentActiveView}`);
+      }
+    }
+
+    // Screen 15: Copy Wallet Address
+    function copyWalletTag(walletAddress) {
+      const textarea = document.createElement('textarea');
+      textarea.value = walletAddress;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast(`Copied wallet tag: ${walletAddress}`);
+    }
+
+    // Screen 16: Interactive Touch Numeric Keypad Logic
+    let keypadRaw = '240.00';
+
+    function renderKeypadDisplay() {
+      const display = document.getElementById('s16AmountDisplay');
+      display.textContent = keypadRaw || '0.00';
+    }
+
+    function setKeypadPreset(presetVal) {
+      keypadRaw = presetVal;
+      renderKeypadDisplay();
+      showToast(`Preset payment set to $${presetVal}`);
+    }
+
+    function pressKeypadDigit(char) {
+      if (keypadRaw === '240.00' || keypadRaw === '0.00') {
+        keypadRaw = char === '.' ? '0.' : char;
+      } else {
+        if (char === '.' && keypadRaw.includes('.')) return;
+        if (keypadRaw.includes('.') && keypadRaw.split('.')[1].length >= 2) return;
+        if (keypadRaw.length >= 8) return;
+        keypadRaw += char;
+      }
+      renderKeypadDisplay();
+    }
+
+    function backspaceKeypad() {
+      if (keypadRaw.length <= 1) {
+        keypadRaw = '0.00';
+      } else {
+        keypadRaw = keypadRaw.slice(0, -1);
+      }
+      renderKeypadDisplay();
+    }
+
+    function selectS16Recipient(name, handle) {
+      document.getElementById('s16RecipientName').textContent = name;
+      document.getElementById('s16RecipientHandle').textContent = handle;
+      showToast(`Recipient set to ${name}`);
+    }
+
+    function submitMobilePayment() {
+      const recipient = document.getElementById('s16RecipientName').textContent;
+      const amt = document.getElementById('s16AmountDisplay').textContent;
+      showToast(`Sent $${amt} instantly to ${recipient}!`);
+    }
+
+    // Screen 17: Interactive Peer Transfer Selection
+    function selectPriceMoneyRow(btn, amount, name) {
+      document.querySelectorAll('.s17-row').forEach((row) => {
+        row.className = 's17-row w-full text-left p-3.5 rounded-2xl bg-canvasMint hover:bg-emeraldTint/40 border border-cardBorder flex items-center justify-between transition-all';
+        const priceEl = row.querySelector('.font-display');
+        const tagEl = row.querySelector('span');
+        if (priceEl) {
+          priceEl.classList.remove('text-emeraldBrand');
+          priceEl.classList.add('text-textPrimary');
+        }
+        if (tagEl) {
+          tagEl.textContent = 'Tap to select';
+          tagEl.className = 'text-[10px] font-semibold text-textSecondary';
+        }
+      });
+
+      btn.className = 's17-row w-full text-left p-3.5 rounded-2xl bg-emeraldTint/60 border-2 border-emeraldBrand flex items-center justify-between transition-all';
+      const activePrice = btn.querySelector('.font-display');
+      const activeTag = btn.querySelector('span');
+      if (activePrice) {
+        activePrice.classList.remove('text-textPrimary');
+        activePrice.classList.add('text-emeraldBrand');
+      }
+      if (activeTag) {
+        activeTag.textContent = 'Selected';
+        activeTag.className = 'text-[10px] font-bold text-emeraldBrand';
+      }
+
+      document.getElementById('s17SelectedAmt').textContent = amount;
+      showToast(`Selected ${name} (${amount})`);
+    }
+
+    function confirmSendToBank() {
+      const amt = document.getElementById('s17SelectedAmt').textContent;
+      showToast(`Disbursed ${amt} via Instant Bank Transfer!`);
+    }
+
+    // Screen 18: Reveal / Mask Virtual Debit Card Numbers
+    let cardRevealed = false;
+    function toggleMobileCardNumbers() {
+      cardRevealed = !cardRevealed;
+      document.getElementById('s18CardNumber').textContent = cardRevealed
+        ? '4921 7740 1928 8402'
+        : '4921 •••• •••• 8402';
+      document.getElementById('s18CardCvv').textContent = cardRevealed ? '739' : '•••';
+      document.getElementById('s18RevealBtnText').textContent = cardRevealed ? 'Hide Card' : 'Reveal Card';
+      showToast(cardRevealed ? 'Virtual card details unmasked' : 'Virtual card details masked');
+    }
+  </script>
+</body>
+</html>

@@ -1,4 +1,8 @@
 //! Immutable synthetic terms and attributable, scope-bound acceptance evidence.
+pub mod offers;
+pub mod periodic;
+pub mod retention;
+pub mod statements;
 use anyhow::{Result, ensure};
 use bank_controls::{entitlements::Entitlements, governance::ChangeKind};
 use bank_core::Core;

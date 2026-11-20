@@ -1,0 +1,28 @@
+@startuml
+title UML sequence - assisted call center session with customer authorization and channel policy (AT-22)
+actor "Call center agent" as Agent
+participant "bank-api" as API
+participant "Controls" as C
+actor Customer
+participant "Core" as Core
+Agent -> API : open session (CALL_CENTER, VERIFIED_CONTACT_CALLBACK, customer, purpose)
+API -> C : open_assisted_session (assisted_service role; method permitted for channel)
+C --> API : AWAITING_CUSTOMER (10 minutes)
+Agent -> API : view accounts
+API -> C : assisted_permits -> SESSION_NOT_ACTIVE (recorded)
+API --> Agent : 403
+Customer -> API : Allow assistance (own bank channel)
+API -> C : authorize_assisted_session -> AUTHORIZED (15 minutes)
+Agent -> API : view accounts / protective freeze
+API -> C : authorize(staff actor, represented customer, assisted:<session>)
+C -> C : assisted_permits: session live, parties match,\noperation confirmed for channel, customer's own account
+C --> API : allowed (recorded with reason CHANNEL_POLICY)
+API -> Core : restrict(debit blocked)
+Customer -> API : quote a payment
+API --> Customer : refused (common restriction)
+Customer -> API : End assistance
+API -> C : close_assisted_session -> CLOSED
+Agent -> API : view accounts
+API --> Agent : 403 (SESSION_NOT_ACTIVE)
+note right of C : DRAFT_PAYMENT is enabled in no channel\nuntil DEC-09 confirms operations
+@enduml

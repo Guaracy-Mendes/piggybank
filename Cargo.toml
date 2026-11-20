@@ -31,6 +31,7 @@ base64 = "0.22"
 jsonwebtoken = { version = "10.2", default-features = false, features = ["rust_crypto"] }
 subtle = "2.6"
 getrandom = "0.4"
+ring = "0.17.14"
 hmac = "0.12"
 bank-identity = { path = "crates/identity" }
 bank-controls = { path = "crates/controls" }

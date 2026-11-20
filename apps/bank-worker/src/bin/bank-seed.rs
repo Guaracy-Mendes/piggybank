@@ -98,6 +98,85 @@ async fn main() -> anyhow::Result<()> {
         controls.approve_change(&checker, p).await?;
         finance.publish_chart(&maker, p, &chart).await?;
     }
+    // Preserve chart v1 byte for byte; new approved v2 adds explicit interest expense.
+    let mut periodic_chart = chart.clone();
+    periodic_chart.id = Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000008")?;
+    periodic_chart.version = 2;
+    periodic_chart
+        .accounts
+        .insert("INTEREST_EXPENSE".into(), "EXPENSE".into());
+    periodic_chart.by_account.insert(
+        Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000005")?,
+        "INTEREST_EXPENSE".into(),
+    );
+    let existing: Option<serde_json::Value> =
+        sqlx::query_scalar("SELECT document FROM finance.chart_versions WHERE id=$1")
+            .bind(periodic_chart.id)
+            .fetch_optional(&finance.pool)
+            .await?;
+    if let Some(existing) = existing {
+        anyhow::ensure!(
+            bank_platform::domain::fingerprint(&existing)?
+                == bank_platform::domain::fingerprint(&periodic_chart)?,
+            "Fixture chart v2 differs"
+        );
+    } else {
+        let p = controls
+            .propose_change(
+                &maker,
+                ChangeKind::FinanceChart,
+                periodic_chart.id,
+                &periodic_chart,
+                Utc::now() + Duration::hours(1),
+            )
+            .await?;
+        controls.approve_change(&checker, p).await?;
+        finance.publish_chart(&maker, p, &periodic_chart).await?;
+    }
+    // A new independently approved chart preserves the sealed v1 and v2 documents.
+    let mut consumer_chart = periodic_chart.clone();
+    consumer_chart.id = Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000009")?;
+    consumer_chart.version = 3;
+    consumer_chart
+        .accounts
+        .insert("BROKER_CLEARING".into(), "ASSET".into());
+    consumer_chart
+        .accounts
+        .insert("CONSUMER_SIMULATOR_CLEARING".into(), "ASSET".into());
+    consumer_chart.by_account.insert(
+        Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000020")?,
+        "BROKER_CLEARING".into(),
+    );
+    consumer_chart.by_account.insert(
+        Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000021")?,
+        "CONSUMER_SIMULATOR_CLEARING".into(),
+    );
+    let existing: Option<serde_json::Value> =
+        sqlx::query_scalar("SELECT document FROM finance.chart_versions WHERE id=$1")
+            .bind(consumer_chart.id)
+            .fetch_optional(&finance.pool)
+            .await?;
+    if let Some(existing) = existing {
+        anyhow::ensure!(
+            bank_platform::domain::fingerprint(&existing)?
+                == bank_platform::domain::fingerprint(&consumer_chart)?,
+            "Fixture chart v3 differs"
+        );
+    } else {
+        let proposal = controls
+            .propose_change(
+                &maker,
+                ChangeKind::FinanceChart,
+                consumer_chart.id,
+                &consumer_chart,
+                Utc::now() + Duration::hours(1),
+            )
+            .await?;
+        controls.approve_change(&checker, proposal).await?;
+        finance
+            .publish_chart(&maker, proposal, &consumer_chart)
+            .await?;
+    }
     let product = ProductVersion {
         id: Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000001")?,
         code: "PIGGY_TST".into(),

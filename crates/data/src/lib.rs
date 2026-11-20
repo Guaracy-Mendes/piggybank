@@ -1,4 +1,9 @@
 //! Governed projections and enterprise aliases. Core financial identities remain unchanged.
+pub mod alerts;
+pub mod analytics;
+pub mod audience;
+pub mod insights;
+pub mod outcomes;
 use anyhow::{Result, ensure};
 use bank_controls::{entitlements::Entitlements, governance::ChangeKind};
 use bank_core::inquiry::Records;

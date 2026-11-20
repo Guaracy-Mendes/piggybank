@@ -2,9 +2,21 @@ import { useEffect, useState } from "react";
 
 export function validRoute(path: string) {
   return (
+    /^\/(save|spend|invest|wallet|preferences|notifications|documents)$/.test(
+      path,
+    ) ||
+    /^\/save\/(new|milestones|[a-f0-9-]{36})$/.test(path) ||
+    /^\/spend\/activity$/.test(path) ||
+    /^\/invest\/(watchlist|analytics|automate)$/.test(path) ||
+    /^\/invest\/(asset|trade)\/[A-Z0-9]{1,10}$/.test(path) ||
+    /^\/invest\/review\/[a-f0-9-]{36}$/.test(path) ||
     /^\/(home|accounts|applications|profile|support|payments)(?:\/[a-zA-Z0-9-]+)?$/.test(
       path,
-    ) || /^\/accounts\/[a-f0-9-]{36}\/periodic\/[a-f0-9-]{36}$/.test(path)
+    ) ||
+    /^\/accounts\/[a-f0-9-]{36}\/(?:periodic|offers)\/[a-f0-9-]{36}$/.test(
+      path,
+    ) ||
+    /^\/(sharing|connected\/[a-f0-9-]{36})$/.test(path)
   );
 }
 export function route() {
@@ -33,6 +45,13 @@ export function useRoute() {
 export function login() {
   sessionStorage.setItem("pb:return", route());
   window.location.assign("/auth/customer/login");
+}
+
+/** UI-02: create a sign-in at the issuer; the password is entered only on the issuer's page. New customers then
+    land on Profile & security to verify their email (UI-03) before applying. */
+export function register() {
+  sessionStorage.setItem("pb:return", "/profile");
+  window.location.assign("/auth/customer/register");
 }
 
 export function stableKey(scope: string) {

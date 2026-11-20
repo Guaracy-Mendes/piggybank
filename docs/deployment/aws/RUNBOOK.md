@@ -23,7 +23,7 @@ export AWS_DEFAULT_REGION="$AWS_REGION"
 export AWS_AVAILABILITY_ZONE=us-east-1a
 export STATE_BUCKET=YOUR_GLOBALLY_UNIQUE_PIGGYBANK_TFSTATE
 export ARTIFACT_BUCKET=YOUR_GLOBALLY_UNIQUE_PIGGYBANK_ARTIFACTS
-export RELEASE=cloud-20261112-02
+export RELEASE=cloud-20261115-01
 aws sts get-caller-identity
 terraform version
 session-manager-plugin --version
@@ -154,6 +154,8 @@ For an authenticated native-basis scenario after deployment, follow the [periodi
 Verify the [Finance audit delivery workflow](../../runbooks/finance-audit-delivery.md) after deployment. Expected: retained pending records, original native receipt recovery and a read-only checker view. Schema 52 refuses legacy delivery flags without original matching Controls evidence; investigate a refused upgrade without manufacturing receipts.
 
 Follow the [customer periodic disclosure runbook](../../runbooks/customer-periodic-disclosures.md) to verify exact approved rule information for an owned account, saved URLs and private approval-data redaction. Reading must not enroll the account or enable a financial posting.
+
+On schema 53, follow the [retained preview review runbook](../../runbooks/periodic-preview-reviews.md). Explicit acknowledgment retains exact historical material and original identity/receipt evidence. Verify original-key recovery and saved-proof inquiry; this workflow does not establish financial consent, enrollment or activation.
 
 ## 11. Complete acceptance and handoff
 

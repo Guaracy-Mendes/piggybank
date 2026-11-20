@@ -60,6 +60,26 @@ impl AuditRecord {
     }
 }
 
+/// High-volume audit streams are partitioned into a fixed set of hash chains (WP-30 capacity finding CF-01).
+/// `controls.append_audit` locks a stream's head row until commit, so a single stream serializes every writer.
+/// Measured locally, the single `authorization` stream capped all authenticated traffic at about 460 requests per
+/// second. The shard set is fixed, so a missing or truncated chain is still detectable. Records written before the
+/// split stay in the legacy unsuffixed stream, which remains verifiable.
+pub const STREAM_SHARDS: u8 = 16;
+pub fn shard_stream(base: &str, key: Uuid) -> String {
+    format!("{base}-{:02}", key.as_bytes()[15] % STREAM_SHARDS)
+}
+/// The legacy unsuffixed stream followed by every shard of `base`.
+pub fn shard_streams(base: &str) -> Vec<String> {
+    std::iter::once(base.to_owned())
+        .chain((0..STREAM_SHARDS).map(|n| format!("{base}-{n:02}")))
+        .collect()
+}
+/// Control-check audit: one resource's checks stay in one ordered chain.
+pub fn control_stream(resource: Uuid) -> String {
+    shard_stream("controls", resource)
+}
+
 #[derive(Clone)]
 pub struct AuditLog {
     pub pool: PgPool,
@@ -95,6 +115,15 @@ impl AuditLog {
             .bind(serde_json::to_value(record)?)
             .fetch_one(&mut **tx)
             .await?)
+    }
+    /// Verifies the legacy chain and every shard of a partitioned stream (`controls`, `authorization`).
+    pub async fn verify_sharded(&self, base: &str) -> Result<bool> {
+        for stream in shard_streams(base) {
+            if !self.verify(&stream).await? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
     pub async fn verify(&self, stream: &str) -> Result<bool> {
         let bad:i64=sqlx::query_scalar("SELECT count(*) FROM (SELECT sequence,previous_digest,digest,payload,lag(digest,1,repeat('0',64)) OVER(ORDER BY sequence) AS expected_previous,row_number() OVER(ORDER BY sequence) AS expected_sequence FROM controls.audit_events WHERE stream=$1) history WHERE previous_digest<>expected_previous OR sequence<>expected_sequence OR digest<>encode(sha256(convert_to(previous_digest||E'\\n'||sequence::text||E'\\n'||payload::text,'UTF8')),'hex')")

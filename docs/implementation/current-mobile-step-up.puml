@@ -1,0 +1,28 @@
+@startuml
+title UML sequence - native payment: persisted intent, interruption recovery and action-bound step-up
+actor Customer
+participant "App" as App
+participant "Secure storage" as Store
+participant "System browser" as Browser
+participant "Issuer" as Issuer
+participant "bank-api" as API
+Customer -> App : Review payment
+App -> API : POST /payment-quotes
+App -> Store : save {idempotencyKey, quoteId}
+App -> API : POST /payments (Idempotency-Key)
+note right of App : process death / timeout here
+App -> Store : on restart: pending found
+App -> API : POST /payments (same key) -> same payment id
+App -> API : GET /payments/{id} (truthful status)
+Customer -> App : Approve and send
+App -> API : POST /payments/{id}/approval -> challengeId
+App -> API : POST /approvals/{challengeId}/native-step-up -> nonce
+App -> Browser : authorize(prompt=login, max_age=0, nonce, PKCE)
+Browser -> Issuer : password
+Issuer -> App : piggybank://auth/callback?code
+App -> Issuer : token exchange (code_verifier) -> id_token
+App -> Issuer : revoke step-up refresh token
+App -> API : POST /approvals/{challengeId}/native-proof {idToken}
+API -> API : verify signature, aud bank-mobile, nonce, sub, auth_time >= begin;\nrecord single-use step-up proof
+App -> API : POST /payments/{id}/confirmation -> ACCEPTED ... SETTLED
+@enduml

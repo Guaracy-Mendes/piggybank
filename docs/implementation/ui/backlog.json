@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "authority": {
+    "visual": "User-designated HTML templates; emerald/slate-teal takes precedence over conflicting PRD color tokens",
+    "functional": "Union of template interactions and supplied UI PRD; screen numbers kept separately",
+    "runtime": "Existing synthetic TST profile; current identity, Core financial authority, immutable receipts and scoped permissions retained"
+  },
+  "source_files": {
+    "mock/piggybank_auth_onboarding_bundle_screens_1_6.html": "2614936618babb8bbf443535ed6d5b3306f3e6aa1097ca97167b81b2cb3e118c",
+    "mock/piggybank_investments_broker_suite_screens_27_32.html": "b1f1efa21dde8278929c42d46c882dddf994cba1fb3168f16ec38d7a2e0b3d9e",
+    "mock/piggybank_mobile_app_screens_part_1_screens_13_19.html": "cf1429cd9f264a9d0b4dc269d079af41d7dfdff108ce18400efbd71a0ea1c9df",
+    "mock/piggybank_mobile_app_screens_part_2_screens_20_26.html": "8c62895308f41444a25ff37dec624353d5b10a542e8493f4c1969884512519d1",
+    "mock/piggybank_web_transactions_analytics_developer_settings_screens_7_12.html": "1798d5c0fc47675149036f939f72e411ebbac2cf508cb091650e860067d17e68",
+    "mock/piggybank_complete_app_prd_screens_1_32.md": "0bf20d44f110a0117075de886b9816bfd2fa46243d1fab78bc3bc397700fe528"
+  },
+  "screens": [
+    {
+      "id": "UI-01",
+      "prd_screen": 1,
+      "title": "Splash & Value Proposition Carousel",
+      "status": "local_implemented",
+      "implemented": "Welcome feature carousel and issuer sign-in",
+      "route": "/#/home",
+      "qualification_or_remaining": "Native mobile launch animation remains device work"
+    },
+    {
+      "id": "UI-02",
+      "prd_screen": 2,
+      "title": "Account Registration & Credentials",
+      "status": "local_implemented",
+      "implemented": "Self-service registration at the issuer from \"Create account\" (OIDC prompt=create): username, email, name, password with a live strength meter (8+ characters, uppercase, symbol), enforced realm password policy and a required synthetic-demo terms checkbox; the new customer returns signed in to start an application",
+      "route": "/auth/customer/register",
+      "qualification_or_remaining": "Email ownership is not verified (OTP provider pending, UI-03); the cloud template keeps registration off; production abuse controls (CAPTCHA, rate limits) pending; a referral code is not collected until referral rewards are approved (UI-14)"
+    },
+    {
+      "id": "UI-03",
+      "prd_screen": 3,
+      "title": "Two-Factor Authentication (2FA / OTP)",
+      "status": "local_implemented",
+      "implemented": "Fresh issuer action-bound reauthentication; email ownership by 6-digit one-time code (schema 79): masked destination, six auto-advancing boxes with one-time-code autofill, 45-second resend countdown, 10-minute expiry, 5 attempts, 5 codes per hour; a match marks the issuer email verified",
+      "route": "/#/profile",
+      "qualification_or_remaining": "Delivery is simulated to a local synthetic outbox (simulator.contact_outbox); a real email/SMS provider, the SMS channel and phone numbers are pending provider selection; this is contact verification, not a second sign-in factor"
+    },
+    {
+      "id": "UI-04",
+      "prd_screen": 4,
+      "title": "KYC Identity Verification",
+      "status": "local_partial",
+      "implemented": "Persistent synthetic profile/evidence, terms, screening and account opening",
+      "route": "/#/applications",
+      "qualification_or_remaining": "Real address, tax ID, citizenship/employment KYC and provider qualification pending"
+    },
+    {
+      "id": "UI-05",
+      "prd_screen": 5,
+      "title": "Biometric & Passcode Setup",
+      "status": "pending_device",
+      "implemented": "Issuer account security and action-bound reauthentication",
+      "route": "/auth/customer/security",
+      "qualification_or_remaining": "Native biometrics, secure device PIN enrollment and physical hardware qualification pending"
+    },
+    {
+      "id": "UI-06",
+      "prd_screen": 6,
+      "title": "Bank Linking (Plaid / Open Banking)",
+      "status": "local_implemented",
+      "implemented": "Masked synthetic links, disconnect and finite exact approved deposit",
+      "route": "/#/wallet",
+      "qualification_or_remaining": "Live bank OAuth and micro-deposit adapters pending"
+    },
+    {
+      "id": "UI-07",
+      "prd_screen": 7,
+      "title": "Financial Goals & Personalization Quiz",
+      "status": "local_implemented",
+      "implemented": "Persisted multiselect goals and personalization",
+      "route": "/#/preferences",
+      "qualification_or_remaining": "Recommendations do not place trades or change account terms"
+    },
+    {
+      "id": "UI-08",
+      "prd_screen": 8,
+      "title": "Master Home Dashboard (Root Tab 1)",
+      "status": "local_implemented",
+      "implemented": "Native personal net worth, privacy, allocation, activity, quick actions, saving-streak badge, month-start change pill and six-month net-worth history",
+      "route": "/#/home",
+      "qualification_or_remaining": "Month-start values replay retained journals and position events under current ownership; a holding without a retained price at that instant withholds the change instead of estimating it"
+    },
+    {
+      "id": "UI-09",
+      "prd_screen": 9,
+      "title": "Savings Hub & Vaults Overview (Root Tab 2)",
+      "status": "local_partial",
+      "implemented": "Native personal/shared vault balances, progress, invitations, automation links, streak/badge summary and lifetime interest with monthly totals",
+      "route": "/#/save",
+      "qualification_or_remaining": "An APY badge requires an activated approved offer; vault balances are not interest-bearing"
+    },
+    {
+      "id": "UI-10",
+      "prd_screen": 10,
+      "title": "Create / Edit Savings Vault",
+      "status": "local_implemented",
+      "implemented": "Create/edit exact named target, date and icon; suggested weekly and 30-day contributions; one bounded PNG/JPEG goal photo per vault, visible to members (schema 77)",
+      "route": "/#/save/new",
+      "qualification_or_remaining": "A goal photo is presentation metadata only; it never changes a balance"
+    },
+    {
+      "id": "UI-11",
+      "prd_screen": 11,
+      "title": "Vault Detail & Ledger",
+      "status": "local_implemented",
+      "implemented": "Native vault ledger, deposits, withdrawals and lock",
+      "route": "/#/save",
+      "qualification_or_remaining": "Recent ledger is bounded to 100 facts; full balance remains native"
+    },
+    {
+      "id": "UI-12",
+      "prd_screen": 12,
+      "title": "Spare-Change Round-Ups Configuration",
+      "status": "local_implemented",
+      "implemented": "Approved round-ups, multiplier, linked card/vault, weekly cap, trailing-30-day and lifetime native saved totals",
+      "route": "/#/save",
+      "qualification_or_remaining": "Round-ups apply only to synthetic card purchases; real card network adapters pending"
+    },
+    {
+      "id": "UI-13",
+      "prd_screen": 13,
+      "title": "Recurring Auto-Save Rules",
+      "status": "local_implemented",
+      "implemented": "Approved calendar-based recurring savings with durable unique runs, pause/resume/cancel and issuer-approved edits; merchant- or category-triggered fixed saving rules approved by the issuer, applied once per card purchase within a weekly cap (schema 76) and counted toward saving streaks, badges and lifetime totals (schema 78)",
+      "route": "/#/invest/automate",
+      "qualification_or_remaining": "Rule savings are excluded from spending; a failed rule saving never reverses the purchase"
+    },
+    {
+      "id": "UI-14",
+      "prd_screen": 14,
+      "title": "High-Yield APY & Interest Tracker",
+      "status": "local_partial",
+      "implemented": "Existing exact approved account periodic disclosures, interest receipts and consent; lifetime interest net of corrections and monthly interest totals",
+      "route": "/#/accounts",
+      "qualification_or_remaining": "APY boost/referral challenges pending approved product rules"
+    },
+    {
+      "id": "UI-15",
+      "prd_screen": 15,
+      "title": "Shared / Group Savings Vault",
+      "status": "local_implemented",
+      "implemented": "Invitations, contributions, mutual approval, holds, native shared payouts and per-member lifetime contribution breakdown",
+      "route": "/#/save",
+      "qualification_or_remaining": "Other members are labelled by ordinal, not identity; shared pools stay excluded from personal net worth"
+    },
+    {
+      "id": "UI-16",
+      "prd_screen": 16,
+      "title": "Savings Milestones & Gamification Badges",
+      "status": "local_implemented",
+      "implemented": "26-week saving heatmap, current/longest daily and monthly streaks, eight-badge catalogue with progress and first unlock date, and a balance-free milestone card",
+      "route": "/#/save/milestones",
+      "qualification_or_remaining": "Card is rendered in the browser with no balances; the share sheet appears only where the browser supports file sharing, otherwise the image is saved"
+    },
+    {
+      "id": "UI-17",
+      "prd_screen": 17,
+      "title": "Spend & Budgeting Overview (Root Tab 3)",
+      "status": "local_implemented",
+      "implemented": "Full-month native income/spending, category budgets, rollover and a labelled safe-to-spend figure: available balance minus approved automations and bill reminders due by month end (schema 76)",
+      "route": "/#/spend",
+      "qualification_or_remaining": "Safe-to-spend is a stated local rule, not a cash-flow forecast or advice; an approved forecasting model remains a product decision"
+    },
+    {
+      "id": "UI-18",
+      "prd_screen": 18,
+      "title": "Spending Analytics & Cash Flow Breakdown",
+      "status": "local_implemented",
+      "implemented": "Native full-period category allocation, merchant totals and averages",
+      "route": "/#/spend",
+      "qualification_or_remaining": "Cross-period interactive drilldown charts remain enhancement work"
+    },
+    {
+      "id": "UI-19",
+      "prd_screen": 19,
+      "title": "Category Budget Editor",
+      "status": "local_implemented",
+      "implemented": "Persisted category limit, rollover and threshold with native threshold notifications",
+      "route": "/#/spend",
+      "qualification_or_remaining": "A budget does not constrain financial posting"
+    },
+    {
+      "id": "UI-20",
+      "prd_screen": 20,
+      "title": "Transaction Detail & Receipt Split",
+      "status": "local_implemented",
+      "implemented": "Exact native transaction, category/note, bounded receipt, equal multi-party split of an outgoing transaction (exact remainder, one request per participant) and paid-request linking to a settled exact internal payment (schema 76)",
+      "route": "/#/spend/activity",
+      "qualification_or_remaining": "Requests are not transfers; each payment still needs its own quote and issuer approval"
+    },
+    {
+      "id": "UI-21",
+      "prd_screen": 21,
+      "title": "Recurring Bills & Subscription Manager",
+      "status": "local_implemented",
+      "implemented": "Stored bill reminders and explicit cancellation-request state",
+      "route": "/#/spend",
+      "qualification_or_remaining": "Merchant cancellation/payment confirmation requires an adapter"
+    },
+    {
+      "id": "UI-22",
+      "prd_screen": 22,
+      "title": "Peer-to-Peer (P2P) Send & Request Money",
+      "status": "local_implemented",
+      "implemented": "Native internal/simulated payment quotes, exact approval, requests, split requests and favourite receiving references (schema 76); QR payment codes for a receiving reference and for open requests, and decoded code text fills in a recipient",
+      "route": "/#/payments",
+      "qualification_or_remaining": "In-app camera scanning needs a device camera; a code only fills in a recipient and every payment still needs its own quote and approval"
+    },
+    {
+      "id": "UI-23",
+      "prd_screen": 23,
+      "title": "PiggyBank Debit & Virtual Cards Hub",
+      "status": "local_implemented",
+      "implemented": "Synthetic virtual card, freeze, online/ATM preference and approved token reveal/purchase",
+      "route": "/#/wallet",
+      "qualification_or_remaining": "Real PAN/CVV, networks, ATM and device enrollment require adapters"
+    },
+    {
+      "id": "UI-24",
+      "prd_screen": 24,
+      "title": "Add Money / Deposit & Withdrawal Hub",
+      "status": "local_partial",
+      "implemented": "Finite approved synthetic funding and native broker/bank transfers",
+      "route": "/#/wallet",
+      "qualification_or_remaining": "Real linked-bank inbound/outbound verification and settlement remain provider work"
+    },
+    {
+      "id": "UI-25",
+      "prd_screen": 25,
+      "title": "Profile, Security & Account Settings (Root Tab 5)",
+      "status": "local_implemented",
+      "implemented": "Contact servicing, security link, goals, appearance, scopes and exports",
+      "route": "/#/preferences",
+      "qualification_or_remaining": "Native device notification permissions are not supplied by the browser preference"
+    },
+    {
+      "id": "UI-26",
+      "prd_screen": 26,
+      "title": "Notification Center & Smart Alerts",
+      "status": "local_implemented",
+      "implemented": "Native notifications, category/unread filters, mark read, safe links and existing support",
+      "route": "/#/notifications",
+      "qualification_or_remaining": "Native device push delivery is not qualified"
+    },
+    {
+      "id": "UI-27",
+      "prd_screen": 27,
+      "title": "Investments Hub & Portfolio Dashboard (Root Tab 4)",
+      "status": "local_partial",
+      "implemented": "Native funded portfolio, buying power, allocation, holdings, actual observations and asset search",
+      "route": "/#/invest",
+      "qualification_or_remaining": "Live market movers, market calendar and latency targets are not supplied"
+    },
+    {
+      "id": "UI-28",
+      "prd_screen": 28,
+      "title": "Asset Detail & Market Research",
+      "status": "local_partial",
+      "implemented": "Synthetic assets, retained fixture observations, position details, watchlist/alerts and DRIP",
+      "route": "/#/invest/asset/AAPL",
+      "qualification_or_remaining": "Live fundamentals, research, analyst/news feeds and external market history pending"
+    },
+    {
+      "id": "UI-29",
+      "prd_screen": 29,
+      "title": "Order Execution Ticket (Buy / Sell)",
+      "status": "local_implemented",
+      "implemented": "Exact fractional amount/shares, buy/sell, market/limit, TIF, presets/max and native validation",
+      "route": "/#/invest/trade/AAPL",
+      "qualification_or_remaining": "PDT/good-faith/margin eligibility are not qualified for real markets"
+    },
+    {
+      "id": "UI-30",
+      "prd_screen": 30,
+      "title": "Order Review & Confirmation Receipt",
+      "status": "local_implemented",
+      "implemented": "Full immutable review, actual issuer approval, execution status and native fill receipt",
+      "route": "/#/invest",
+      "qualification_or_remaining": "OPEN is distinct from FILLED; no cosmetic device approval bypass"
+    },
+    {
+      "id": "UI-31",
+      "prd_screen": 31,
+      "title": "Portfolio Analytics & Asset Allocation",
+      "status": "local_partial",
+      "implemented": "Native position allocation by asset class, sector or holding, realized/unrealized return, highest/lowest performers, recorded cash/equity, dividend receipts and indicative income outlook",
+      "route": "/#/invest/analytics",
+      "qualification_or_remaining": "Market benchmark comparison requires a supplied benchmark feed; recorded values include contributions and are not a return series"
+    },
+    {
+      "id": "UI-32",
+      "prd_screen": 32,
+      "title": "Recurring Investments (Auto-Invest) Management",
+      "status": "local_implemented",
+      "implemented": "Approved recurring buys, exact cadence/monthly anchor, due-date uniqueness, pause/resume/cancel, issuer-approved edits, version history and native monthly-commitment/invested summaries",
+      "route": "/#/invest/automate",
+      "qualification_or_remaining": "Edits create a new approved version; the monthly commitment is a cadence projection, not a forecast of fills"
+    }
+  ],
+  "new_capabilities": [
+    "Savings vaults, locks, shared contributions and automation",
+    "Budgets, categorization, spending insights and subscriptions",
+    "Simulated debit/virtual card controls, receipts and payment requests",
+    "Linked bank simulation, preferences, goals, notifications and achievements",
+    "Scoped personal API credentials and secure statement exports",
+    "Brokerage cash, asset research, exact fractional market/limit orders and order receipts",
+    "Portfolio allocation, watchlists, dividends, DRIP and recurring investments"
+  ],
+  "workstreams": [
+    {
+      "id": "UI-A",
+      "title": "Canonical template styling, responsive navigation and screen reconciliation",
+      "status": "local_implemented"
+    },
+    {
+      "id": "UI-B",
+      "title": "Guarded persisted personal finance, savings, cards, budgets and settings",
+      "status": "in_progress"
+    },
+    {
+      "id": "UI-C",
+      "title": "Native synthetic brokerage, step-up review, holdings and receipts",
+      "status": "in_progress"
+    },
+    {
+      "id": "UI-D",
+      "title": "Recurring saving/investing, dividends and recovery",
+      "status": "in_progress"
+    },
+    {
+      "id": "UI-E",
+      "title": "Template-based customer surfaces and complete cross-links",
+      "status": "in_progress"
+    },
+    {
+      "id": "UI-F",
+      "title": "Native, issuer/browser, accessibility and regression acceptance",
+      "status": "in_progress"
+    }
+  ],
+  "local_preview": {
+    "runbook": "LOCAL_CX_TEST.md",
+    "state": "ready_for_local_cx",
+    "runtime": "current source; schema 61; separate from sealed schema-56 archive",
+    "validation": {
+      "workspace_integration_cases": 149,
+      "core_consumer_cases": 19,
+      "library_cases": 19,
+      "pdf_binary_cases": 1,
+      "distinct_browser_journeys": 21,
+      "implemented_http_patterns": 138,
+      "rendered_and_syntax_checked_diagrams": 62,
+      "persistent_local_schema": 61,
+      "applied_checksums_matching_sources": 61
+    },
+    "completion_claim": "Core local synthetic journeys accepted; full 32-screen PRD remains in progress with explicit remaining work."
+  },
+  "html_extras": [
+    {
+      "source_screen": 11,
+      "capability": "Scoped developer tokens with issuer approval, hash-only retention, read-only endpoint, expiry and revocation",
+      "route": "/#/preferences",
+      "status": "local_implemented"
+    },
+    {
+      "source_screens": [
+        27,
+        28,
+        29
+      ],
+      "capability": "Desktop portfolio, trading and automated wealth",
+      "route": "/#/invest",
+      "status": "local_partial"
+    },
+    {
+      "source_screens": [
+        30,
+        31,
+        32
+      ],
+      "capability": "Responsive mobile portfolio, asset/order review, watchlist and income",
+      "route": "/#/invest",
+      "status": "local_partial"
+    }
+  ]
+}

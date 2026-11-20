@@ -58,7 +58,7 @@ impl Entitlements {
     pub async fn staff_access(&self, actor: &ActorContext) -> Result<StaffAccess> {
         ensure!(actor.trust == TrustContext::Workforce, "Workforce required");
         let person = self.person(actor).await?;
-        let mut capabilities = vec![];
+        let mut capabilities: Vec<String> = vec![];
         for (name, action) in [
             ("case.review", Action::ReviewCase),
             ("payment.inquire", Action::InquirePayment),
@@ -73,6 +73,46 @@ impl Entitlements {
             if self.authorize(actor, action, None, person.0).await? {
                 capabilities.push(name.into());
             }
+        }
+        let records_manage = self
+            .authorize(actor, Action::ManageRecords, None, person.0)
+            .await?;
+        let records_approve = self
+            .authorize(actor, Action::ApproveRecords, None, person.0)
+            .await?;
+        if records_manage
+            || records_approve
+            || self
+                .authorize(actor, Action::ReadAccount, None, person.0)
+                .await?
+        {
+            capabilities.push("records.read".into());
+        }
+        let steward = self
+            .authorize(actor, Action::ProposeMaster, None, person.0)
+            .await?;
+        let replay = self
+            .authorize(actor, Action::ReplayEvents, None, person.0)
+            .await?;
+        if steward {
+            capabilities.push("data.steward".into());
+        }
+        if replay {
+            capabilities.push("events.replay".into());
+        }
+        if steward
+            || replay
+            || capabilities
+                .iter()
+                .any(|c| ["case.review", "case.approve", "payment.inquire"].contains(&c.as_str()))
+        {
+            capabilities.push("operations.view".into());
+        }
+        if records_manage {
+            capabilities.push("records.manage".into());
+        }
+        if records_approve {
+            capabilities.push("records.approve".into());
         }
         if self.finance_authorized(actor, false).await? {
             capabilities.push("finance.inquire".into());
