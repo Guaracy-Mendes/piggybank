@@ -3,7 +3,7 @@
 
 The [official-template consumer and investment preview](docs/implementation/ui/ARCHITECTURE.md) extends the essential banking baseline. Use the [local end-to-end CX walkthrough](docs/implementation/ui/LOCAL_CX_TEST.md) and [32-screen coverage record](docs/implementation/ui/SCREEN_COVERAGE.md).
 
-This repository contains a proposed product requirements baseline, editable C4/UML models, and an evolving synthetic local application based on the supplied [Digital Bank Logical Architecture](Digital%20Bank%20Logical%20Architecture.jpeg). The [current implementation](docs/implementation/README.md) distinguishes working capabilities from the full target design.
+This repository contains a proposed product requirements baseline, editable C4/UML models, and an evolving synthetic local application based on the supplied *Digital Bank Logical Architecture* image (kept outside this repository). The [current implementation](docs/implementation/README.md) distinguishes working capabilities from the full target design.
 
 **Product baseline:** Draft v1.0, 2026-10-22. The image is the only product source supplied. Requirements, release boundaries, interfaces, deployment topology, and numerical targets are proposals unless explicitly marked as observations from that image. Implementation progress and evidence are tracked separately in the backlog.
 
@@ -54,6 +54,16 @@ make dev
 ```
 
 The customer portal is at `http://127.0.0.1:4300`, the workforce portal is at `http://127.0.0.1:4301`, and the API is at `http://127.0.0.1:4180`, with `/health/live` and `/health/ready`; the worker health port is `4181`, and the synthetic provider process is at `4182`. `make dev-down` retains the project's persistent data volumes. Product capabilities become available as their work packages are implemented; real providers and production activation remain separate gates.
+
+## Remote repository
+
+The repository is hosted at <https://github.com/Guaracy-Mendes/piggybank>. After cloning, run once:
+
+```sh
+scripts/setup_git_remote.sh   # sets origin, creates the git-ignored .env (mode 0600) and wires git credentials to it
+```
+
+Put a fine-grained GitHub token with **Contents: read and write** on this repository in `.env` as `GITHUB_TOKEN=`. `scripts/git-credential-env.sh` supplies it to git for `github.com` only, reading the file as data; if it is empty, git falls back to `gh auth`. Keep real secrets only in `.env`, and see `.env.example` for what belongs there. The local stack's fixture credentials are published synthetic test values, not secrets.
 
 ## Evidence convention
 

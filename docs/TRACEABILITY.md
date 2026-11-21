@@ -1,6 +1,6 @@
 # Digital Bank — Source, Requirement and Acceptance Traceability
 
-**Baseline:** 1.0, 2026-10-22. Source evidence is the [supplied image](../Digital%20Bank%20Logical%20Architecture.jpeg), transcribed in the [architecture inventory](ARCHITECTURE.md#source-capability-inventory). All requirements and test scenarios are proposals. This map establishes documentation coverage, not implementation completeness or executed product-test results.
+**Baseline:** 1.0, 2026-10-22. Source evidence is the supplied *Digital Bank Logical Architecture* image (kept outside this repository), transcribed in the [architecture inventory](ARCHITECTURE.md#source-capability-inventory). All requirements and test scenarios are proposals. This map establishes documentation coverage, not implementation completeness or executed product-test results.
 
 ## Coverage convention
 

@@ -6,7 +6,7 @@
 | Version / date | 1.0 / 2026-10-22 |
 | Status | Proposed requirements baseline; stakeholder decisions pending |
 | Product / working repository | Digital Bank / `piggybank` |
-| Primary evidence | [Digital Bank Logical Architecture.jpeg](../Digital%20Bank%20Logical%20Architecture.jpeg) |
+| Primary evidence | *Digital Bank Logical Architecture* image (kept outside this repository) |
 | Product owner / engineering owner | TBD / TBD |
 | Control owners | Compliance, Risk, Security, Finance, Operations; named accountable people TBD |
 | Intended readers | Product, design, engineering, architecture, QA, operations, finance, risk, compliance, partner integration teams |
@@ -570,4 +570,4 @@ C4 levels describe zoom depth, not development stages. The source's L2 badges ar
 | C4 | Context, containers, components and code; containers mean deployable applications/data stores, not only OS containers |
 | P0 / R1 | Release-blocking priority / proposed limited retail launch |
 
-Primary product source: [supplied architecture image](../Digital%20Bank%20Logical%20Architecture.jpeg), with the original credits retained in the root README. Modeling/tool references: [C4 diagram hierarchy](https://c4model.com/diagrams.html), [C4 deployment scope](https://c4model.com/diagrams/deployment), [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML), and [PlantUML command-line documentation](https://plantuml.com/command-line). The proposed accessibility target refers to [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/). These references guide notation, rendering and accessibility criteria; they do not supply banking business requirements or evidence that the proposed bank exists.
+Primary product source: the supplied architecture image (kept outside this repository), with the original credits retained in the root README. Modeling/tool references: [C4 diagram hierarchy](https://c4model.com/diagrams.html), [C4 deployment scope](https://c4model.com/diagrams/deployment), [C4-PlantUML](https://github.com/plantuml-stdlib/C4-PlantUML), and [PlantUML command-line documentation](https://plantuml.com/command-line). The proposed accessibility target refers to [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/). These references guide notation, rendering and accessibility criteria; they do not supply banking business requirements or evidence that the proposed bank exists.
