@@ -45,7 +45,7 @@ If an account is already active, reuse it. Otherwise sign in, choose **Open an a
 - Native commands retain their original request key through retries. Repeating the same key/input returns its original receipt, and changed input under that key is refused.
 - Open orders, holds, vault balances, tokens, notifications and schedules survive a preview restart. This preview never clears the persistent database.
 - Prices are observed synthetic fixtures, not a live WebSocket market feed. Existing charts show only retained observations. Benchmarks, analyst research, real securities, physical device authentication and PRD latency/FPS targets are not certified by this local preview.
-- The current local database is schema 66. Historical sealed schema-56 images require a separate compatible database; there is no automatic schema downgrade.
+- The current local database is schema 80; see the [local deployment runbook](../../runbooks/local-deployment.md) for upgrades. Historical sealed schema-56 images require a separate compatible database; there is no automatic schema downgrade.
 - Saved bills are reminders and cancellation requests. They do not claim merchant payment or cancellation confirmation. Incoming payment requests never move money without the existing reviewed payment flow.
 
 ```sh

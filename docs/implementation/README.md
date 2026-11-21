@@ -69,7 +69,7 @@ The current local implementation includes Rust/Axum API and worker processes, Po
 
 The [22 target C4/UML views](../diagrams/README.md) preserve the full PRD design. They describe the target product and should be read with this implementation status. `make diagrams` renders both target and implementation views with the pinned PlantUML distribution. `make check` checks both sets without equating valid diagrams with executable product evidence.
 
-Follow the [local development runbook](../runbooks/local-development.md) to start the persistent synthetic environment and reproduce the implementation checks.
+Follow the [local deployment runbook](../runbooks/local-deployment.md) to start the persistent synthetic environment and reproduce the implementation checks.
 
 The [payment execution specification](payment-execution.md) records the exact internal, external, incoming and return financial and recovery boundaries.
 

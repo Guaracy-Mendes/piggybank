@@ -4,7 +4,7 @@
 
 | Mode | How |
 | --- | --- |
-| Local development | [local development runbook](local-development.md) or `python3 scripts/local_cx.py prepare && python3 scripts/local_cx.py start` |
+| Local development | [local deployment runbook](local-deployment.md) or `python3 scripts/local_cx.py prepare && python3 scripts/local_cx.py start` |
 | Packaged | `infra/cloud/shared/package.py` builds the sealed release archive (images, Compose, bootstrap); `make cloud-check` verifies it. Images run as uid 10001 with read-only filesystems. See the cloud runbooks in `docs/deployment/`. |
 
 ## Rolling upgrade: expand, deploy, contract

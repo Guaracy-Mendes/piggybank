@@ -1,5 +1,7 @@
 # Local development
 
+For the complete step-by-step procedure (prerequisites, deployment, verification, operation, troubleshooting and reset), follow the [local deployment runbook](local-deployment.md). This page explains the runtime's behavior and boundaries.
+
 This environment uses synthetic data and is bound to loopback. Its credentials are fixtures and cannot enable a production profile. The API, leased worker, signed control simulator, Core ledger, customer journeys and browser portals are implemented locally. Current package completion and evidence are recorded in the [execution board](../implementation/WORK_PACKAGES.md).
 
 Use the pinned Rust toolchain in `rust-toolchain.toml` and Node version in `.node-version`. `scripts/cargo.sh` resolves the selected Rust toolchain even when the shell omits the Cargo directory. Install it through rustup if unavailable; `rustup toolchain install 1.97.0 --profile minimal --component rustfmt --component clippy` installs the required components. Use `npm ci` with the selected Node/npm environment after checking its version.

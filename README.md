@@ -43,7 +43,7 @@ The implementation plan was added on 2026-10-23. Application implementation is t
 
 ## Run locally
 
-The [local development runbook](docs/runbooks/local-development.md) describes the current runtime and its limitations. Use the pinned Rust and Node toolchains, then run:
+The [local deployment runbook](docs/runbooks/local-deployment.md) gives the complete step-by-step deployment, verification, operation, troubleshooting and reset procedure. The [local development runbook](docs/runbooks/local-development.md) describes the current runtime and its limitations. Use the pinned Rust and Node toolchains, then run:
 
 ```sh
 make dev-up
