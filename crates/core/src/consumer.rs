@@ -150,6 +150,14 @@ impl Core {
             .fetch_one(&self.pool)
             .await?)
     }
+    /// Savings interest (schema 80): finalizes and credits closed months, settles the one-off challenge and pays
+    /// qualified referrals. Each credit is keyed by a deterministic operation, so concurrent ticks pay once. The
+    /// worker runs it separately from `consumer_tick`, so a savings failure never blocks automatic savings.
+    pub async fn savings_tick(&self) -> Result<i32> {
+        Ok(sqlx::query_scalar("SELECT core.savings_tick()")
+            .fetch_one(&self.pool)
+            .await?)
+    }
     pub async fn consumer_statement(
         &self,
         c: &Entitlements,

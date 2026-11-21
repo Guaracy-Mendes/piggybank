@@ -1649,3 +1649,438 @@ async fn vault_photo_goals_are_bounded_owner_only_metadata() -> Result<()> {
     assert_eq!(batches, after);
     f.close().await
 }
+
+// ---- Schema 80: savings interest, boosts, the one-off challenge and referrals (UI-09/UI-14 local template) ----
+use chrono::{Datelike, Duration, NaiveDate};
+async fn set_clock(f: &F, date: NaiveDate) -> Result<()> {
+    let sql = format!(
+        "CREATE OR REPLACE FUNCTION core.periodic_clock() RETURNS timestamptz LANGUAGE sql VOLATILE SECURITY DEFINER SET search_path=pg_catalog AS $$ SELECT '{date}T12:00:00Z'::timestamptz $$"
+    );
+    sqlx::query(sqlx::AssertSqlSafe(sql))
+        .execute(&f.db.migrator)
+        .await?;
+    Ok(())
+}
+fn month_start(d: NaiveDate) -> NaiveDate {
+    d.with_day(1).unwrap()
+}
+fn next_month(d: NaiveDate) -> NaiveDate {
+    let m = month_start(d);
+    if m.month() == 12 {
+        NaiveDate::from_ymd_opt(m.year() + 1, 1, 1).unwrap()
+    } else {
+        NaiveDate::from_ymd_opt(m.year(), m.month() + 1, 1).unwrap()
+    }
+}
+/// round(n / 3,650,000) half up, for n >= 0.
+fn interest(minor_days: i64, bps: i64) -> i64 {
+    let n = minor_days as i128 * bps as i128;
+    ((2 * n + 3_650_000) / 7_300_000) as i64
+}
+impl F {
+    async fn savings(&self, who: &ActorContext) -> Result<Value> {
+        Ok(self.core.consumer_snapshot(&self.c, who).await?["savings"].clone())
+    }
+    async fn as_actor(&self, who: &ActorContext, action: &str, input: Value) -> Result<Value> {
+        self.core
+            .consumer_command(&self.c, who, Uuid::new_v4(), action, &input)
+            .await
+    }
+    async fn vault(&self, name: &str) -> Result<String> {
+        let v = self
+            .cmd(
+                "VAULT_CREATE",
+                json!({"name":name,"targetMinor":"10000000"}),
+            )
+            .await?;
+        Ok(v["id"].as_str().unwrap().to_owned())
+    }
+    async fn save(&self, vault: &str, minor: i64) -> Result<()> {
+        self.cmd(
+            "VAULT_DEPOSIT",
+            json!({"id":vault,"accountId":self.account,"amountMinor":minor.to_string()}),
+        )
+        .await?;
+        Ok(())
+    }
+    async fn booked(&self, id: &str) -> Result<i64> {
+        Ok(self
+            .core
+            .balance(AccountId(Uuid::parse_str(id)?))
+            .await?
+            .booked
+            .minor_units())
+    }
+    async fn opened_today(&self) -> Result<NaiveDate> {
+        Ok(
+            sqlx::query_scalar("SELECT (now() AT TIME ZONE 'UTC')::date")
+                .fetch_one(&self.db.migrator)
+                .await?,
+        )
+    }
+    /// A further linked customer, like the fixture's alice and bob.
+    async fn customer(&self, subject: &str) -> Result<ActorContext> {
+        let who = ActorContext {
+            subject: subject.into(),
+            ..self.b.clone()
+        };
+        sqlx::query("INSERT INTO controls.person_links VALUES($1,$2,$3)")
+            .bind(&who.issuer)
+            .bind(&who.subject)
+            .bind(Uuid::new_v4())
+            .execute(&self.db.migrator)
+            .await?;
+        sqlx::query("INSERT INTO identity.subjects(issuer,subject,trust) VALUES($1,$2,'customer')")
+            .bind(&who.issuer)
+            .bind(&who.subject)
+            .execute(&self.db.migrator)
+            .await?;
+        Ok(who)
+    }
+    /// Opens and funds an account for a customer, like the fixture does for alice.
+    async fn open_account(&self, who: &ActorContext, minor: i64) -> Result<Uuid> {
+        let person = self.c.person(who).await?.0;
+        let (party, account) = (Uuid::new_v4(), Uuid::new_v4());
+        let product: Uuid =
+            sqlx::query_scalar("SELECT id FROM core.product_versions WHERE code='UI_FIXTURE'")
+                .fetch_one(&self.db.migrator)
+                .await?;
+        sqlx::query("INSERT INTO core.parties(id,issuer,subject,source_application,identity_digest) VALUES($1,$2,$3,$4,'fixture')").bind(party).bind(&who.issuer).bind(&who.subject).bind(Uuid::new_v4()).execute(&self.db.migrator).await?;
+        sqlx::query("INSERT INTO core.ledger_accounts(id,kind,state,debit_blocked) VALUES($1,'CUSTOMER','ACTIVE',false)").bind(account).execute(&self.db.migrator).await?;
+        sqlx::query("INSERT INTO core.account_registry(id,application_id,party_id,product_version_id,acceptance_id,opening_digest) VALUES($1,$2,$3,$4,$5,'fixture')").bind(account).bind(Uuid::new_v4()).bind(party).bind(product).bind(Uuid::new_v4()).execute(&self.db.migrator).await?;
+        sqlx::query("INSERT INTO core.account_relationships VALUES($1,$2,'OWNER',NULL)")
+            .bind(account)
+            .bind(person)
+            .execute(&self.db.migrator)
+            .await?;
+        self.fund(account, minor).await?;
+        Ok(account)
+    }
+    async fn fund(&self, account: Uuid, minor: i64) -> Result<()> {
+        self.core
+            .fund_synthetic(
+                Uuid::new_v4(),
+                AccountId(account),
+                AccountId(Uuid::parse_str("4f1a780b-3e31-48ef-a294-000000000003")?),
+                Money::new(minor, Currency::synthetic()),
+            )
+            .await?;
+        Ok(())
+    }
+    async fn count(&self, sql: &'static str) -> Result<i64> {
+        Ok(sqlx::query_scalar(sql).fetch_one(&self.db.migrator).await?)
+    }
+}
+
+#[tokio::test]
+async fn savings_interest_is_capped_boosted_finalized_once_and_stops_after_leaving() -> Result<()> {
+    let f = F::new().await?;
+    let t0 = f.opened_today().await?;
+    set_clock(&f, t0).await?;
+    f.fund(f.account, 6_000_000).await?;
+    let s = f.savings(&f.a).await?;
+    assert_eq!(s["canJoin"], true);
+    assert_eq!(s["enrollment"], Value::Null);
+    assert_eq!(s["program"]["baseApyPercent"], "3.04");
+    assert_eq!(s["program"]["maxApyPercent"], "4.59");
+    let digest = s["program"]["digest"].as_str().unwrap().to_owned();
+    // Joining needs the exact displayed terms and explicit acceptance.
+    assert!(
+        f.cmd(
+            "SAVINGS_JOIN",
+            json!({"digest":"0".repeat(64),"accepted":true})
+        )
+        .await
+        .is_err()
+    );
+    assert!(
+        f.cmd("SAVINGS_JOIN", json!({"digest":digest,"accepted":false}))
+            .await
+            .is_err()
+    );
+    assert!(
+        f.cmd("SAVINGS_CHALLENGE", json!({"vaultId":Uuid::new_v4()}))
+            .await
+            .is_err(),
+        "enrollment first"
+    );
+    let joined = f
+        .cmd("SAVINGS_JOIN", json!({"digest":digest,"accepted":true}))
+        .await?;
+    assert_eq!(joined["state"], "ENROLLED");
+    assert!(joined["referralCode"].as_str().unwrap().starts_with("PB"));
+    assert!(
+        f.cmd("SAVINGS_JOIN", json!({"digest":digest,"accepted":true}))
+            .await
+            .is_err()
+    );
+
+    // Two vaults above the TST 50,000 cap: the oldest vault is filled first.
+    let a = f.vault("Oldest").await?;
+    let b = f.vault("Newer").await?;
+    assert!(
+        f.cmd("SAVINGS_CHALLENGE", json!({"vaultId":Uuid::new_v4()}))
+            .await
+            .is_err(),
+        "own vault"
+    );
+    f.cmd("SAVINGS_CHALLENGE", json!({"vaultId":a})).await?;
+    assert!(
+        f.cmd("SAVINGS_CHALLENGE", json!({"vaultId":b}))
+            .await
+            .is_err(),
+        "one-off"
+    );
+    f.save(&a, 4_000_000).await?;
+    f.save(&b, 2_000_000).await?;
+    // The challenge completes once, even with concurrent ticks.
+    let _ = tokio::join!(f.core.savings_tick(), f.core.savings_tick());
+    tokio::time::sleep(std::time::Duration::from_secs(4)).await;
+    f.core.savings_tick().await?;
+    let s = f.savings(&f.a).await?;
+    assert_eq!(s["challenge"]["state"], "COMPLETED", "{}", s["challenge"]);
+    assert_eq!(f.booked(&a).await?, 4_001_000);
+    assert_eq!(
+        f.count("SELECT count(*) FROM core.journal_batches WHERE posting_kind='CHALLENGE_BONUS'")
+            .await?,
+        1
+    );
+
+    // Month 0 closes: interest from the joining day, at the base rate (plus the new-customer boost only if the
+    // account opened on the 1st), credited into each vault once.
+    let m0 = month_start(t0);
+    let m1 = next_month(t0);
+    let days = (m1 - t0).num_days();
+    let r0: i64 = if t0.day() == 1 { 400 } else { 300 };
+    let (ia, ib) = (interest(4_001_000 * days, r0), interest(999_000 * days, r0));
+    set_clock(&f, m1 + Duration::days(1)).await?;
+    let _ = tokio::join!(f.core.savings_tick(), f.core.savings_tick());
+    f.core.savings_tick().await?;
+    let months: Vec<(NaiveDate, i64)> =
+        sqlx::query_as("SELECT month,total_minor FROM core.savings_interest_months ORDER BY month")
+            .fetch_all(&f.db.migrator)
+            .await?;
+    assert_eq!(months, vec![(m0, ia + ib)]);
+    assert_eq!(f.booked(&a).await?, 4_001_000 + ia);
+    assert_eq!(f.booked(&b).await?, 2_000_000 + ib);
+    assert_eq!(
+        f.count("SELECT count(*) FROM core.journal_batches j JOIN core.journal_entries e ON e.batch_id=j.id WHERE j.posting_kind='SAVINGS_INTEREST' AND e.account_id='4f1a780b-3e31-48ef-a294-000000000005' AND e.delta<0").await?,
+        2
+    );
+    let snapshot = f.core.consumer_snapshot(&f.c, &f.a).await?;
+    assert_eq!(
+        snapshot["progress"]["interest"]["lifetimeMinor"],
+        (ia + ib).to_string()
+    );
+    assert_eq!(snapshot["savings"]["vaultInterest"][&a], ia.to_string());
+    // A receipt is immutable.
+    assert!(
+        sqlx::query("UPDATE core.savings_interest_months SET total_minor=0")
+            .execute(&f.db.migrator)
+            .await
+            .is_err()
+    );
+
+    // Month 1: the new-customer boost applies. Save in every week whose Thursday falls in month 1.
+    let m2 = next_month(m1);
+    let s = f.savings(&f.a).await?;
+    assert_eq!(s["rate"]["totalBps"], 400, "{}", s["rate"]);
+    let mut day = m1;
+    while day < m2 {
+        if day.weekday() == chrono::Weekday::Thu {
+            set_clock(&f, day).await?;
+            f.save(&a, 1_000).await?;
+        }
+        day += Duration::days(1);
+    }
+    // Month 2: base + streak + new customer = 4.50%, the cap.
+    set_clock(&f, m2 + Duration::days(1)).await?;
+    f.core.savings_tick().await?;
+    let s = f.savings(&f.a).await?;
+    assert_eq!(
+        (
+            s["rate"]["uncappedBps"].as_i64(),
+            s["rate"]["totalBps"].as_i64()
+        ),
+        (Some(450), Some(450)),
+        "{}",
+        s["rate"]
+    );
+    assert_eq!(s["rate"]["apyPercent"], "4.59");
+    let rate1: i64 = sqlx::query_scalar("SELECT (document->'rate'->>'totalBps')::bigint FROM core.savings_interest_months WHERE month=$1")
+        .bind(m1)
+        .fetch_one(&f.db.migrator)
+        .await?;
+    assert_eq!(rate1, 400);
+
+    // Leaving is final: month 2 accrues until the day before leaving and nothing after.
+    set_clock(&f, m2 + Duration::days(4)).await?;
+    assert!(
+        f.cmd("SAVINGS_LEAVE", json!({"confirm":false}))
+            .await
+            .is_err()
+    );
+    f.cmd("SAVINGS_LEAVE", json!({"confirm":true})).await?;
+    assert!(
+        f.cmd("SAVINGS_LEAVE", json!({"confirm":true}))
+            .await
+            .is_err()
+    );
+    let m3 = next_month(m2);
+    set_clock(&f, m3 + Duration::days(1)).await?;
+    f.core.savings_tick().await?;
+    set_clock(&f, next_month(m3) + Duration::days(1)).await?;
+    f.core.savings_tick().await?;
+    let doc: Value =
+        sqlx::query_scalar("SELECT document FROM core.savings_interest_months WHERE month=$1")
+            .bind(m2)
+            .fetch_one(&f.db.migrator)
+            .await?;
+    assert_eq!(doc["to"], json!((m2 + Duration::days(3)).to_string()));
+    assert_eq!(doc["vaults"][0]["days"], 4);
+    assert_eq!(
+        f.count("SELECT count(*) FROM core.savings_interest_months")
+            .await?,
+        3
+    );
+    f.close().await
+}
+
+#[tokio::test]
+async fn referrals_pay_both_sides_once_respect_the_annual_limit_and_challenges_expire() -> Result<()>
+{
+    let f = F::new().await?;
+    let t0 = f.opened_today().await?;
+    set_clock(&f, t0).await?;
+    let digest = f.savings(&f.a).await?["program"]["digest"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let code = f
+        .cmd("SAVINGS_JOIN", json!({"digest":digest,"accepted":true}))
+        .await?["referralCode"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    // Claim rules: format, own code, unknown code; then one claim per referee.
+    assert!(
+        f.cmd("REFERRAL_CLAIM", json!({"code":code})).await.is_err(),
+        "own code"
+    );
+    assert!(
+        f.as_actor(&f.b, "REFERRAL_CLAIM", json!({"code":"nope"}))
+            .await
+            .is_err()
+    );
+    assert!(
+        f.as_actor(&f.b, "REFERRAL_CLAIM", json!({"code":"PB00000000"}))
+            .await
+            .is_err()
+    );
+    assert_eq!(
+        f.as_actor(&f.b, "REFERRAL_CLAIM", json!({"code":code.to_lowercase()}))
+            .await?["state"],
+        "PENDING"
+    );
+    assert!(
+        f.as_actor(&f.b, "REFERRAL_CLAIM", json!({"code":code}))
+            .await
+            .is_err()
+    );
+    let bob = f.open_account(&f.b, 20_000).await?;
+    let carol_actor = f.customer("carol").await?;
+    f.as_actor(&carol_actor, "REFERRAL_CLAIM", json!({"code":code}))
+        .await?;
+    let carol = f.open_account(&carol_actor, 20_000).await?;
+    // Four earlier paid referrals this year leave room for exactly one more paid referrer bonus.
+    for _ in 0..8 {
+        f.fund(f.account, 1).await?;
+    }
+    let batches: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM core.journal_batches WHERE posting_kind='SYNTHETIC_FUNDING' ORDER BY created_at DESC LIMIT 8")
+        .fetch_all(&f.db.migrator)
+        .await?;
+    let alice_person = f.c.person(&f.a).await?.0;
+    for pair in batches.chunks(2) {
+        sqlx::query("INSERT INTO core.savings_referrals(id,referrer_person,referee_person,code,claimed_on,state,qualified_on,referee_batch,referrer_batch,referrer_outcome) VALUES($1,$2,$3,$4,$5,'PAID',$5,$6,$7,'PAID')")
+            .bind(Uuid::new_v4()).bind(alice_person).bind(Uuid::new_v4()).bind(&code).bind(t0 + Duration::days(30)).bind(pair[0]).bind(pair[1])
+            .execute(&f.db.migrator).await?;
+    }
+
+    // A challenge that misses its target expires without a bonus.
+    let v = f.vault("Trip").await?;
+    f.cmd("SAVINGS_CHALLENGE", json!({"vaultId":v})).await?;
+    f.save(&v, 10_000).await?;
+
+    // Day 29 after opening: not yet 30 held days. Day 30: both sides are paid once.
+    set_clock(&f, t0 + Duration::days(29)).await?;
+    f.core.savings_tick().await?;
+    assert_eq!(
+        f.savings(&f.b).await?["referral"]["claimed"]["state"],
+        "PENDING"
+    );
+    set_clock(&f, t0 + Duration::days(30)).await?;
+    let before = f.booked(&f.account.to_string()).await?;
+    tokio::time::sleep(std::time::Duration::from_secs(4)).await;
+    let _ = tokio::join!(f.core.savings_tick(), f.core.savings_tick());
+    tokio::time::sleep(std::time::Duration::from_secs(4)).await;
+    f.core.savings_tick().await?;
+    // Both referees are paid; the referrer is paid once more and then reaches the annual limit of 5.
+    assert_eq!(
+        f.savings(&f.b).await?["referral"]["claimed"]["state"],
+        "PAID"
+    );
+    assert_eq!(
+        f.savings(&carol_actor).await?["referral"]["claimed"]["state"],
+        "PAID"
+    );
+    assert_eq!(f.booked(&bob.to_string()).await?, 22_500);
+    assert_eq!(f.booked(&carol.to_string()).await?, 22_500);
+    assert_eq!(f.booked(&f.account.to_string()).await?, before + 2_500);
+    assert_eq!(
+        f.count("SELECT count(*) FROM core.journal_batches WHERE posting_kind='REFERRAL_BONUS'")
+            .await?,
+        3
+    );
+    let s = f.savings(&f.a).await?;
+    assert_eq!(s["referral"]["paidThisYear"], 5);
+    let outcomes: Vec<String> = s["referral"]["referrals"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["yourBonus"].as_str().unwrap().to_owned())
+        .collect();
+    assert_eq!(
+        outcomes.iter().filter(|o| *o == "ANNUAL_LIMIT").count(),
+        1,
+        "{outcomes:?}"
+    );
+    assert_eq!(
+        outcomes.iter().filter(|o| *o == "PAID").count(),
+        5,
+        "{outcomes:?}"
+    );
+    assert_eq!(s["challenge"]["state"], "EXPIRED");
+    assert_eq!(
+        f.count("SELECT count(*) FROM core.journal_batches WHERE posting_kind='CHALLENGE_BONUS'")
+            .await?,
+        0
+    );
+    // Bob cannot refer alice back.
+    let bob_code = {
+        let d = f.savings(&f.b).await?["program"]["digest"]
+            .as_str()
+            .unwrap()
+            .to_owned();
+        f.as_actor(&f.b, "SAVINGS_JOIN", json!({"digest":d,"accepted":true}))
+            .await?["referralCode"]
+            .as_str()
+            .unwrap()
+            .to_owned()
+    };
+    assert!(
+        f.cmd("REFERRAL_CLAIM", json!({"code":bob_code}))
+            .await
+            .is_err()
+    );
+    f.close().await
+}

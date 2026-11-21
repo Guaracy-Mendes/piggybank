@@ -90,10 +90,10 @@
       "id": "UI-09",
       "prd_screen": 9,
       "title": "Savings Hub & Vaults Overview (Root Tab 2)",
-      "status": "local_partial",
-      "implemented": "Native personal/shared vault balances, progress, invitations, automation links, streak/badge summary and lifetime interest with monthly totals",
+      "status": "local_implemented",
+      "implemented": "Native personal/shared vault balances, progress, invitations, automation links, streak/badge summary, lifetime interest with monthly totals; an APY badge (current rate after joining, or the maximum before) and per-vault interest earned under the user-approved synthetic savings interest program (schema 80)",
       "route": "/#/save",
-      "qualification_or_remaining": "An APY badge requires an activated approved offer; vault balances are not interest-bearing"
+      "qualification_or_remaining": "Rates and rules are user-approved synthetic template values, not a real deposit offer; not reviewed under any jurisdiction (Brazilian requirements pending)"
     },
     {
       "id": "UI-10",
@@ -135,10 +135,10 @@
       "id": "UI-14",
       "prd_screen": 14,
       "title": "High-Yield APY & Interest Tracker",
-      "status": "local_partial",
-      "implemented": "Existing exact approved account periodic disclosures, interest receipts and consent; lifetime interest net of corrections and monthly interest totals",
-      "route": "/#/accounts",
-      "qualification_or_remaining": "APY boost/referral challenges pending approved product rules"
+      "status": "local_implemented",
+      "implemented": "Account periodic disclosures, receipts and consent retained; savings interest program (schema 80): opt-in by exact terms digest, base 3.00% (about 3.04% APY) on own vaults with a TST 50,000 cap, stacking saving-streak (+0.50%) and new-customer (+1.00%, 3 full months) boosts capped at 4.50%, monthly immutable receipts credited once per vault, rate breakdown, streak weeks, month-to-date estimate, a one-off TST 500 in 30 days challenge with a TST 10 bonus, and referral codes paying TST 25 to each side after 30 days at TST 100 (5 per year)",
+      "route": "/#/save/interest",
+      "qualification_or_remaining": "Synthetic template rules approved by the user on 2026-11-21; legal review (Brazil) pending; the referral code is entered in the app within 30 days of the first account, not on the issuer registration form"
     },
     {
       "id": "UI-15",

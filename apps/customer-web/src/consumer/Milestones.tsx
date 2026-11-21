@@ -154,8 +154,8 @@ export function InterestSummary({ p }: { p?: ProgressReport }) {
       <div className="ui-number">{amount(i.lifetimeMinor)}</div>
       <p className="ui-caption">
         {i.postings
-          ? `${i.postings} native periodic posting(s), net of corrections${i.lastPostedOn ? "; last on " + i.lastPostedOn : ""}.`
-          : "No interest has been credited yet. Interest posts only under an activated offer with retained consent."}
+          ? `${i.postings} native interest posting(s) on accounts and vaults, net of corrections${i.lastPostedOn ? "; last on " + i.lastPostedOn : ""}.`
+          : "No interest has been credited yet. Vaults earn interest after you join the savings interest program; accounts only under an activated offer."}
       </p>
       {i.months.length > 0 && (
         <Bars

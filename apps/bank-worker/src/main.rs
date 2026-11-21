@@ -545,14 +545,25 @@ async fn finance_work(
         if *stop.borrow() {
             return;
         }
-        let consumer_result = match bank_platform::database::Module::Core.connect().await {
-            Ok(pool) => bank_core::Core::new(pool).consumer_tick().await.map(|_| ()),
-            Err(error) => Err(error),
-        };
+        let (consumer_result, savings_result) =
+            match bank_platform::database::Module::Core.connect().await {
+                Ok(pool) => {
+                    let core = bank_core::Core::new(pool);
+                    let consumer = core.consumer_tick().await.map(|_| ());
+                    (consumer, core.savings_tick().await.map(|_| ()))
+                }
+                Err(error) => (Err(anyhow::anyhow!("{error}")), Err(error)),
+            };
         if consumer_result.is_err() {
             tracing::warn!(
                 code = "CONSUMER_RECOVERY_PENDING",
                 "consumer automation awaits native recovery"
+            );
+        }
+        if savings_result.is_err() {
+            tracing::warn!(
+                code = "SAVINGS_INTEREST_PENDING",
+                "savings interest processing awaits native recovery"
             );
         }
         if finance.forecast_tick().await.is_err() {

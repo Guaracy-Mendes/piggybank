@@ -579,13 +579,22 @@ test("savings milestones show native streaks, monthly net worth, badges and a ba
       .getByText(/^Locked · \d+ of 100$/),
   ).toBeVisible();
   await page.getByRole("button", { name: "Create milestone card" }).click();
-  // The card is rendered and PNG-encoded locally on a canvas; allow for a slow CI host (two earlier flakes at 5 s).
   await expect(
     page.getByRole("img", { name: /^Milestone card: / }),
-  ).toBeVisible({ timeout: 15_000 });
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Save image ↓" }),
   ).toHaveAttribute("download", /^piggybank-[a-z0-9_]+\.png$/);
+  // Regaining window focus revalidates the session in the background; it must not unmount the workspace and drop
+  // page state (the cause of two earlier flakes of this test, where the card vanished before the assertion).
+  await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith("/auth/customer/me")),
+    page.evaluate(() => window.dispatchEvent(new Event("focus"))),
+  ]);
+  await expect(page.getByText("Opening your secure session…")).toHaveCount(0);
+  await expect(
+    page.getByRole("img", { name: /^Milestone card: / }),
+  ).toBeVisible();
   await accessible(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await accessible(page);
@@ -2108,6 +2117,134 @@ test("QR payment codes: a receiving reference and an open request render as fait
   );
   await accessible(page);
   for (const c of [alice, bob]) await c.context.close();
+});
+
+test("savings interest: a customer joins with the exact terms, sees the rate and boosts, completes the one-off challenge and a friend uses the referral code", async ({
+  browser,
+}) => {
+  const fixture = JSON.parse(
+    readFileSync(resolve(".local/customer-browser-fixture.json"), "utf8"),
+  );
+  const alice = await login(browser, "alice"),
+    page = alice.page;
+  const account = await activeAccount(alice.context, "Interest alice");
+  execFileSync("podman", [
+    "exec",
+    "piggybank-postgres-1",
+    "psql",
+    "-U",
+    "dev_admin",
+    "-d",
+    fixture.database,
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    `SELECT * FROM core.fund_synthetic('${crypto.randomUUID()}','${account}','4f1a780b-3e31-48ef-a294-000000000003',100000)`,
+  ]);
+  const created = await send(
+    alice.context,
+    "/api/v1/consumer/commands",
+    {
+      action: "VAULT_CREATE",
+      input: { name: "Interest goal", targetMinor: "100000" },
+    },
+    "POST",
+    crypto.randomUUID(),
+  );
+  expect(created.status()).toBe(200);
+  const vault = (await created.json()).id as string;
+
+  // UI-09: the savings hub invites the customer to earn interest.
+  await page.goto(customer + "/#/save");
+  await page.reload();
+  await page.getByRole("link", { name: /^Earn up to 4\.59% APY/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "Interest & boosts", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("3.04% APY", { exact: true })).toBeVisible();
+  const join = page.getByRole("button", { name: "Join and start earning" });
+  await expect(join).toBeDisabled();
+  await accessible(page);
+  await page
+    .getByLabel(/I agree to these synthetic savings interest terms/)
+    .check();
+  await join.click();
+
+  // UI-14: the current rate, its breakdown and next month's streak weeks.
+  await expect(
+    page.getByRole("list", { name: "Rate breakdown" }),
+  ).toContainText("Base rate 3.00%");
+  await expect(
+    page.getByRole("list", { name: "Rate breakdown" }),
+  ).toContainText(/New customer \+1\.00%/);
+  await expect(
+    page.getByRole("list", { name: "Saving weeks this month" }),
+  ).toBeVisible();
+  const code = (await page.getByTestId("referral-code").textContent())!.trim();
+  expect(code).toMatch(/^PB[0-9A-F]{8}$/);
+
+  // The one-off challenge completes from an actual vault deposit and pays its bonus once.
+  await page.getByLabel("Challenge vault").selectOption(vault);
+  await page.getByRole("button", { name: "Start challenge" }).click();
+  await expect(
+    page.getByRole("progressbar", { name: "Challenge progress" }),
+  ).toBeVisible();
+  await accessible(page);
+  await page.goto(customer + "/#/save/" + vault);
+  await page.getByLabel("Amount (TST)", { exact: true }).fill("500.00");
+  await page.getByRole("button", { name: "Submit vault transfer" }).click();
+  await expect(
+    page.getByText("TST 500.00", { exact: true }).first(),
+  ).toBeVisible();
+  await page.goto(customer + "/#/save/interest");
+  await expect(
+    page.getByText(/completed \d{4}-\d{2}-\d{2}; TST 10\.00 bonus added/),
+  ).toBeVisible({ timeout: 20_000 });
+
+  // The hub now shows the earned rate and per-vault interest.
+  await page.goto(customer + "/#/save");
+  await expect(
+    page.getByRole("link", { name: /^Earning \d\.\d\d% APY/ }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByText(/^Interest earned TST \d+\.\d\d · \d\.\d\d% a year$/)
+      .first(),
+  ).toBeVisible();
+  await page.goto(customer + "/#/save/interest");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await accessible(page);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: ".local/ui80-interest-mobile.png",
+    fullPage: true,
+  });
+
+  // A friend enters the code within 30 days of their first account; the referrer sees it pending.
+  const bob = await login(browser, "bob");
+  await activeAccount(bob.context, "Interest bob");
+  await bob.page.goto(customer + "/#/save/interest");
+  await bob.page.reload();
+  await bob.page
+    .getByLabel("Were you referred? Enter the code")
+    .fill(code.toLowerCase());
+  await bob.page.getByRole("button", { name: "Use referral code" }).click();
+  await expect(
+    bob.page.getByText(
+      /^You used a referral code on \d{4}-\d{2}-\d{2}\. Keep at least TST 100\.00 in your accounts through \d{4}-\d{2}-\d{2}\.$/,
+    ),
+  ).toBeVisible();
+  await accessible(bob.page);
+  await page.reload();
+  await expect(
+    page.getByRole("list", { name: "Your referrals" }),
+  ).toContainText("waiting for the 30-day balance");
+  await bob.context.close();
+  await alice.context.close();
 });
 
 test("self-service registration and email verification: a new customer creates a sign-in at the issuer with a live strength meter, enforced policy and terms, then verifies the email with a one-time code", async ({

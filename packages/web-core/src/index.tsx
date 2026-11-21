@@ -97,24 +97,34 @@ export function SessionProvider({
   const [loading, setLoading] = useState(true);
   const [problem, setProblem] = useState<string | null>(null);
   const sequence = useRef(0);
+  const known = useRef<Schema["Identity"] | null>(null);
   const refresh = useCallback(async () => {
     const run = ++sequence.current;
-    setLoading(true);
-    setProblem(null);
+    // With a signed-in identity this is a background revalidation (e.g. on window focus): keep the workspace
+    // mounted so page state survives. A 401 still signs out at once; any other failure surfaces on the next call.
+    const background = known.current !== null;
+    if (!background) {
+      setLoading(true);
+      setProblem(null);
+    }
     try {
       const result = await client.GET("/auth/{trust}/me", {
         params: { path: { trust } },
       });
       if (run !== sequence.current) return;
-      if (result.response.status === 401) setIdentity(null);
-      else {
+      if (result.response.status === 401) {
+        known.current = null;
+        setIdentity(null);
+      } else {
         const current = await value(result);
         if (current.actor.trust !== trust.toUpperCase())
           throw new ApiFailure(403);
+        if (run !== sequence.current) return;
+        known.current = current;
         setIdentity(current);
       }
     } catch (error) {
-      if (run === sequence.current) setProblem(message(error));
+      if (run === sequence.current && !background) setProblem(message(error));
     } finally {
       if (run === sequence.current) setLoading(false);
     }
@@ -123,6 +133,7 @@ export function SessionProvider({
     void refresh();
     const expired = () => {
       ++sequence.current;
+      known.current = null;
       setIdentity(null);
       setLoading(false);
     };
@@ -159,6 +170,7 @@ export function SessionProvider({
       )
     )
       throw new ApiFailure(503);
+    known.current = null;
     setIdentity(null);
     window.location.assign(navigation.continueTo);
   }, [client, trust]);

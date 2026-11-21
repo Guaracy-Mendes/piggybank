@@ -165,8 +165,8 @@ issuer; customer-web never sees a password.
   integration (173/0) passed.
 - This is the second time that test has failed this way; the first was `.local/ci/20261118T163917Z`, recorded under
   WP-33. It passed in the full consumer suite locally (20/20) and in the schema-78 run.
-- No root cause was proven. The card is drawn and PNG-encoded locally on a canvas, which is the only asynchronous step.
-  Two changes were made:
+- No root cause was proven at the time (it was later found; see "Session revalidation fix" below). Two changes were
+  made:
   - the button now shows "Creating card…" and is disabled while the card is generated;
   - the test allows 15 s for the image.
 - The milestones captions now say that merchant saving rules count (schema 78).
@@ -228,6 +228,88 @@ SMS is sent.
 
 **Still pending.** A real email/SMS provider, an SMS channel with phone numbers, and a second sign-in factor (this is
 contact verification only).
+
+## Session revalidation fix (no migration)
+
+**Root cause of the milestones flake.** The shared session provider (`packages/web-core/src/index.tsx`) re-reads
+`/auth/{trust}/me` whenever the window gains focus. It set `loading` to true for that re-read, so both portals swapped
+the whole workspace for "Opening your secure session…" and mounted it again. That threw away all page state: the
+generated milestone card, and any half-filled form. A user switching back to the browser tab lost what they had typed.
+In the two failed runs a focus event evidently landed between the click and the assertion.
+
+- The card is not slow: a headless Chromium probe drew and PNG-encoded it in about 40 ms (6 browsers × 4 draws), far
+  inside the original 5 s. The 15 s test timeout was therefore removed again; the "Creating card…" busy state stays.
+- **Reproduced.** The milestones journey now dispatches a window `focus` after the card appears, waits for the `/me`
+  response and requires the card to still be shown with no session-loading screen. Before the fix it failed at that
+  assertion (the card was gone), matching both pipeline failures.
+- **Fix.** Once an identity is known, a re-read runs in the background: the workspace stays mounted. A 401 still clears
+  the identity at once (signed out). Any other failure of a background re-read is not shown as a full-screen problem;
+  the next API call surfaces it, and an expired session still signs out through `bank:expired`. A re-read that returns
+  a different user remounts the workspace (it is keyed by issuer and subject).
+- After the fix, consumer journeys 1–4 passed (including the focus check).
+- `.local/ci/20261121T020435Z` (2026-11-21 02:04–02:31 UTC): all 37 steps passed. Integration 174/0, consumer
+  browser 20/20 (including the focus check), payments browser 14/14, customer, staff, issuer and Android journeys.
+  Afterwards the customers realm held only `alice` and `bob`.
+
+## Savings interest increment (UI-09/UI-14, schema 80)
+
+A local template with **user-approved synthetic product rules** (2026-11-21). These are not a real deposit offer and
+have not been reviewed under any jurisdiction; Brazilian requirements are to be checked later.
+
+| Rule | Value |
+| --- | --- |
+| Base rate | 3.00% a year (about 3.04% APY) on the customer's own vaults; daily actual/365 on each day's closing booked balance |
+| Balance cap | TST 50,000 across own vaults, applied oldest vault first; the excess earns nothing |
+| Crediting | Summed per vault and calendar month (UTC), rounded half up once, credited into each vault after the month closes |
+| Saving streak boost | +0.50% for a month after saving into a vault in every week (Monday to Sunday) whose Thursday fell in the previous month |
+| New customer boost | +1.00% for the first 3 full calendar months after the first account opened |
+| Total rate | Boosts stack, at most 4.50% (about 4.59% APY) |
+| One-off challenge | Save TST 500 into one own vault within 30 days for a TST 10 bonus in that vault, once per person |
+| Referrals | TST 25 to each side once the referee keeps at least TST 100 in their own accounts for 30 days; code entered within 30 days of the referee's first account; at most 5 paid referrer bonuses per calendar year; expires after 180 days |
+
+- **Data and functions** (migration 0080):
+  - `core.savings_programs` holds the immutable program version 1 with its canonical SHA-256 digest.
+  - Customers opt in through `SAVINGS_JOIN`, which needs the exact displayed digest and `accepted: true`; `SAVINGS_LEAVE`
+    is final for this version; `SAVINGS_CHALLENGE` and `REFERRAL_CLAIM` follow the rules above. All four run through
+    the existing consumer command path, with the same replay and scope checks.
+  - `core.savings_tick()` is run by the worker separately from consumer automation, so a savings failure never blocks
+    automatic savings. It finalizes the next closed month per person as an immutable receipt (rate components with
+    their evidence, per-vault days, capped minor-days and amounts, digest) and credits each vault. It also settles
+    challenges and referrals. Every credit is a native balanced journal from the approved interest expense control
+    account (`…0005`, already mapped in the GL chart), keyed by a deterministic operation, so retries and concurrent
+    ticks pay once. Failures are recorded per person with a retry delay.
+  - Lifetime interest in the progress read model now includes `SAVINGS_INTEREST` credits to the person's own vaults.
+- **Interpretations recorded here:**
+  - Option A ("vaults earn the account rate") is implemented as the program rate on vault balances. Account balances
+    keep the existing WP-24 periodic terms, so nothing is paid twice.
+  - "Code entered at registration" is implemented in the app, within 30 days of the first account. The issuer
+    registration form does not carry custom attributes in this template, and a newly registered user has no bank person
+    until they apply.
+  - Self-referral is refused for the same person. One person holding several issuer identities is not detected
+    (threat model SF-012).
+- **UI:**
+  - Savings hub (UI-09): an "Earning X% APY" badge once joined, "Earn up to 4.59% APY" before, and "Interest earned"
+    with the current rate on each own vault card.
+  - Interest & boosts (UI-14, `#/save/interest`): the terms and a join checkbox; once joined, the current rate with
+    each boost marked earned or not and why, the cap note, a month-to-date estimate, the current month's saving weeks
+    for next month's streak, interest by month, the challenge with a progress bar, the referral code, referrals and
+    their outcomes, a claim form, and a final-leave control. The accounts page links here.
+
+| Check | Result |
+| --- | --- |
+| Core database test `savings_interest_is_capped_boosted_finalized_once_and_stops_after_leaving` | Passed. Wrong digest and unaccepted terms are refused; the challenge needs enrollment and an own vault, is one-off and completes once under concurrent ticks; the first month's interest equals an independent half-up calculation with the cap filling the oldest vault first, is credited once per vault from the expense control account under concurrent ticks, and appears in lifetime interest; receipts are immutable; the new-customer boost applies in the first full month; saving in every week gives base + streak + new customer = 4.50% (4.59% APY); leaving accrues until the day before and stops later months |
+| Core database test `referrals_pay_both_sides_once_respect_the_annual_limit_and_challenges_expire` | Passed. Own, malformed, unknown and repeated codes are refused; nothing pays on day 29; on day 30 both referees are paid once under concurrent ticks, the referrer is paid once more and then reaches the annual limit of 5; a missed challenge expires with no bonus; mutual referral is refused |
+| Core database suite | 30 passed, 0 failed, including the forward-upgrade test from schema 59 |
+| Browser journey "savings interest: …" | Passed, with axe at desktop and 390×844 and no horizontal overflow. The hub offers 4.59% APY; joining needs the checkbox; the rate breakdown shows base 3.00% and the new-customer boost; the streak weeks render; a TST 500 vault deposit completes the challenge and adds the TST 10 bonus; the hub then shows the earned rate and per-vault interest; bob enters alice's code (lower case) and sees his 30-day hold date; alice sees the referral pending |
+
+**Gated run.** `.local/ci/20261121T145513Z` (2026-11-21 14:55–15:23 UTC): all 37 steps passed. Integration 176/0,
+consumer browser 21/21 (including the savings interest journey), payments browser 14/14, customer, staff, issuer and
+Android journeys, and ingress for all 251 implemented paths. The persistent database migrated to schema 80, which is
+now locked (80 migrations). Afterwards the customers realm held only `alice` and `bob`.
+
+**Found during the increment.** The core forward-upgrade test runs the new binary against schema 59. It failed when the
+consumer tick also called the new savings function, which does not exist there. The worker now runs the savings tick
+separately, with its own `SAVINGS_INTEREST_PENDING` warning.
 
 ## Native financial coverage
 

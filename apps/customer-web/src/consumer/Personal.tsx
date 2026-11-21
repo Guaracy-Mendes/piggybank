@@ -10,6 +10,7 @@ import {
   type Activity,
   type Vault,
   decimal,
+  percent,
 } from "./model";
 import { navigate } from "../lib/navigation";
 import { encodePaymentCode } from "../lib/paymentCode";
@@ -22,6 +23,7 @@ import {
   StreakBadge,
 } from "./Milestones";
 import { Messages } from "./Messages";
+import { SavingsInterest } from "./Interest";
 
 export function AccountSelect({ name = "accountId" }: { name?: string }) {
   const c = useConsumer();
@@ -207,6 +209,7 @@ export function Savings({ route }: { route: string }) {
     v = c.data.vaults.find((v) => v.id === id),
     [error, setError] = useState("");
   if (id === "milestones") return <Milestones />;
+  if (id === "interest") return <SavingsInterest />;
   if (id === "new")
     return (
       <>
@@ -371,6 +374,19 @@ export function Savings({ route }: { route: string }) {
             )}
           </div>
           <p>Shared balances are listed separately in their pool cards.</p>
+          {c.data.savings?.enrollment?.active ? (
+            <p>
+              <a className="ui-pill" href="#/save/interest">
+                Earning {c.data.savings.rate.apyPercent}% APY →
+              </a>
+            </p>
+          ) : c.data.savings ? (
+            <p>
+              <a className="ui-pill" href="#/save/interest">
+                Earn up to {c.data.savings.program.maxApyPercent}% APY →
+              </a>
+            </p>
+          ) : null}
           <a className="ui-pill" href="#/invest/automate">
             Set up automatic savings →
           </a>
@@ -433,6 +449,15 @@ export function Savings({ route }: { route: string }) {
               Goal {amount(v.targetMinor)}
               {v.targetDate ? " · " + v.targetDate : ""}
             </p>
+            {v.isOwner && c.data.savings?.enrollment && (
+              <p className="ui-caption">
+                Interest earned{" "}
+                {amount(c.data.savings.vaultInterest[v.id] ?? "0")}
+                {c.data.savings.enrollment.active
+                  ? ` · ${percent(c.data.savings.rate.totalBps)} a year`
+                  : ""}
+              </p>
+            )}
           </Box>
         ))}
       </div>
@@ -451,9 +476,12 @@ export function Savings({ route }: { route: string }) {
       <Box title="Interest & disclosures">
         <InterestSummary p={c.data.progress} />
         <p>
-          Interest is credited only under an activated financial offer with
-          retained consent and an actual native periodic receipt. A savings goal
-          does not automatically promise a rate.
+          Vault interest is credited monthly under the savings interest program
+          you join, from native receipts. Account interest is credited only
+          under an activated account offer with retained consent.
+        </p>
+        <p>
+          <a href="#/save/interest">Interest, boosts & referrals →</a>
         </p>
         <a href="#/accounts">
           Review your account offers & interest receipts →

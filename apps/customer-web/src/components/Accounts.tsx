@@ -174,6 +174,11 @@ export function AccountsView({
         title="A clearer view of your money."
         description="Available, posted and held balances are shown separately, directly from your account."
       />
+      <p>
+        <a className="text-link" href="#/save/interest">
+          Vault interest, APY boosts & referrals →
+        </a>
+      </p>
       {!account ? (
         <div className="card">
           <h2>Your first account starts with an application.</h2>

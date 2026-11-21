@@ -5,7 +5,7 @@ export function validRoute(path: string) {
     /^\/(save|spend|invest|wallet|preferences|notifications|documents)$/.test(
       path,
     ) ||
-    /^\/save\/(new|milestones|[a-f0-9-]{36})$/.test(path) ||
+    /^\/save\/(new|milestones|interest|[a-f0-9-]{36})$/.test(path) ||
     /^\/spend\/activity$/.test(path) ||
     /^\/invest\/(watchlist|analytics|automate)$/.test(path) ||
     /^\/invest\/(asset|trade)\/[A-Z0-9]{1,10}$/.test(path) ||

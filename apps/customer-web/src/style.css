@@ -1464,3 +1464,50 @@
   font-size: 1.3rem;
   padding: 0;
 }
+/* Schema 80: savings interest (UI-09/UI-14). */
+.ui-rate-parts,
+.ui-terms {
+  padding-left: 1.1rem;
+  margin: 10px 0;
+}
+.ui-rate-parts li,
+.ui-terms li {
+  margin: 4px 0;
+}
+.ui-weeks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+.ui-weeks li {
+  display: grid;
+  gap: 2px;
+  min-width: 7.5rem;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+.ui-weeks li[data-state="SAVED"] {
+  border-color: #2f8a63;
+}
+.ui-weeks li[data-state="MISSED"] {
+  border-style: dashed;
+}
+.ui-referral-code {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+.ui-leave {
+  margin: 16px 0;
+}
+.ui-leave summary {
+  cursor: pointer;
+}
+.ui-hero .ui-caption {
+  color: rgba(255, 255, 255, 0.86);
+}

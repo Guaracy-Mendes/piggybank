@@ -219,7 +219,127 @@ export type Workspace = {
     billsDueMinor: string;
     through: string;
   };
+  savings?: Savings;
 };
+/* Schema 80: savings interest with user-approved synthetic rules (UI-09/UI-14 local template). */
+export type SavingsWeek = {
+  from: string;
+  to: string;
+  saved: boolean;
+  state: "SAVED" | "MISSED" | "OPEN" | "UPCOMING";
+};
+export type RateComponent = {
+  code: "BASE" | "SAVING_STREAK" | "NEW_CUSTOMER";
+  bps: number;
+  applied: boolean;
+  basisMonth?: string;
+  weeks?: SavingsWeek[];
+  openedOn?: string | null;
+  firstMonth?: string | null;
+  lastMonth?: string | null;
+};
+export type SavingsRate = {
+  month: string;
+  baseBps: number;
+  capBps: number;
+  uncappedBps: number;
+  totalBps: number;
+  apyPercent: string;
+  components: RateComponent[];
+};
+export type SavingsAccrual = {
+  month: string;
+  from: string;
+  to: string;
+  rate: SavingsRate;
+  balanceCapMinor: string;
+  totalMinor: string;
+  vaults: {
+    vaultId: string;
+    days: number;
+    eligibleMinorDays: string;
+    amountMinor: string;
+  }[];
+};
+export type Savings = {
+  asOf: string;
+  program: {
+    version: number;
+    digest: string;
+    title: string;
+    label: string;
+    baseRateBps: number;
+    maxRateBps: number;
+    balanceCapMinor: string;
+    baseApyPercent: string;
+    maxApyPercent: string;
+    terms: string[];
+    decision: string;
+    challenge: { targetMinor: string; days: number; bonusMinor: string };
+    referral: {
+      bonusMinor: string;
+      fundMinor: string;
+      holdDays: number;
+      claimWithinDays: number;
+      maxPaidPerYear: number;
+    };
+  };
+  enrollment: {
+    joinedOn: string;
+    leftOn: string | null;
+    active: boolean;
+    programVersion: number;
+  } | null;
+  canJoin: boolean;
+  rate: SavingsRate;
+  streakWeeks: SavingsWeek[];
+  monthToDate: SavingsAccrual | null;
+  months: {
+    month: string;
+    totalMinor: string;
+    rateBps: number;
+    apyPercent: string;
+    components: RateComponent[];
+    vaults: SavingsAccrual["vaults"];
+    digest: string;
+    finalizedAt: string;
+  }[];
+  lifetimeInterestMinor: string;
+  vaultInterest: Record<string, string>;
+  challenge: {
+    vaultId: string;
+    startedOn: string;
+    endsOn: string;
+    targetMinor: string;
+    bonusMinor: string;
+    progressMinor: string;
+    state: "ACTIVE" | "COMPLETED" | "EXPIRED";
+    completedOn: string | null;
+  } | null;
+  referral: {
+    code: string | null;
+    paidThisYear: number;
+    maxPaidPerYear: number;
+    referrals: {
+      id: string;
+      claimedOn: string;
+      state: "PENDING" | "PAID" | "EXPIRED";
+      qualifiedOn: string | null;
+      yourBonus: "PAID" | "ANNUAL_LIMIT" | "NO_ACTIVE_ACCOUNT" | null;
+    }[];
+    claimed: {
+      claimedOn: string;
+      state: "PENDING" | "PAID" | "EXPIRED";
+      qualifiedOn: string | null;
+      holdFrom: string | null;
+      holdUntil: string | null;
+    } | null;
+    canClaim: boolean;
+    claimUntil: string | null;
+  };
+};
+/** Basis points as a percentage, e.g. 450 → "4.50%". */
+export const percent = (bps: number) => (bps / 100).toFixed(2) + "%";
 export type Asset = {
   symbol: string;
   name: string;
