@@ -17,3 +17,4 @@ test-results/
 **/*.tfplan
 infra/cloud/*/backend.hcl
 infra/cloud/*/terraform.tfvars
+/mock/
